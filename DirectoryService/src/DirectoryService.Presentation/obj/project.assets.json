@@ -147,6 +147,19 @@
         "runtime": {
           "bin/placeholder/DirectoryService.Domain.dll": {}
         }
+      },
+      "DirectoryService.Infrastructure/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "dependencies": {
+          "DirectoryService.Application": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/DirectoryService.Infrastructure.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/DirectoryService.Infrastructure.dll": {}
+        }
       }
     }
   },
@@ -546,6 +559,11 @@
       "type": "project",
       "path": "../DirectoryService.Domain/DirectoryService.Domain.csproj",
       "msbuildProject": "../DirectoryService.Domain/DirectoryService.Domain.csproj"
+    },
+    "DirectoryService.Infrastructure/1.0.0": {
+      "type": "project",
+      "path": "../DirectoryService.Infrastructure/DirectoryService.Infrastructure.csproj",
+      "msbuildProject": "../DirectoryService.Infrastructure/DirectoryService.Infrastructure.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -553,6 +571,7 @@
       "DirectoryService.Application >= 1.0.0",
       "DirectoryService.Contracts >= 1.0.0",
       "DirectoryService.Domain >= 1.0.0",
+      "DirectoryService.Infrastructure >= 1.0.0",
       "Microsoft.AspNetCore.OpenApi >= 9.0.10",
       "StyleCop.Analyzers >= 1.1.118",
       "Swashbuckle.AspNetCore >= 9.0.6"
@@ -591,6 +610,9 @@
             },
             "/Users/tiglev/RiderProjects/DirectoryService/DirectoryService/src/DirectoryService.Domain/DirectoryService.Domain.csproj": {
               "projectPath": "/Users/tiglev/RiderProjects/DirectoryService/DirectoryService/src/DirectoryService.Domain/DirectoryService.Domain.csproj"
+            },
+            "/Users/tiglev/RiderProjects/DirectoryService/DirectoryService/src/DirectoryService.Infrastructure/DirectoryService.Infrastructure.csproj": {
+              "projectPath": "/Users/tiglev/RiderProjects/DirectoryService/DirectoryService/src/DirectoryService.Infrastructure/DirectoryService.Infrastructure.csproj"
             }
           }
         }
