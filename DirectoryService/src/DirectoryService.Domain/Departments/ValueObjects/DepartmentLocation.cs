@@ -21,7 +21,16 @@ public class DepartmentLocation
 
     public static Result<DepartmentLocation> Create(Guid departmentId, Guid locationId)
     {
-        // if () в будущем (когда будет работа с бд) будет проверка что departmentId и locationId точно существуют 
+
+        if (departmentId == Guid.Empty)
+        {
+            return Result.Failure<DepartmentLocation>("DepartmentId cannot be empty");
+        }
+
+        if (locationId == Guid.Empty)
+        {
+            return Result.Failure<DepartmentLocation>("LocationId cannot be empty");
+        }
 
         return new DepartmentLocation(departmentId, locationId);
     }
