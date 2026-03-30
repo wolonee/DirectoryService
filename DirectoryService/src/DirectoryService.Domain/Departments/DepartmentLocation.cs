@@ -19,5 +19,10 @@ public class DepartmentLocation
     
     public DateTime CreatedAt { get; private set; }
 
+    public static Result<DepartmentLocation> Create(Guid departmentId, Guid locationId)
+    {
+        // if () в будущем (когда будет работа с бд) будет проверка что departmentId и locationId точно существуют 
 
+        return new DepartmentLocation(departmentId, locationId);
+    }
 }

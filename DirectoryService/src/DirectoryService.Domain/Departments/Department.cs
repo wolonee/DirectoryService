@@ -91,7 +91,13 @@ public class Department
         
         var validPath = pathResult.Value;
         
-        return new Department(validName, validIdentifier, parent, validPath, depth, isActive);
+        var createdDepartment = new Department(validName, validIdentifier, parent, validPath, depth, isActive);
+        if (parent != null)
+        {
+            parent._children.Add(createdDepartment);
+        }
+        
+        return createdDepartment;
     }
 
     public Result Rename(string name, string identifier)
@@ -134,13 +140,18 @@ public class Department
         return Result.Success();
     }
 
-    // public DepartmentLocation AddLocation(Guid departmentId, Guid locationId)
-    // {
-    //     var departmentLocation = new DepartmentLocation(departmentId, locationId);
-    //     _departmentLocations.Add(departmentLocation);
-    //
-    //     return departmentLocation;
-    // }
+    public Result<DepartmentLocation> AddDepartmentLocation(Guid departmentId, Guid locationId)
+    {
+        var departmentLocationResult = DepartmentLocation.Create(departmentId, locationId);
+        if (departmentLocationResult.IsFailure)
+        {
+            return Result.Failure<DepartmentLocation>(departmentLocationResult.Error);
+        }
+        
+        _departmentLocations.Add(departmentLocationResult.Value);
+    
+        return departmentLocationResult.Value;
+    }
 }
 
 public record Path
