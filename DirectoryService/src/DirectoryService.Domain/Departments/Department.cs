@@ -6,6 +6,7 @@ public class Department
 {
     private List<Department> _children = [];
     private List<DepartmentLocation> _departmentLocations = [];
+    private List<DepartmentPosition> _departmentPositions = [];
     
     private Department(
         LocationName locationName, 
@@ -36,7 +37,9 @@ public class Department
 
     public IReadOnlyList<Department> Children => _children;
     
-    public IReadOnlyList<DepartmentLocation> DepartmentLocations => _departmentLocations; // create location
+    public IReadOnlyList<DepartmentLocation> DepartmentLocations => _departmentLocations;
+    
+    public IReadOnlyList<DepartmentPosition> DepartmentPositions => _departmentPositions;
     
     public DepartmentPath DepartmentPath { get; private set; }
     
@@ -53,7 +56,8 @@ public class Department
         string identifier, 
         Department? parent, 
         bool isActive,
-        IEnumerable<Guid> locationIds)
+        IEnumerable<Guid> locationIds,
+        IEnumerable<Guid> positionsIds)
     {
         var nameResult = LocationName.Create(name);
         if (nameResult.IsFailure)
@@ -107,6 +111,15 @@ public class Department
             }
         }
         
+        foreach (var positionId in positionsIds)
+        {
+            var addResult = createdDepartment.AddDepartmentPosition(positionId);
+            if (addResult.IsFailure)
+            {
+                return Result.Failure<Department>(addResult.Error);
+            }
+        }
+        
         return createdDepartment;
     }
     
@@ -119,6 +132,20 @@ public class Department
         }
         
         _departmentLocations.Add(departmentLocationResult.Value);
+        UpdatedAt = DateTime.UtcNow;
+        
+        return Result.Success();
+    }
+    
+    public Result AddDepartmentPosition(Guid positionId)
+    {
+        var departmentPositionResult = DepartmentPosition.Create(Id, positionId);
+        if (departmentPositionResult.IsFailure)
+        {
+            return Result.Failure(departmentPositionResult.Error);
+        }
+        
+        _departmentPositions.Add(departmentPositionResult.Value);
         UpdatedAt = DateTime.UtcNow;
         
         return Result.Success();
