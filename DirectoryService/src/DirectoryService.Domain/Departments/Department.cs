@@ -52,7 +52,8 @@ public class Department
         string name, 
         string identifier, 
         Department? parent, 
-        bool isActive)
+        bool isActive,
+        IEnumerable<Guid> locationIds)
     {
         var nameResult = LocationName.Create(name);
         if (nameResult.IsFailure)
@@ -97,7 +98,30 @@ public class Department
             parent._children.Add(createdDepartment);
         }
         
+        foreach (var locationId in locationIds)
+        {
+            var addResult = createdDepartment.AddDepartmentLocation(locationId);
+            if (addResult.IsFailure)
+            {
+                return Result.Failure<Department>(addResult.Error);
+            }
+        }
+        
         return createdDepartment;
+    }
+    
+    public Result AddDepartmentLocation(Guid locationId)
+    {
+        var departmentLocationResult = DepartmentLocation.Create(Id, locationId);
+        if (departmentLocationResult.IsFailure)
+        {
+            return Result.Failure(departmentLocationResult.Error);
+        }
+        
+        _departmentLocations.Add(departmentLocationResult.Value);
+        UpdatedAt = DateTime.UtcNow;
+        
+        return Result.Success();
     }
 
     public Result Rename(string name, string identifier)
@@ -140,16 +164,16 @@ public class Department
         return Result.Success();
     }
 
-    public Result<DepartmentLocation> AddDepartmentLocation(Guid departmentId, Guid locationId)
-    {
-        var departmentLocationResult = DepartmentLocation.Create(departmentId, locationId);
-        if (departmentLocationResult.IsFailure)
-        {
-            return Result.Failure<DepartmentLocation>(departmentLocationResult.Error);
-        }
-        
-        _departmentLocations.Add(departmentLocationResult.Value);
-    
-        return departmentLocationResult.Value;
-    }
+    // public Result<DepartmentLocation> AddDepartmentLocation(Guid locationId)
+    // {
+    //     var departmentLocationResult = DepartmentLocation.Create(Id, locationId);
+    //     if (departmentLocationResult.IsFailure)
+    //     {
+    //         return Result.Failure<DepartmentLocation>(departmentLocationResult.Error);
+    //     }
+    //     
+    //     _departmentLocations.Add(departmentLocationResult.Value);
+    //
+    //     return departmentLocationResult.Value;
+    // }
 }
