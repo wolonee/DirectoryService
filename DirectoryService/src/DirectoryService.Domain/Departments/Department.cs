@@ -8,18 +8,18 @@ public class Department
     private List<DepartmentLocation> _departmentLocations = [];
     
     private Department(
-        Name name, 
-        Identifier identifier, 
+        LocationName locationName, 
+        DepartmentIdentifier departmentIdentifier, 
         Department? parent, 
-        Path path, 
+        DepartmentPath departmentPath, 
         int depth, 
         bool isActive)
     {
         Id = Guid.NewGuid();
-        Name = name;
-        Identifier = identifier;
+        LocationName = locationName;
+        DepartmentIdentifier = departmentIdentifier;
         Parent = parent;
-        Path = path;
+        DepartmentPath = departmentPath;
         Depth = depth;
         IsActive = isActive;
         CreatedAt = DateTime.UtcNow;
@@ -28,9 +28,9 @@ public class Department
     
     public Guid Id { get; private set; }
     
-    public Name Name { get; private set; }
+    public LocationName LocationName { get; private set; }
     
-    public Identifier Identifier { get; private set; }
+    public DepartmentIdentifier DepartmentIdentifier { get; private set; }
     
     public Department? Parent { get; private set; }
 
@@ -38,7 +38,7 @@ public class Department
     
     public IReadOnlyList<DepartmentLocation> DepartmentLocations => _departmentLocations; // create location
     
-    public Path Path { get; private set; }
+    public DepartmentPath DepartmentPath { get; private set; }
     
     public int Depth { get; private set; }
     
@@ -54,13 +54,13 @@ public class Department
         Department? parent, 
         bool isActive)
     {
-        var nameResult = Name.Create(name);
+        var nameResult = LocationName.Create(name);
         if (nameResult.IsFailure)
         {
             return Result.Failure<Department>(nameResult.Error);
         }
         
-        var identifierResult = Identifier.Create(identifier);
+        var identifierResult = DepartmentIdentifier.Create(identifier);
         if (identifierResult.IsFailure)
         {
             return Result.Failure<Department>(identifierResult.Error);
@@ -74,7 +74,7 @@ public class Department
         
         if (parent != null)
         {
-            path = $"{parent.Path.Value}.{validIdentifier.Value}";
+            path = $"{parent.DepartmentPath.Value}.{validIdentifier.Value}";
             depth = parent.Depth + 1;
         }
         else
@@ -83,7 +83,7 @@ public class Department
             depth = 1;
         }
         
-        var pathResult = Path.Create(path);
+        var pathResult = DepartmentPath.Create(path);
         if (pathResult.IsFailure)
         {
             return Result.Failure<Department>(pathResult.Error);
@@ -102,20 +102,20 @@ public class Department
 
     public Result Rename(string name, string identifier)
     {
-        var nameResult = Name.Create(name);
+        var nameResult = LocationName.Create(name);
         if (nameResult.IsFailure)
         {
             return Result.Failure(nameResult.Error);
         }
             
-        var identifierResult = Identifier.Create(identifier);
+        var identifierResult = DepartmentIdentifier.Create(identifier);
         if (identifierResult.IsFailure)
         {
             return Result.Failure(identifierResult.Error);
         }
         
-        Name = nameResult.Value;
-        Identifier = identifierResult.Value;
+        LocationName = nameResult.Value;
+        DepartmentIdentifier = identifierResult.Value;
         
         return Result.Success();
     }
@@ -151,33 +151,5 @@ public class Department
         _departmentLocations.Add(departmentLocationResult.Value);
     
         return departmentLocationResult.Value;
-    }
-}
-
-public record Path
-{
-    public const int MAX_LENGTH = 150;
-    public const int MIN_LENGTH = 3;
-    
-    public Path(string value)
-    {
-        Value = value;
-    }
-    
-    public string Value { get; }
-
-    public static Result<Path> Create(string value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return Result.Failure<Path>("Path can't be empty");
-        }
-
-        if (value.StartsWith('.') || value.EndsWith('.') || value.Contains(".."))
-        {
-            return Result.Failure<Path>("Path cannot start or end with a dot");
-        }
-
-        return new Path(value);
     }
 }
