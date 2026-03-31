@@ -30,11 +30,21 @@ x86/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
 bld/
+# Игнорируем ВСЕ папки bin и obj рекурсивно во всем решении
 [Bb]in/
 [Oo]bj/
 [Oo]bj/**/*.nuget.dgspec.json
+[Oo]bj/**/*.nuget.g.props
+[Oo]bj/**/*.nuget.g.targets
 [Oo]bj/**/project.assets.json
-[Oo]bj/**/*.nuget.cache
+[Oo]bj/**/project.nuget.cache
+[Oo]bj/**/project.packagespec.json
+[Oo]bj/**/rider.project.*.info
+[Oo]bj/**/rider.project.model.nuget.info
+[Oo]bj/**/rider.project.restore.info
+[Oo]bj/**/*AssemblyInfoInputs.cache
+[Oo]bj/**/*GlobalUsings.g.cs
+[Oo]bj/**/**.g.cs
 [Ll]og/
 [Ll]ogs/
 
