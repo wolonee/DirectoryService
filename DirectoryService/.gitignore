@@ -32,6 +32,9 @@ x86/
 bld/
 [Bb]in/
 [Oo]bj/
+[Oo]bj/**/*.nuget.dgspec.json
+[Oo]bj/**/project.assets.json
+[Oo]bj/**/*.nuget.cache
 [Ll]og/
 [Ll]ogs/
 
@@ -460,6 +463,13 @@ Temporary Items
 Thumbs.db
 ehthumbs.db
 ehthumbs_vista.db
+
+# NuGet auto-generated files inside obj/
+[Oo]bj/**/project.assets.json
+[Oo]bj/**/project.nuget.cache
+[Oo]bj/**/*.nuget.g.props
+[Oo]bj/**/*.nuget.g.targets
+[Oo]bj/**/NuGet*.props
 
 # Dump file
 *.stackdump
