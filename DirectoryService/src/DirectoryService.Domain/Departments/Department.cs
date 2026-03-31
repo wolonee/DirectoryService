@@ -4,9 +4,9 @@ namespace DirectoryService.Domain;
 
 public class Department
 {
-    private List<Department> _children = [];
-    private List<DepartmentLocation> _departmentLocations = [];
-    private List<DepartmentPosition> _departmentPositions = [];
+    private readonly List<Department> _children = [];
+    private readonly List<DepartmentLocation> _departmentLocations = [];
+    private readonly List<DepartmentPosition> _departmentPositions = [];
     
     private Department(
         LocationName locationName, 
@@ -52,39 +52,24 @@ public class Department
     public DateTime UpdatedAt { get; private set; }
 
     public static Result<Department> Create(
-        string name, 
-        string identifier, 
+        LocationName name, 
+        DepartmentIdentifier identifier, 
         Department? parent, 
         bool isActive,
         IEnumerable<Guid> locationIds,
         IEnumerable<Guid> positionsIds)
     {
-        var nameResult = LocationName.Create(name);
-        if (nameResult.IsFailure)
-        {
-            return Result.Failure<Department>(nameResult.Error);
-        }
-        
-        var identifierResult = DepartmentIdentifier.Create(identifier);
-        if (identifierResult.IsFailure)
-        {
-            return Result.Failure<Department>(identifierResult.Error);
-        }
-        
-        var validName = nameResult.Value;
-        var validIdentifier = identifierResult.Value;
-        
         string path;
         int depth;
         
         if (parent != null)
         {
-            path = $"{parent.DepartmentPath.Value}.{validIdentifier.Value}";
+            path = $"{parent.DepartmentPath.Value}.{identifier.Value}";
             depth = parent.Depth + 1;
         }
         else
         {
-            path = validIdentifier.Value;
+            path = identifier.Value;
             depth = 1;
         }
         
@@ -96,60 +81,62 @@ public class Department
         
         var validPath = pathResult.Value;
         
-        var createdDepartment = new Department(validName, validIdentifier, parent, validPath, depth, isActive);
-        if (parent != null)
-        {
-            parent._children.Add(createdDepartment);
-        }
-        
-        foreach (var locationId in locationIds)
-        {
-            var addResult = createdDepartment.AddDepartmentLocation(locationId);
-            if (addResult.IsFailure)
-            {
-                return Result.Failure<Department>(addResult.Error);
-            }
-        }
-        
-        foreach (var positionId in positionsIds)
-        {
-            var addResult = createdDepartment.AddDepartmentPosition(positionId);
-            if (addResult.IsFailure)
-            {
-                return Result.Failure<Department>(addResult.Error);
-            }
-        }
+        var createdDepartment = new Department(name, identifier, parent, validPath, depth, isActive);
         
         return createdDepartment;
     }
+
+    // public Result UpdateLocations(IEnumerable<Guid> locationIds)
+    // {
+    //     foreach (var locationId in locationIds)
+    //     {
+    //         var addResult = AddDepartmentLocation(locationId);
+    //         if (addResult.IsFailure)
+    //         {
+    //             return Result.Failure<Department>(addResult.Error);
+    //         }
+    //     }
+    // }
+    //
+    // public Result AddDepartmentLocation(Guid locationId)
+    // {
+    //     var departmentLocationResult = DepartmentLocation.Create(Id, locationId);
+    //     if (departmentLocationResult.IsFailure)
+    //     {
+    //         return Result.Failure(departmentLocationResult.Error);
+    //     }
+    //     
+    //     _departmentLocations.Add(departmentLocationResult.Value);
+    //     UpdatedAt = DateTime.UtcNow;
+    //     
+    //     return Result.Success();
+    // }
     
-    public Result AddDepartmentLocation(Guid locationId)
-    {
-        var departmentLocationResult = DepartmentLocation.Create(Id, locationId);
-        if (departmentLocationResult.IsFailure)
-        {
-            return Result.Failure(departmentLocationResult.Error);
-        }
-        
-        _departmentLocations.Add(departmentLocationResult.Value);
-        UpdatedAt = DateTime.UtcNow;
-        
-        return Result.Success();
-    }
-    
-    public Result AddDepartmentPosition(Guid positionId)
-    {
-        var departmentPositionResult = DepartmentPosition.Create(Id, positionId);
-        if (departmentPositionResult.IsFailure)
-        {
-            return Result.Failure(departmentPositionResult.Error);
-        }
-        
-        _departmentPositions.Add(departmentPositionResult.Value);
-        UpdatedAt = DateTime.UtcNow;
-        
-        return Result.Success();
-    }
+    // public Result UpdatePositions(IEnumerable<Guid> positionsIds)
+    // {
+    //     foreach (var positionId in positionsIds)
+    //     {
+    //         var addResult = AddDepartmentPosition(positionId);
+    //         if (addResult.IsFailure)
+    //         {
+    //             return Result.Failure<Department>(addResult.Error);
+    //         }
+    //     }
+    // }
+    //
+    // public Result AddDepartmentPosition(Guid positionId)
+    // {
+    //     var departmentPositionResult = DepartmentPosition.Create(Id, positionId);
+    //     if (departmentPositionResult.IsFailure)
+    //     {
+    //         return Result.Failure(departmentPositionResult.Error);
+    //     }
+    //     
+    //     _departmentPositions.Add(departmentPositionResult.Value);
+    //     UpdatedAt = DateTime.UtcNow;
+    //     
+    //     return Result.Success();
+    // }
 
     public Result Rename(string name, string identifier)
     {

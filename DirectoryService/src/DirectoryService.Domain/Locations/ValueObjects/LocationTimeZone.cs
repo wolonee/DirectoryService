@@ -22,14 +22,11 @@ public record LocationTimeZone
         {
             return Result.Failure<LocationTimeZone>("Time zone must be in IANA format");
         }
-
-        try
+        
+        bool isValid = TimeZoneInfo.TryFindSystemTimeZoneById(value, out var _);
+        if (isValid == false)
         {
-            TimeZoneInfo.FindSystemTimeZoneById(value);
-        }
-        catch (Exception e)
-        {
-            return Result.Failure<LocationTimeZone>("Time zone is invalid");
+            return Result.Failure<LocationTimeZone>("Time zone not found");
         }
 
         return new LocationTimeZone(value);
