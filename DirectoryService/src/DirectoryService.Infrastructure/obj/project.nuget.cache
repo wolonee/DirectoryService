@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "+A3dnyWeKd4=",
+  "success": true,
+  "projectFilePath": "/Users/tiglev/RiderProjects/DirectoryService/DirectoryService/src/DirectoryService.Infrastructure/DirectoryService.Infrastructure.csproj",
+  "expectedPackageFiles": [
+    "/Users/tiglev/.nuget/packages/stylecop.analyzers/1.1.118/stylecop.analyzers.1.1.118.nupkg.sha512"
+  ],
+  "logs": []
+}

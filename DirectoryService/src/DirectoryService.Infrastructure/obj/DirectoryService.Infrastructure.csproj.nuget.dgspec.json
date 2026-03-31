@@ -1,0 +1,287 @@
+{
+  "format": 1,
+  "restore": {
+    "/Users/tiglev/RiderProjects/DirectoryService/DirectoryService/src/DirectoryService.Infrastructure/DirectoryService.Infrastructure.csproj": {}
+  },
+  "projects": {
+    "/Users/tiglev/RiderProjects/DirectoryService/DirectoryService/src/DirectoryService.Application/DirectoryService.Application.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/tiglev/RiderProjects/DirectoryService/DirectoryService/src/DirectoryService.Application/DirectoryService.Application.csproj",
+        "projectName": "DirectoryService.Application",
+        "projectPath": "/Users/tiglev/RiderProjects/DirectoryService/DirectoryService/src/DirectoryService.Application/DirectoryService.Application.csproj",
+        "packagesPath": "/Users/tiglev/.nuget/packages/",
+        "outputPath": "/Users/tiglev/RiderProjects/DirectoryService/DirectoryService/src/DirectoryService.Application/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/tiglev/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "/Users/tiglev/RiderProjects/DirectoryService/DirectoryService/src/DirectoryService.Contracts/DirectoryService.Contracts.csproj": {
+                "projectPath": "/Users/tiglev/RiderProjects/DirectoryService/DirectoryService/src/DirectoryService.Contracts/DirectoryService.Contracts.csproj"
+              },
+              "/Users/tiglev/RiderProjects/DirectoryService/DirectoryService/src/DirectoryService.Domain/DirectoryService.Domain.csproj": {
+                "projectPath": "/Users/tiglev/RiderProjects/DirectoryService/DirectoryService/src/DirectoryService.Domain/DirectoryService.Domain.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "StyleCop.Analyzers": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.1.118, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.306/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/tiglev/RiderProjects/DirectoryService/DirectoryService/src/DirectoryService.Contracts/DirectoryService.Contracts.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/tiglev/RiderProjects/DirectoryService/DirectoryService/src/DirectoryService.Contracts/DirectoryService.Contracts.csproj",
+        "projectName": "DirectoryService.Contracts",
+        "projectPath": "/Users/tiglev/RiderProjects/DirectoryService/DirectoryService/src/DirectoryService.Contracts/DirectoryService.Contracts.csproj",
+        "packagesPath": "/Users/tiglev/.nuget/packages/",
+        "outputPath": "/Users/tiglev/RiderProjects/DirectoryService/DirectoryService/src/DirectoryService.Contracts/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/tiglev/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "StyleCop.Analyzers": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.1.118, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.306/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/tiglev/RiderProjects/DirectoryService/DirectoryService/src/DirectoryService.Domain/DirectoryService.Domain.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/tiglev/RiderProjects/DirectoryService/DirectoryService/src/DirectoryService.Domain/DirectoryService.Domain.csproj",
+        "projectName": "DirectoryService.Domain",
+        "projectPath": "/Users/tiglev/RiderProjects/DirectoryService/DirectoryService/src/DirectoryService.Domain/DirectoryService.Domain.csproj",
+        "packagesPath": "/Users/tiglev/.nuget/packages/",
+        "outputPath": "/Users/tiglev/RiderProjects/DirectoryService/DirectoryService/src/DirectoryService.Domain/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/tiglev/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "StyleCop.Analyzers": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.1.118, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.306/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/tiglev/RiderProjects/DirectoryService/DirectoryService/src/DirectoryService.Infrastructure/DirectoryService.Infrastructure.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/tiglev/RiderProjects/DirectoryService/DirectoryService/src/DirectoryService.Infrastructure/DirectoryService.Infrastructure.csproj",
+        "projectName": "DirectoryService.Infrastructure",
+        "projectPath": "/Users/tiglev/RiderProjects/DirectoryService/DirectoryService/src/DirectoryService.Infrastructure/DirectoryService.Infrastructure.csproj",
+        "packagesPath": "/Users/tiglev/.nuget/packages/",
+        "outputPath": "/Users/tiglev/RiderProjects/DirectoryService/DirectoryService/src/DirectoryService.Infrastructure/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/tiglev/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "/Users/tiglev/RiderProjects/DirectoryService/DirectoryService/src/DirectoryService.Application/DirectoryService.Application.csproj": {
+                "projectPath": "/Users/tiglev/RiderProjects/DirectoryService/DirectoryService/src/DirectoryService.Application/DirectoryService.Application.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "StyleCop.Analyzers": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.1.118, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.306/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
