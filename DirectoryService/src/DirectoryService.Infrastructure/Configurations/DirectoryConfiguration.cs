@@ -11,6 +11,13 @@ public class DirectoryConfiguration : IEntityTypeConfiguration<Department>
         builder.ToTable("department");
         
         builder.HasKey(d => d.Id);
+        
+        builder.Property(d => d.Depth)
+            .IsRequired()
+            .HasDefaultValue(0);
+        
+        builder.Property(d => d.IsActive)
+            .IsRequired();
 
         builder.Property(d => d.DepartmentName)
             .IsRequired()
@@ -26,5 +33,19 @@ public class DirectoryConfiguration : IEntityTypeConfiguration<Department>
             .IsRequired()
             .HasMaxLength(LengthConstants.MAX_LENGTH_150)
             .HasConversion(v => v.Value, p => new DepartmentPath(p));
+
+        // builder
+        //     .HasMany(d => d.DepartmentLocations)
+        //     .WithOne()
+        //     .HasForeignKey(l => l.DepartmentId)
+        //     .IsRequired()
+        //     .OnDelete(DeleteBehavior.Cascade);
+        
+        builder
+            .HasMany(dp => dp.DepartmentPositions)
+            .WithOne()
+            .HasForeignKey(p => p.DepartmentId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

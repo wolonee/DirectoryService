@@ -15,13 +15,14 @@ public class DepartmentLocation
     
     public Guid DepartmentId { get; private set; }
     
+    
+    
     public Guid LocationId { get; private set; }
     
     public DateTime CreatedAt { get; private set; }
 
     public static Result<DepartmentLocation> Create(Guid departmentId, Guid locationId)
     {
-
         if (departmentId == Guid.Empty)
         {
             return Result.Failure<DepartmentLocation>("DepartmentId cannot be empty");
