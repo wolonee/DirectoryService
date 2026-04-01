@@ -23,11 +23,13 @@ public class DirectoryConfiguration : IEntityTypeConfiguration<Department>
 
         builder.Property(d => d.DepartmentName)
             .IsRequired()
+            .HasColumnName("name")
             .HasMaxLength(LengthConstants.MAX_LENGTH_150)
             .HasConversion(v => v.Value, n => new DepartmentName(n));
         
         builder.Property(d => d.DepartmentIdentifier)
             .IsRequired()
+            .HasColumnName("identifier")
             .HasMaxLength(LengthConstants.MAX_LENGTH_150)
             .HasConversion(v => v.Value, i => new DepartmentIdentifier(i));
 

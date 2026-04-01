@@ -3,4 +3,5 @@
 public class LengthConstants
 {
     public const int MAX_LENGTH_150 = 150;
+    public const int MAX_LENGTH_200 = 200;
 }
