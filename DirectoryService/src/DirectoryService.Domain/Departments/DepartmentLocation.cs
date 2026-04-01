@@ -1,6 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 
-namespace DirectoryService.Domain;
+namespace DirectoryService.Domain.Departments;
 
 public class DepartmentLocation
 {
@@ -15,7 +15,7 @@ public class DepartmentLocation
     
     public Guid DepartmentId { get; private set; }
     
-    
+    public Department Department { get; private set; }
     
     public Guid LocationId { get; private set; }
     

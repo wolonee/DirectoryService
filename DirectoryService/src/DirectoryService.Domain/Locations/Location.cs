@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
+using DirectoryService.Domain.Locations.ValueObjects;
 
-namespace DirectoryService.Domain;
+namespace DirectoryService.Domain.Locations;
 
 public class Location
 {

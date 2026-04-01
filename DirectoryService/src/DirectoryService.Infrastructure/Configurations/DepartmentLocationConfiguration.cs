@@ -1,4 +1,6 @@
 ﻿using DirectoryService.Domain;
+using DirectoryService.Domain.Departments;
+using DirectoryService.Domain.Locations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -8,6 +10,22 @@ public class DepartmentLocationConfiguration : IEntityTypeConfiguration<Departme
 {
     public void Configure(EntityTypeBuilder<DepartmentLocation> builder)
     {
-        builder.HasKey(dl => dl.LocationId);
+        builder.ToTable("department_locations");
+        
+        builder.HasKey(dl => dl.Id);
+        
+        builder
+            .HasOne(d => d.Department)
+            .WithMany(dl => dl.DepartmentLocations)
+            .HasForeignKey(dl => dl.DepartmentId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder
+            .HasOne<Location>()
+            .WithMany()
+            .HasForeignKey(dl => dl.LocationId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

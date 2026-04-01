@@ -1,6 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 
-namespace DirectoryService.Domain;
+namespace DirectoryService.Domain.Departments.ValueObjects;
 
 public record DepartmentIdentifier
 {
