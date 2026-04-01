@@ -10,7 +10,7 @@ public record DepartmentName
     public DepartmentName(string value)
     {
         Value = value;
-    }
+    } 
     
     public string Value { get; }
 
