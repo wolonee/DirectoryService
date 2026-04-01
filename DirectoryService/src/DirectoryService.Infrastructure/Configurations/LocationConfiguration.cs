@@ -18,17 +18,17 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
         {
             nb.Property(s => s.Street)
                 .IsRequired()
-                .HasMaxLength(LengthConstants.MAX_LENGTH_200)
+                .HasMaxLength(LengthConstants.LENGTH200)
                 .HasColumnName("street");
 
             nb.Property(s => s.City)
                 .IsRequired()
-                .HasMaxLength(LengthConstants.MAX_LENGTH_200)
+                .HasMaxLength(LengthConstants.LENGTH200)
                 .HasColumnName("city");
 
             nb.Property(s => s.Country)
                 .IsRequired()
-                .HasMaxLength(LengthConstants.MAX_LENGTH_150)
+                .HasMaxLength(LengthConstants.LENGTH150)
                 .HasColumnName("country");
         });
         
@@ -43,7 +43,7 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
             nb.Property(ln => ln.Value)
                 .IsRequired()
                 .HasColumnName("name")
-                .HasMaxLength(LengthConstants.MAX_LENGTH_200);
+                .HasMaxLength(LengthConstants.LENGTH200);
         });
 
         builder.Navigation(l => l.LocationAddress).IsRequired(false);
