@@ -7,7 +7,7 @@ public record DepartmentPath
     public const int MAX_LENGTH = 150;
     public const int MIN_LENGTH = 3;
     
-    private DepartmentPath(string value)
+    public DepartmentPath(string value)
     {
         Value = value;
     }

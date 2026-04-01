@@ -16,5 +16,15 @@ public class DirectoryConfiguration : IEntityTypeConfiguration<Department>
             .IsRequired()
             .HasMaxLength(LengthConstants.MAX_LENGTH_150)
             .HasConversion(v => v.Value, n => new DepartmentName(n));
+        
+        builder.Property(d => d.DepartmentIdentifier)
+            .IsRequired()
+            .HasMaxLength(LengthConstants.MAX_LENGTH_150)
+            .HasConversion(v => v.Value, i => new DepartmentIdentifier(i));
+
+        builder.Property(d => d.DepartmentPath)
+            .IsRequired()
+            .HasMaxLength(LengthConstants.MAX_LENGTH_150)
+            .HasConversion(v => v.Value, p => new DepartmentPath(p));
     }
 }
