@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DirectoryService.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class Valid_Initial : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -71,7 +71,7 @@ namespace DirectoryService.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "DepartmentPosition",
+                name: "department_position",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -81,9 +81,9 @@ namespace DirectoryService.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DepartmentPosition", x => x.Id);
+                    table.PrimaryKey("PK_department_position", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_DepartmentPosition_department_DepartmentId",
+                        name: "FK_department_position_department_DepartmentId",
                         column: x => x.DepartmentId,
                         principalTable: "department",
                         principalColumn: "id",
@@ -132,8 +132,8 @@ namespace DirectoryService.Infrastructure.Migrations
                 column: "LocationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DepartmentPosition_DepartmentId",
-                table: "DepartmentPosition",
+                name: "IX_department_position_DepartmentId",
+                table: "department_position",
                 column: "DepartmentId");
         }
 
@@ -144,7 +144,7 @@ namespace DirectoryService.Infrastructure.Migrations
                 name: "department_locations");
 
             migrationBuilder.DropTable(
-                name: "DepartmentPosition");
+                name: "department_position");
 
             migrationBuilder.DropTable(
                 name: "position");

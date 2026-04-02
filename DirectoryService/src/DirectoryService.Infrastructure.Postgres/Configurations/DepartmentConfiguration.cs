@@ -56,8 +56,8 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
         //     .OnDelete(DeleteBehavior.Cascade);
         
         builder
-            .HasMany(dp => dp.DepartmentPositions)
-            .WithOne()
+            .HasMany(d => d.DepartmentPositions)
+            .WithOne(dp => dp.Department)
             .HasForeignKey(p => p.DepartmentId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
