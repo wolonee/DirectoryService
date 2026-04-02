@@ -26,7 +26,7 @@ public class Location
 
     public LocationName? Name { get; private set; }
 
-    public LocationTimeZone? Timezone { get; private set; }
+    public LocationTimeZone Timezone { get; private set; }
 
     public bool IsActive { get; private set; }
     

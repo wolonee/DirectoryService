@@ -11,8 +11,10 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
     public void Configure(EntityTypeBuilder<Department> builder)
     {
         builder.ToTable("department");
-        
+
         builder.HasKey(d => d.Id);
+        builder.Property(d => d.Id)
+            .HasColumnName("id");
         
         builder.Property(d => d.Depth)
             .IsRequired()
@@ -25,7 +27,7 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
             .IsRequired()
             .HasColumnName("name")
             .HasMaxLength(LengthConstants.LENGTH150)
-            .HasConversion(v => v.Value, n => new DepartmentName(n));
+            .HasConversion(v => v.Value, n => DepartmentName.Create(n).Value);
         
         // builder.OwnsOne(d => d.DepartmentName, db =>
         // {
@@ -39,12 +41,12 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
             .IsRequired()
             .HasColumnName("identifier")
             .HasMaxLength(LengthConstants.LENGTH150)
-            .HasConversion(v => v.Value, i => new DepartmentIdentifier(i));
+            .HasConversion(v => v.Value, i => DepartmentIdentifier.Create(i).Value);
 
         builder.Property(d => d.DepartmentPath)
             .IsRequired()
             .HasMaxLength(LengthConstants.LENGTH150)
-            .HasConversion(v => v.Value, p => new DepartmentPath(p));
+            .HasConversion(v => v.Value, p => DepartmentPath.Create(p).Value);
 
         // builder
         //     .HasMany(d => d.DepartmentLocations)

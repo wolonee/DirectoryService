@@ -13,6 +13,8 @@ public class DepartmentLocationConfiguration : IEntityTypeConfiguration<Departme
         builder.ToTable("department_locations");
         
         builder.HasKey(dl => dl.Id);
+        builder.Property(dl => dl.Id)
+            .HasColumnName("id");
         
         builder
             .HasOne(d => d.Department)

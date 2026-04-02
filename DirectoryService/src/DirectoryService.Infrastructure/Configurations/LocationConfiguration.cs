@@ -13,6 +13,8 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
         builder.ToTable("locations");
         
         builder.HasKey(l => l.Id);
+        builder.Property(l => l.Id)
+            .HasColumnName("id");
 
         builder.ComplexProperty(v => v.LocationAddress, nb =>
         {
@@ -48,14 +50,20 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
 
         builder.Navigation(l => l.LocationAddress).IsRequired(false);
         
-        builder.OwnsOne(l => l.Timezone, nb =>
-        {
-            nb.Property(tz => tz.Value)
-                .IsRequired()
-                .HasColumnName("timezone");
-        });
-
-        builder.Navigation(l => l.Timezone).IsRequired(false);
+        // builder.OwnsOne(l => l.Timezone, nb =>
+        // {
+        //     nb.Property(tz => tz.Value)
+        //         .IsRequired()
+        //         .HasColumnName("timezone");
+        // });
+        //
+        // builder.Navigation(l => l.Timezone).IsRequired(false);
+        
+        builder.Property(l => l.Timezone)
+            .HasConversion(v => v.Value, tz => LocationTimeZone.Create(tz).Value)
+            .IsRequired()
+            .HasMaxLength(LengthConstants.LENGTH200)
+            .HasColumnName("timezone");
         
         builder.Property(l => l.IsActive).IsRequired();
     }
