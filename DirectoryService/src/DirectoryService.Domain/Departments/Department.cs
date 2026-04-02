@@ -5,6 +5,11 @@ namespace DirectoryService.Domain.Departments;
 
 public class Department
 {
+    // EF CORE
+    private Department()
+    {
+    }
+    
     private readonly List<Department> _children = [];
     private readonly List<DepartmentLocation> _departmentLocations = [];
     private readonly List<DepartmentPosition> _departmentPositions = [];

@@ -1,5 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+    <PropertyGroup>
+      <RootNamespace>DirectoryService.Infrastructure</RootNamespace>
+    </PropertyGroup>
+
     <ItemGroup>
       <ProjectReference Include="..\DirectoryService.Application\DirectoryService.Application.csproj" />
     </ItemGroup>

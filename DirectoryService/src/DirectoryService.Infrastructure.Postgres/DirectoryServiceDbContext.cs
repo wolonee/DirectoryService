@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace DirectoryService.Infrastructure;
 
@@ -16,9 +17,12 @@ public class DirectoryServiceDbContext : DbContext
         base.OnConfiguring(optionsBuilder);
 
         optionsBuilder.UseNpgsql(_connectionString);
+        
+        optionsBuilder.LogTo(Console.WriteLine, LogLevel.Information);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(DirectoryServiceDbContext).Assembly);
     }
 }

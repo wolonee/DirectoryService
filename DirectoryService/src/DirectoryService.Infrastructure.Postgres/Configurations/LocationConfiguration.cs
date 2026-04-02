@@ -33,12 +33,6 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
                 .HasMaxLength(LengthConstants.LENGTH150)
                 .HasColumnName("country");
         });
-        
-        // builder.Property(ln => ln.Name)
-        //     .HasConversion(v => v.Value, n => LocationName.Create(n).Value)
-        //     .IsRequired(false)
-        //     .HasMaxLength(LengthConstants.MAX_LENGTH_200)
-        //     .HasColumnName("name");
 
         builder.OwnsOne(l => l.Name, nb =>
         {
@@ -48,16 +42,7 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
                 .HasMaxLength(LengthConstants.LENGTH200);
         });
 
-        builder.Navigation(l => l.LocationAddress).IsRequired(false);
-        
-        // builder.OwnsOne(l => l.Timezone, nb =>
-        // {
-        //     nb.Property(tz => tz.Value)
-        //         .IsRequired()
-        //         .HasColumnName("timezone");
-        // });
-        //
-        // builder.Navigation(l => l.Timezone).IsRequired(false);
+        builder.Navigation(l => l.Name).IsRequired(false);
         
         builder.Property(l => l.Timezone)
             .HasConversion(v => v.Value, tz => LocationTimeZone.Create(tz).Value)

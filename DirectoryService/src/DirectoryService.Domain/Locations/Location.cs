@@ -5,6 +5,11 @@ namespace DirectoryService.Domain.Locations;
 
 public class Location
 {
+    // EF CORE
+    private Location()
+    {
+    }
+    
     private Location(
         LocationAddress locationAddress,
         LocationName name,
