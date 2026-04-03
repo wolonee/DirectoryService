@@ -71,26 +71,6 @@ namespace DirectoryService.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "department_position",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    DepartmentId = table.Column<Guid>(type: "uuid", nullable: false),
-                    PositionId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_department_position", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_department_position_department_DepartmentId",
-                        column: x => x.DepartmentId,
-                        principalTable: "department",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "department_locations",
                 columns: table => new
                 {
@@ -116,6 +96,32 @@ namespace DirectoryService.Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "department_position",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    DepartmentId = table.Column<Guid>(type: "uuid", nullable: false),
+                    PositionId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_department_position", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_department_position_department_DepartmentId",
+                        column: x => x.DepartmentId,
+                        principalTable: "department",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_department_position_position_PositionId",
+                        column: x => x.PositionId,
+                        principalTable: "position",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_department_ParentId",
                 table: "department",
@@ -135,6 +141,11 @@ namespace DirectoryService.Infrastructure.Migrations
                 name: "IX_department_position_DepartmentId",
                 table: "department_position",
                 column: "DepartmentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_department_position_PositionId",
+                table: "department_position",
+                column: "PositionId");
         }
 
         /// <inheritdoc />
@@ -147,13 +158,13 @@ namespace DirectoryService.Infrastructure.Migrations
                 name: "department_position");
 
             migrationBuilder.DropTable(
-                name: "position");
-
-            migrationBuilder.DropTable(
                 name: "locations");
 
             migrationBuilder.DropTable(
                 name: "department");
+
+            migrationBuilder.DropTable(
+                name: "position");
         }
     }
 }

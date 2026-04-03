@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using DirectoryService.Domain;
+using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Positions;
 using DirectoryService.Domain.Positions.ValueObjects;
 using Microsoft.EntityFrameworkCore;
@@ -46,5 +47,11 @@ public class PositionConfiguration : IEntityTypeConfiguration<Position>
         builder.Property(a => a.IsActive)
             .HasColumnName("isActive")
             .IsRequired();
+        
+        // builder.HasOne<DepartmentPosition>()
+        //     .WithMany()
+        //     .HasForeignKey("position_id")
+        //     .IsRequired()
+        //     .OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -13,7 +13,7 @@ public class DirectoryServiceDbContext : DbContext
         _connectionString = connectionString;
     }
     
-    // public DbSet<DepartmentPosition> DepartmentPositions { get; set; }
+    public DbSet<DepartmentPosition> DepartmentPositions { get; set; }
 
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
