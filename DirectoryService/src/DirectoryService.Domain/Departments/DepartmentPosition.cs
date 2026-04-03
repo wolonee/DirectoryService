@@ -4,6 +4,10 @@ namespace DirectoryService.Domain.Departments;
 
 public class DepartmentPosition
 {
+    private DepartmentPosition()
+    {
+    }
+    
     private DepartmentPosition(Guid departmentId, Guid positionId)
     {
         DepartmentId = departmentId;

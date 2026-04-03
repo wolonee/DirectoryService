@@ -4,6 +4,10 @@ namespace DirectoryService.Domain.Departments;
 
 public class DepartmentLocation
 {
+    private DepartmentLocation()
+    {
+    }
+    
     private DepartmentLocation(Guid departmentId, Guid locationId)
     {
         DepartmentId = departmentId;
