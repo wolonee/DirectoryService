@@ -13,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DirectoryService.Infrastructure.Migrations
 {
     [DbContext(typeof(DirectoryServiceDbContext))]
-    [Migration("20260403091917_add_department_positions")]
-    partial class add_department_positions
+    [Migration("20260403145518_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -120,7 +120,7 @@ namespace DirectoryService.Infrastructure.Migrations
 
                     b.HasIndex("PositionId");
 
-                    b.ToTable("department_position", (string)null);
+                    b.ToTable("department_positions", (string)null);
                 });
 
             modelBuilder.Entity("DirectoryService.Domain.Locations.Location", b =>

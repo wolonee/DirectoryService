@@ -97,7 +97,7 @@ namespace DirectoryService.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "department_position",
+                name: "department_positions",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -107,15 +107,15 @@ namespace DirectoryService.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_department_position", x => x.Id);
+                    table.PrimaryKey("PK_department_positions", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_department_position_department_DepartmentId",
+                        name: "FK_department_positions_department_DepartmentId",
                         column: x => x.DepartmentId,
                         principalTable: "department",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_department_position_position_PositionId",
+                        name: "FK_department_positions_position_PositionId",
                         column: x => x.PositionId,
                         principalTable: "position",
                         principalColumn: "id",
@@ -138,13 +138,13 @@ namespace DirectoryService.Infrastructure.Migrations
                 column: "LocationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_department_position_DepartmentId",
-                table: "department_position",
+                name: "IX_department_positions_DepartmentId",
+                table: "department_positions",
                 column: "DepartmentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_department_position_PositionId",
-                table: "department_position",
+                name: "IX_department_positions_PositionId",
+                table: "department_positions",
                 column: "PositionId");
         }
 
@@ -155,7 +155,7 @@ namespace DirectoryService.Infrastructure.Migrations
                 name: "department_locations");
 
             migrationBuilder.DropTable(
-                name: "department_position");
+                name: "department_positions");
 
             migrationBuilder.DropTable(
                 name: "locations");

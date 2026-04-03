@@ -117,7 +117,7 @@ namespace DirectoryService.Infrastructure.Migrations
 
                     b.HasIndex("PositionId");
 
-                    b.ToTable("department_position", (string)null);
+                    b.ToTable("department_positions", (string)null);
                 });
 
             modelBuilder.Entity("DirectoryService.Domain.Locations.Location", b =>
