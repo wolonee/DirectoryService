@@ -1,9 +1,15 @@
 ﻿using CSharpFunctionalExtensions;
+using DirectoryService.Domain.Positions.ValueObjects;
 
 namespace DirectoryService.Domain.Positions;
 
 public class Position
 {
+    // EF CORE
+    private Position()
+    {
+    }
+    
     private Position(PositionName name, string? description, bool isActive)
     {
         Id = Guid.NewGuid();

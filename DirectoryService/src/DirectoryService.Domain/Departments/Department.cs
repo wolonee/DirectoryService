@@ -1,15 +1,21 @@
 using CSharpFunctionalExtensions;
+using DirectoryService.Domain.Departments.ValueObjects;
 
-namespace DirectoryService.Domain;
+namespace DirectoryService.Domain.Departments;
 
 public class Department
 {
+    // EF CORE
+    private Department()
+    {
+    }
+    
     private readonly List<Department> _children = [];
     private readonly List<DepartmentLocation> _departmentLocations = [];
     private readonly List<DepartmentPosition> _departmentPositions = [];
     
     private Department(
-        LocationName locationName, 
+        DepartmentName departmentName, 
         DepartmentIdentifier departmentIdentifier, 
         Department? parent, 
         DepartmentPath departmentPath, 
@@ -17,7 +23,7 @@ public class Department
         bool isActive)
     {
         Id = Guid.NewGuid();
-        LocationName = locationName;
+        DepartmentName = departmentName;
         DepartmentIdentifier = departmentIdentifier;
         Parent = parent;
         DepartmentPath = departmentPath;
@@ -29,7 +35,7 @@ public class Department
     
     public Guid Id { get; private set; }
     
-    public LocationName LocationName { get; private set; }
+    public DepartmentName DepartmentName { get; private set; }
     
     public DepartmentIdentifier DepartmentIdentifier { get; private set; }
     
@@ -52,7 +58,7 @@ public class Department
     public DateTime UpdatedAt { get; private set; }
 
     public static Result<Department> Create(
-        LocationName name, 
+        DepartmentName name, 
         DepartmentIdentifier identifier, 
         Department? parent, 
         bool isActive,
@@ -140,7 +146,7 @@ public class Department
 
     public Result Rename(string name, string identifier)
     {
-        var nameResult = LocationName.Create(name);
+        var nameResult = DepartmentName.Create(name);
         if (nameResult.IsFailure)
         {
             return Result.Failure(nameResult.Error);
@@ -152,7 +158,7 @@ public class Department
             return Result.Failure(identifierResult.Error);
         }
         
-        LocationName = nameResult.Value;
+        DepartmentName = nameResult.Value;
         DepartmentIdentifier = identifierResult.Value;
         
         return Result.Success();

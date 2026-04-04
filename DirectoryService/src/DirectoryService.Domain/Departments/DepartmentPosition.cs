@@ -1,9 +1,13 @@
 ﻿using CSharpFunctionalExtensions;
 
-namespace DirectoryService.Domain;
+namespace DirectoryService.Domain.Departments;
 
 public class DepartmentPosition
 {
+    private DepartmentPosition()
+    {
+    }
+    
     private DepartmentPosition(Guid departmentId, Guid positionId)
     {
         DepartmentId = departmentId;
@@ -14,6 +18,8 @@ public class DepartmentPosition
     public Guid Id { get; private set; }
     
     public Guid DepartmentId { get; private set; }
+    
+    public Department Department { get; private set; }
     
     public Guid PositionId { get; private set; }
     

@@ -1,7 +1,0 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-    <ItemGroup>
-      <ProjectReference Include="..\DirectoryService.Application\DirectoryService.Application.csproj" />
-    </ItemGroup>
-
-</Project>

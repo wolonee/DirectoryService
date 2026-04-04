@@ -1,16 +1,15 @@
 ﻿using CSharpFunctionalExtensions;
 
-namespace DirectoryService.Domain;
+namespace DirectoryService.Domain.Departments.ValueObjects;
 
 public record DepartmentName
 {
     public const int MAX_LENGTH = 150;
     public const int MIN_LENGTH = 3;
     
-    public DepartmentName(string value)
-    {
+    private DepartmentName(string value) {
         Value = value;
-    }
+    } 
     
     public string Value { get; }
 

@@ -1,9 +1,15 @@
 ﻿using CSharpFunctionalExtensions;
+using DirectoryService.Domain.Locations.ValueObjects;
 
-namespace DirectoryService.Domain;
+namespace DirectoryService.Domain.Locations;
 
 public class Location
 {
+    // EF CORE
+    private Location()
+    {
+    }
+    
     private Location(
         LocationAddress locationAddress,
         LocationName name,
@@ -23,7 +29,7 @@ public class Location
 
     public LocationAddress LocationAddress { get; private set; }
 
-    public LocationName Name { get; private set; }
+    public LocationName? Name { get; private set; }
 
     public LocationTimeZone Timezone { get; private set; }
 

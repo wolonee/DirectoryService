@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+      <RootNamespace>DirectoryService.Infrastructure</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\DirectoryService.Application\DirectoryService.Application.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+    </ItemGroup>
+
+</Project>

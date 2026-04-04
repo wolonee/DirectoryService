@@ -1,13 +1,13 @@
 ﻿using CSharpFunctionalExtensions;
 
-namespace DirectoryService.Domain;
+namespace DirectoryService.Domain.Departments.ValueObjects;
 
 public record DepartmentIdentifier
 {
     public const int MAX_LENGTH = 150;
     public const int MIN_LENGTH = 3;
     
-    public DepartmentIdentifier(string value)
+    private DepartmentIdentifier(string value)
     {
         Value = value;
     }

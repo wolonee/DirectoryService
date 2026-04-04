@@ -1,6 +1,6 @@
 ﻿    using CSharpFunctionalExtensions;
 
-namespace DirectoryService.Domain;
+    namespace DirectoryService.Domain.Locations.ValueObjects;
 
 public record LocationTimeZone
 {
