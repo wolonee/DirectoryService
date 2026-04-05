@@ -1,4 +1,5 @@
 using DirectoryService.Application.Locations;
+using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Locations;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,6 +21,8 @@ public class LocationController : ControllerBase
         [FromBody] CreateLocationAddressDto request,
         CancellationToken cancellationToken)
     {
-        var result = CreateLocationHandler.Handle(request, cancellationToken);
+        var result = await CreateLocationHandler.Handle(request, cancellationToken);
+        
+        return Ok(result);
     }
 }
