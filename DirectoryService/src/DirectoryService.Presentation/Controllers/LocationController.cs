@@ -18,10 +18,11 @@ public class LocationController : ControllerBase
 
     [HttpPost]
     public async Task<IActionResult> Create(
+        [FromServices] CreateLocationHandler handler,
         [FromBody] CreateLocationAddressDto request,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
-        var result = await CreateLocationHandler.Handle(request, cancellationToken);
+        var result = await handler.Handle(request, cancellationToken);
         
         return Ok(result);
     }
