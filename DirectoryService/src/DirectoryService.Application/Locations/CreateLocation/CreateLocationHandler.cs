@@ -33,6 +33,7 @@ public class CreateLocationHandler
         }
         
         // бизнес валидация
+        // например локаций не должно быть больше чем 10 и тд.
         
         // создание сущности Location
         var locationAddress = LocationAddress.Create(dto.Street, dto.City, dto.Country);
