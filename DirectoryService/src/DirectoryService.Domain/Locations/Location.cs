@@ -41,28 +41,6 @@ public class Location
 
     public static Result<Location> Create(LocationAddress addressResult, LocationName name, LocationTimeZone timezone, bool isActive)
     {
-        // var addressResult = LocationAddress.Create(street, city, country);
-        // if (addressResult.IsFailure)
-        // {
-        //     return Result.Failure<Location>(addressResult.Error);
-        // }
-
-        // var nameResult = LocationName.Create(name);
-        // if (nameResult.IsFailure)
-        // {
-        //     return Result.Failure<Location>(nameResult.Error);
-        // }
-        
-        // var timezoneResult = LocationTimeZone.Create(timezone);
-        // if (timezoneResult.IsFailure)
-        // {
-        //     return Result.Failure<Location>(timezoneResult.Error);
-        // }
-        
-        // var validAddress = addressResult.Value;
-        // var validName = nameResult.Value;
-        // var validTimezone = timezoneResult.Value;
-        
         return new Location(addressResult, name, timezone, isActive);
     }
 }
