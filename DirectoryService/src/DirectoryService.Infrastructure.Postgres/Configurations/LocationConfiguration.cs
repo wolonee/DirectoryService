@@ -42,7 +42,7 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
                 .HasMaxLength(LengthConstants.LENGTH200);
         });
 
-        builder.Navigation(l => l.Name).IsRequired(false);
+        builder.Navigation(l => l.Name).IsRequired();
         
         builder.Property(l => l.Timezone)
             .HasConversion(v => v.Value, tz => LocationTimeZone.Create(tz).Value)

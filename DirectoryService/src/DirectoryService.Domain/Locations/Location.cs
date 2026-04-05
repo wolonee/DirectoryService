@@ -29,7 +29,7 @@ public class Location
 
     public LocationAddress LocationAddress { get; private set; }
 
-    public LocationName? Name { get; private set; }
+    public LocationName Name { get; private set; }
 
     public LocationTimeZone Timezone { get; private set; }
 
@@ -39,7 +39,7 @@ public class Location
 
     public DateTime UpdatedAt { get; private set; }
 
-    public static Result<Location> Create(LocationAddress addressResult, LocationName name, LocationTimeZone timezone, bool isActive)
+    public static Result<Location> Create(LocationAddress addressResult, LocationName name, LocationTimeZone timezone, bool isActive = false)
     {
         return new Location(addressResult, name, timezone, isActive);
     }

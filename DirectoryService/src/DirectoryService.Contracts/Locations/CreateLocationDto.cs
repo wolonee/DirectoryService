@@ -1,6 +1,6 @@
 namespace DirectoryService.Contracts.Locations;
 
-public record CreateLocationAddressDto(
+public record CreateLocationDto(
     string Street,
     string City,
     string Country,

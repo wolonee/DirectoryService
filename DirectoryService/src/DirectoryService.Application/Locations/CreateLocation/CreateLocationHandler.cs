@@ -3,6 +3,7 @@ using CSharpFunctionalExtensions;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Domain.Locations.ValueObjects;
+using FluentValidation;
 using Microsoft.Extensions.Logging;
 
 namespace DirectoryService.Application.Locations;
@@ -12,17 +13,25 @@ namespace DirectoryService.Application.Locations;
 public class CreateLocationHandler
 {
     private readonly ILocationsRepository _repository;
+    private readonly IValidator<CreateLocationDto> _validator;
     private readonly ILogger<CreateLocationHandler> _logger;
     
-    public CreateLocationHandler(ILocationsRepository repository, ILogger<CreateLocationHandler> logger)
+    public CreateLocationHandler(ILocationsRepository repository, ILogger<CreateLocationHandler> logger, IValidator<CreateLocationDto> validator)
     {
         _repository = repository;
+        _validator = validator;
         _logger = logger;
     }
     
-    public async Task<Result<Guid>> Handle(CreateLocationAddressDto dto, CancellationToken cancellationToken = default)
+    public async Task<Result<Guid>> Handle(CreateLocationDto dto, CancellationToken cancellationToken = default)
     {
         // валидация входных данных
+        var result = await _validator.ValidateAsync(dto, cancellationToken);
+        if (!result.IsValid)
+        {
+            return Result.Failure<Guid>("Location not valid");
+        }
+        
         // бизнес валидация
         
         // создание сущности Location
