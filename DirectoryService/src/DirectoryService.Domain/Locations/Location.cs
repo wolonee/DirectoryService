@@ -39,30 +39,30 @@ public class Location
 
     public DateTime UpdatedAt { get; private set; }
 
-    public static Result<Location> Create(string street, string city, string country, string name, string timezone, bool isActive)
+    public static Result<Location> Create(LocationAddress addressResult, LocationName name, LocationTimeZone timezone, bool isActive)
     {
-        var addressResult = LocationAddress.Create(street, city, country);
-        if (addressResult.IsFailure)
-        {
-            return Result.Failure<Location>(addressResult.Error);
-        }
+        // var addressResult = LocationAddress.Create(street, city, country);
+        // if (addressResult.IsFailure)
+        // {
+        //     return Result.Failure<Location>(addressResult.Error);
+        // }
 
-        var nameResult = LocationName.Create(name);
-        if (nameResult.IsFailure)
-        {
-            return Result.Failure<Location>(nameResult.Error);
-        }
+        // var nameResult = LocationName.Create(name);
+        // if (nameResult.IsFailure)
+        // {
+        //     return Result.Failure<Location>(nameResult.Error);
+        // }
         
-        var timezoneResult = LocationTimeZone.Create(timezone);
-        if (timezoneResult.IsFailure)
-        {
-            return Result.Failure<Location>(timezoneResult.Error);
-        }
+        // var timezoneResult = LocationTimeZone.Create(timezone);
+        // if (timezoneResult.IsFailure)
+        // {
+        //     return Result.Failure<Location>(timezoneResult.Error);
+        // }
         
-        var validAddress = addressResult.Value;
-        var validName = nameResult.Value;
-        var validTimezone = timezoneResult.Value;
+        // var validAddress = addressResult.Value;
+        // var validName = nameResult.Value;
+        // var validTimezone = timezoneResult.Value;
         
-        return new Location(validAddress, validName, validTimezone, isActive);
+        return new Location(addressResult, name, timezone, isActive);
     }
 }
