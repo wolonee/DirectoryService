@@ -54,7 +54,7 @@ public class CreateLocationHandler
             return Result.Failure<Guid>(locationTimezone.Error);
         }
 
-        var location = Location.Create(locationAddress.Value, locationName.Value, locationTimezone.Value, dto.IsActive);
+        var location = Location.Create(locationAddress.Value, locationName.Value, locationTimezone.Value);
         
         // Сохранение сущности Location в базе данных
         var locationId = await _repository.AddAsync(location.Value, cancellationToken);

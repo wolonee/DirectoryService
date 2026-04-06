@@ -39,8 +39,30 @@ public class Location
 
     public DateTime UpdatedAt { get; private set; }
 
-    public static Result<Location> Create(LocationAddress addressResult, LocationName name, LocationTimeZone timezone, bool isActive = false)
+    public static Result<Location> Create(LocationAddress addressResult, LocationName name, LocationTimeZone timezone)
     {
-        return new Location(addressResult, name, timezone, isActive);
+        return new Location(addressResult, name, timezone, false);
+    }
+
+    public Result Activate()
+    {
+        if (IsActive)
+        {
+            return Result.Failure("Location is already active");
+        }
+        
+        IsActive = true;
+        return Result.Success();
+    }
+
+    public Result Deactivate()
+    {
+        if (!IsActive)
+        {
+            return Result.Failure("Location is not active");
+        }
+        
+        IsActive = false;
+        return Result.Success();
     }
 }

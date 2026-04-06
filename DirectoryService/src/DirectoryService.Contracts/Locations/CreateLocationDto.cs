@@ -5,5 +5,4 @@ public record CreateLocationDto(
     string City,
     string Country,
     string Name,
-    string Timezone,
-    bool IsActive);
+    string Timezone);
