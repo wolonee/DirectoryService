@@ -13,14 +13,13 @@ public class Location
     private Location(
         LocationAddress locationAddress,
         LocationName name,
-        LocationTimeZone timezone,
-        bool isActive)
+        LocationTimeZone timezone)
     {
         Id = Guid.NewGuid();
         LocationAddress = locationAddress;
         Name = name;
         Timezone = timezone;
-        IsActive = isActive;
+        IsActive = false;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = CreatedAt;
     }
@@ -41,7 +40,7 @@ public class Location
 
     public static Result<Location> Create(LocationAddress addressResult, LocationName name, LocationTimeZone timezone)
     {
-        return new Location(addressResult, name, timezone, false);
+        return new Location(addressResult, name, timezone);
     }
 
     public Result Activate()
@@ -64,5 +63,5 @@ public class Location
         
         IsActive = false;
         return Result.Success();
-    }
+    }   
 }
