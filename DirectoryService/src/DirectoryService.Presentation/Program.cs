@@ -1,15 +1,17 @@
 using DirectoryService.Infrastructure;
+using DirectoryService.Presentation;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+var services = builder.Services;
 
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+services.AddProgramDependencies();
 
-builder.Services.AddScoped<DirectoryServiceDbContext>(_ =>
-    new DirectoryServiceDbContext(builder.Configuration.GetConnectionString("DirectoryServiceDb")));
+services.AddEndpointsApiExplorer();
+services.AddSwaggerGen();
+
+services.AddScoped<DirectoryServiceDbContext>(_ =>
+    new DirectoryServiceDbContext(builder.Configuration.GetConnectionString("DirectoryServiceDb")!));
 
 var app = builder.Build();
 

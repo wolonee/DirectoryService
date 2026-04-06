@@ -24,9 +24,13 @@ public class LocationController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         var command = new CreateLocationCommand(request);
-        
+
         var result = await handler.Handle(command, cancellationToken);
+        if (result.IsFailure)
+        {
+            return BadRequest(result.Error);
+        }
         
-        return Ok(result);
+        return Ok(result.Value);
     }
 }
