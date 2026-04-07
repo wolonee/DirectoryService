@@ -13,14 +13,13 @@ public class Location
     private Location(
         LocationAddress locationAddress,
         LocationName name,
-        LocationTimeZone timezone,
-        bool isActive)
+        LocationTimeZone timezone)
     {
         Id = Guid.NewGuid();
         LocationAddress = locationAddress;
         Name = name;
         Timezone = timezone;
-        IsActive = isActive;
+        IsActive = true;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = CreatedAt;
     }
@@ -29,7 +28,7 @@ public class Location
 
     public LocationAddress LocationAddress { get; private set; }
 
-    public LocationName? Name { get; private set; }
+    public LocationName Name { get; private set; }
 
     public LocationTimeZone Timezone { get; private set; }
 
@@ -39,30 +38,30 @@ public class Location
 
     public DateTime UpdatedAt { get; private set; }
 
-    public static Result<Location> Create(string street, string city, string country, string name, string timezone, bool isActive)
+    public static Result<Location> Create(LocationAddress addressResult, LocationName name, LocationTimeZone timezone)
     {
-        var addressResult = LocationAddress.Create(street, city, country);
-        if (addressResult.IsFailure)
-        {
-            return Result.Failure<Location>(addressResult.Error);
-        }
-
-        var nameResult = LocationName.Create(name);
-        if (nameResult.IsFailure)
-        {
-            return Result.Failure<Location>(nameResult.Error);
-        }
-        
-        var timezoneResult = LocationTimeZone.Create(timezone);
-        if (timezoneResult.IsFailure)
-        {
-            return Result.Failure<Location>(timezoneResult.Error);
-        }
-        
-        var validAddress = addressResult.Value;
-        var validName = nameResult.Value;
-        var validTimezone = timezoneResult.Value;
-        
-        return new Location(validAddress, validName, validTimezone, isActive);
+        return new Location(addressResult, name, timezone);
     }
+
+    public Result Activate()
+    {
+        if (IsActive)
+        {
+            return Result.Failure("Location is already active");
+        }
+        
+        IsActive = true;
+        return Result.Success();
+    }
+
+    public Result Deactivate()
+    {
+        if (!IsActive)
+        {
+            return Result.Failure("Location is not active");
+        }
+        
+        IsActive = false;
+        return Result.Success();
+    }   
 }
