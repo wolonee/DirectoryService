@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Exceptions;
+using DirectoryService.Application.Locations.Exceptions;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Domain.Locations.ValueObjects;
@@ -37,17 +38,6 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand
             return Result.Failure<Guid>("Location not valid");
         }
         
-        try
-        {
-            CreateLocationNew();
-        }
-        catch (Exception e)
-        {
-            throw new TooManyLocationsException([Error.Failure(
-                "too.many.locations",
-                "Пользователь не может открыть больше 3 локаций.")]);
-        }
-        
         // бизнес валидация
         // например локаций не должно быть больше чем 10 и тд.
         
@@ -68,9 +58,4 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand
         
         return saveResult;
     } 
-    
-    public void CreateLocationNew()
-    {
-        throw new Exception();
-    }
 }

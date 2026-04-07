@@ -1,11 +1,12 @@
+using DirectoryService.Application.Locations.Exceptions;
 using DirectoryService.Shared;
 
 namespace DirectoryService.Application.Exceptions;
 
 public class TooManyLocationsException : BadRequestException
 {
-    public TooManyLocationsException(Error[] errors)
-        : base(errors)
+    public TooManyLocationsException()
+        : base([Errors.Locations.ToManyLocations()])
     {
     }
 }
