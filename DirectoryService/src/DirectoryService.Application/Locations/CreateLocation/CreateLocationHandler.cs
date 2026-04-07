@@ -28,7 +28,7 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand
         _logger = logger;
     }
     
-    public async Task<Result<Guid, Error[]>> Handle(CreateLocationCommand command, CancellationToken cancellationToken = default)
+    public async Task<Result<Guid, Failure>> Handle(CreateLocationCommand command, CancellationToken cancellationToken = default)
     {
         var dto = command.Request;
         
@@ -36,15 +36,7 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand
         var resultValidation = await _validator.ValidateAsync(dto, cancellationToken);
         if (!resultValidation.IsValid)
         {
-            // return Result.Failure<Guid>(Error.Validation(resultValidation => ));
-
-            // var errors = resultValidation.Errors.Select(e => Error.Validation(
-            //     e.ErrorCode,
-            //     e.ErrorMessage, 
-            //     e.PropertyName))
-            //     .ToArray();
-
-            throw new LocationValidationException(resultValidation.ToErrors());
+            return resultValidation.ToErrors();
         }
         
         // бизнес валидация
@@ -66,5 +58,5 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand
         _logger.LogInformation("Created Location with id {locationId}", saveResult);
         
         return saveResult;
-    } 
+    }
 }
