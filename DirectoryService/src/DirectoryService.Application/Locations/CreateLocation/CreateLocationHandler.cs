@@ -1,8 +1,10 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstractions;
+using DirectoryService.Application.Exceptions;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Domain.Locations.ValueObjects;
+using DirectoryService.Shared;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 
@@ -24,7 +26,7 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand
         _logger = logger;
     }
     
-    public async Task<Result<Guid>> Handle(CreateLocationCommand command, CancellationToken cancellationToken = default)
+    public async Task<Result<Guid, Error[]>> Handle(CreateLocationCommand command, CancellationToken cancellationToken = default)
     {
         var dto = command.Request;
         
@@ -55,4 +57,9 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand
         
         return saveResult;
     } 
+    
+    public void CreateLocationNew()
+    {
+        throw new Exception();
+    }
 }

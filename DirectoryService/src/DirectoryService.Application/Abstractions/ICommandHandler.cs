@@ -1,4 +1,5 @@
 using CSharpFunctionalExtensions;
+using DirectoryService.Shared;
 
 namespace DirectoryService.Application.Abstractions;
 
@@ -7,11 +8,11 @@ public interface ICommand;
 public interface ICommandHandler<TResponse, TCommand>
     where TCommand : ICommand
 {
-    public Task<Result<TResponse>> Handle(TCommand command, CancellationToken cancellationToken = default);
+    public Task<Result<TResponse, Error[]>> Handle(TCommand command, CancellationToken cancellationToken = default);
 }
 
 public interface ICommandHandler<TCommand>
     where TCommand : ICommand
 {
-    public Task<Result> Handle(TCommand command, CancellationToken cancellationToken = default);
+    public Task<UnitResult<Error[]>> Handle(TCommand command, CancellationToken cancellationToken = default);
 }
