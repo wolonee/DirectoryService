@@ -1,5 +1,6 @@
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Locations;
+using DirectoryService.Application.Locations.CreateLocation;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Locations;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +21,7 @@ public class LocationController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(
         [FromServices] ICommandHandler<Guid, CreateLocationCommand> handler,
-        [FromBody] CreateLocationDto request,
+        [FromBody] CreateLocationRequest request,
         CancellationToken cancellationToken = default)
     {
         var command = new CreateLocationCommand(request);

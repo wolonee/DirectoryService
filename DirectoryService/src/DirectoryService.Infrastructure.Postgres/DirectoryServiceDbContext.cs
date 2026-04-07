@@ -30,8 +30,10 @@ public class DirectoryServiceDbContext : DbContext
         base.OnConfiguring(optionsBuilder);
 
         optionsBuilder.UseNpgsql(_connectionString);
-        
-        optionsBuilder.LogTo(Console.WriteLine, LogLevel.Information);
+
+        optionsBuilder.EnableDetailedErrors();
+        optionsBuilder.EnableSensitiveDataLogging();
+        optionsBuilder.LogTo(Console.WriteLine);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -1,5 +1,4 @@
-﻿
-using CSharpFunctionalExtensions;
+﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Locations;
@@ -7,18 +6,18 @@ using DirectoryService.Domain.Locations.ValueObjects;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 
-namespace DirectoryService.Application.Locations;
+namespace DirectoryService.Application.Locations.CreateLocation;
 
 public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand>
 {
     private readonly ILocationsRepository _repository;
-    private readonly IValidator<CreateLocationDto> _validator;
+    private readonly IValidator<CreateLocationRequest> _validator;
     private readonly ILogger<CreateLocationHandler> _logger;
     
     public CreateLocationHandler(
         ILocationsRepository repository,
         ILogger<CreateLocationHandler> logger,
-        IValidator<CreateLocationDto> validator)
+        IValidator<CreateLocationRequest> validator)
     {
         _repository = repository;
         _validator = validator;
@@ -27,7 +26,7 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand
     
     public async Task<Result<Guid>> Handle(CreateLocationCommand command, CancellationToken cancellationToken = default)
     {
-        var dto = command.dto;
+        var dto = command.Request;
         
         // валидация входных данных
         var result = await _validator.ValidateAsync(dto, cancellationToken);
@@ -41,31 +40,19 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand
         
         // создание сущности Location
         var locationAddress = LocationAddress.Create(dto.Street, dto.City, dto.Country);
-        if (locationAddress.IsFailure)
-        {
-            return Result.Failure<Guid>(locationAddress.Error);
-        }
 
         var locationName = LocationName.Create(dto.Name);
-        if (locationName.IsFailure)
-        {
-            return Result.Failure<Guid>(locationName.Error);
-        }
         
         var locationTimezone = LocationTimeZone.Create(dto.Timezone);
-        if (locationTimezone.IsFailure)
-        {
-            return Result.Failure<Guid>(locationTimezone.Error);
-        }
 
         var location = Location.Create(locationAddress.Value, locationName.Value, locationTimezone.Value);
         
         // Сохранение сущности Location в базе данных
-        var locationId = await _repository.AddAsync(location.Value, cancellationToken);
+        var saveResult = await _repository.AddAsync(location.Value, cancellationToken);
 
         // Логирование об успешном сохранении
-        _logger.LogInformation("Created Location with id {locationId}", locationId);
+        _logger.LogInformation("Created Location with id {locationId}", saveResult);
         
-        return locationId;
+        return saveResult;
     } 
 }

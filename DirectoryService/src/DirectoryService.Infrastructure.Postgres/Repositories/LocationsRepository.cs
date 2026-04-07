@@ -1,8 +1,7 @@
 using DirectoryService.Application.Locations;
 using DirectoryService.Domain.Locations;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace DirectoryService.Infrastructure;
+namespace DirectoryService.Infrastructure.Repositories;
 
 public class LocationsRepository : ILocationsRepository
 {

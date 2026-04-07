@@ -19,7 +19,7 @@ public class Location
         LocationAddress = locationAddress;
         Name = name;
         Timezone = timezone;
-        IsActive = false;
+        IsActive = true;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = CreatedAt;
     }
