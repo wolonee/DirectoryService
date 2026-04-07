@@ -37,6 +37,17 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand
             return Result.Failure<Guid>("Location not valid");
         }
         
+        try
+        {
+            CreateLocationNew();
+        }
+        catch (Exception e)
+        {
+            throw new TooManyLocationsException([Error.Failure(
+                "too.many.locations",
+                "Пользователь не может открыть больше 3 локаций.")]);
+        }
+        
         // бизнес валидация
         // например локаций не должно быть больше чем 10 и тд.
         
