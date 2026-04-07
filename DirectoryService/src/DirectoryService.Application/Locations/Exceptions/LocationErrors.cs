@@ -2,7 +2,7 @@ using DirectoryService.Shared;
 
 namespace DirectoryService.Application.Locations.Exceptions;
 
-public partial class Errors
+public class LocationErrors
 {
     public static class Locations
     {

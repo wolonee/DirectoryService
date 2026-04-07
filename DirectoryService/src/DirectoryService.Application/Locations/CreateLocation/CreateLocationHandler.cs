@@ -9,6 +9,7 @@ using DirectoryService.Domain.Locations.ValueObjects;
 using DirectoryService.Shared;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
+using Errors = DirectoryService.Shared.Errors;
 
 namespace DirectoryService.Application.Locations.CreateLocation;
 
@@ -28,7 +29,7 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand
         _logger = logger;
     }
     
-    public async Task<Result<Guid, Failure>> Handle(CreateLocationCommand command, CancellationToken cancellationToken = default)
+    public async Task<Result<Guid, Errors>> Handle(CreateLocationCommand command, CancellationToken cancellationToken = default)
     {
         var dto = command.Request;
         

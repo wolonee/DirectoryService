@@ -3,6 +3,7 @@ using DirectoryService.Application.Locations;
 using DirectoryService.Application.Locations.CreateLocation;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Locations;
+using DirectoryService.Presentation.ResponseExtensions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DirectoryService.Presentation.Controllers;
@@ -29,7 +30,7 @@ public class LocationController : ControllerBase
         var result = await handler.Handle(command, cancellationToken);
         if (result.IsFailure)
         {
-            return BadRequest(result.Error);
+            return result.Error.ToResponse();
         }
         
         return Ok(result.Value);
