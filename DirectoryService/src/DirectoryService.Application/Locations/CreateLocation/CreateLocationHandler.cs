@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Exceptions;
+using DirectoryService.Application.Extentions;
 using DirectoryService.Application.Locations.Exceptions;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Locations;
@@ -32,10 +33,18 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand
         var dto = command.Request;
         
         // валидация входных данных
-        var result = await _validator.ValidateAsync(dto, cancellationToken);
-        if (!result.IsValid)
+        var resultValidation = await _validator.ValidateAsync(dto, cancellationToken);
+        if (!resultValidation.IsValid)
         {
-            return Result.Failure<Guid>("Location not valid");
+            // return Result.Failure<Guid>(Error.Validation(resultValidation => ));
+
+            // var errors = resultValidation.Errors.Select(e => Error.Validation(
+            //     e.ErrorCode,
+            //     e.ErrorMessage, 
+            //     e.PropertyName))
+            //     .ToArray();
+
+            throw new LocationValidationException(resultValidation.ToErrors());
         }
         
         // бизнес валидация
