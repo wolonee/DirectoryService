@@ -3,33 +3,45 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DirectoryService.Presentation.ResponseExtensions;
 
-public static class ErrorsResult
+public sealed class ErrorsResult : IResult
 {
-    public static ActionResult ToResponse(this Errors errors)
+    private readonly Errors _errors;
+
+    public ErrorsResult(Error error)
     {
-        if (!errors.Any())
+        _errors = error.ToErrors();
+    }
+    
+    public ErrorsResult(Errors errors)
+    {
+        _errors = errors;
+    }
+    
+    public Task ExecuteAsync(HttpContext httpContext)
+    {
+        ArgumentNullException.ThrowIfNull(httpContext);
+        if (!_errors.Any())
         {
-            return new ObjectResult(null)
-            {
-                StatusCode = StatusCodes.Status500InternalServerError,
-            };
+            httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            
+            return httpContext.Response.WriteAsJsonAsync(Envelope.Errors(_errors));
         }
 
-        var distinctErrorTypes = errors
+        var distinctErrorTypes = _errors
             .Select(x => x.Type)
             .Distinct()
             .ToList();
-        
+         
         int statusCode = distinctErrorTypes.Count > 1
             ? StatusCodes.Status500InternalServerError
             : GetStatusCodeFromErrorType(distinctErrorTypes.First());
+         
+        var envelope = Envelope.Errors(_errors);
+        httpContext.Response.StatusCode = statusCode;
         
-        return new ObjectResult(errors)  
-        {            
-            StatusCode = statusCode,  
-        };  
+        return httpContext.Response.WriteAsJsonAsync(envelope);
     }
-
+    
     private static int GetStatusCodeFromErrorType(ErrorType errorType) =>
         errorType switch
         {

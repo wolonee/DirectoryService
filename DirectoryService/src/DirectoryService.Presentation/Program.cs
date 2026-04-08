@@ -9,7 +9,10 @@ var services = builder.Services;
 services.AddProgramDependencies();
 
 services.AddEndpointsApiExplorer();
-services.AddSwaggerGen();
+services.AddSwaggerGen(options =>
+{
+    options.SchemaFilter<EnvelopeSchemaFilter>();
+});
 
 services.AddScoped<DirectoryServiceDbContext>(_ =>
     new DirectoryServiceDbContext(builder.Configuration.GetConnectionString("DirectoryServiceDb")!));
