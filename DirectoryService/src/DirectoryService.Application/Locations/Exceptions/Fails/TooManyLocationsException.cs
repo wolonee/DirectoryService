@@ -6,7 +6,7 @@ namespace DirectoryService.Application.Locations.Exceptions.Fails;
 public class TooManyLocationsException : BadRequestException
 {
     public TooManyLocationsException()
-        : base([LocationErrors.ToManyLocations()])
+        : base(LocationErrors.ToManyLocations())
     {
     }
 }

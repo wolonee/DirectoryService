@@ -5,7 +5,7 @@ namespace DirectoryService.Application.Locations.Exceptions.Fails;
 
 public class LocationValidationException : BadRequestException
 {
-    public LocationValidationException(Error[] errors)
+    public LocationValidationException(Errors errors)
         : base(errors)
     {
     }

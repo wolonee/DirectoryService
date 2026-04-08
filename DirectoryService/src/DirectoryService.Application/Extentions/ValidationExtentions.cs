@@ -5,7 +5,7 @@ namespace DirectoryService.Application.Extentions;
 
 public static class ValidationExtentions
 {
-    public static Errors ToErrors(this ValidationResult resultValidation) =>
+    public static Errors ToValidationErrors(this ValidationResult resultValidation) =>
         resultValidation.Errors.Select(e => Error.Validation(
             e.ErrorCode, 
             e.ErrorMessage, 

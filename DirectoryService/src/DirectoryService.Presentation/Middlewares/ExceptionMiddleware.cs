@@ -33,22 +33,24 @@ public class ExceptionMiddleware
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         _logger.LogError(exception, exception.Message);
-
-        (int code, Error[]? errors) = exception switch
+        
+        (int code, Errors? errors) = exception switch
         {
             BadRequestException => (
-                StatusCodes.Status400BadRequest, JsonSerializer.Deserialize<Error[]>(exception.Message)),
+                StatusCodes.Status400BadRequest, JsonSerializer.Deserialize<Errors>(exception.Message)),
 
             NotFoundException => (
-                StatusCodes.Status404NotFound, JsonSerializer.Deserialize<Error[]>(exception.Message)),
+                StatusCodes.Status404NotFound, JsonSerializer.Deserialize<Errors>(exception.Message)),
 
-            _ => (StatusCodes.Status500InternalServerError, [Error.Failure(null, "Something went wrong.")])
+            _ => (StatusCodes.Status500InternalServerError, Error.Failure(null, "Something went wrong.")),
         };
+
+        var envelope = Envelope.Errors(errors);
         
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = code;
 
-        await context.Response.WriteAsJsonAsync(errors);
+        await context.Response.WriteAsJsonAsync(envelope);
     }
 }
 

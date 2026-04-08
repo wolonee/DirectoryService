@@ -46,8 +46,8 @@ public sealed class ErrorsResult : IResult
         {
             ErrorType.VALIDATION => StatusCodes.Status400BadRequest,
             ErrorType.NOT_FOUND => StatusCodes.Status404NotFound,
-            ErrorType.CONFLICT => StatusCodes.Status409Conflict,
             ErrorType.FAILURE => StatusCodes.Status500InternalServerError,
+            ErrorType.CONFLICT => StatusCodes.Status409Conflict,
             _ => StatusCodes.Status500InternalServerError
         };
 }
