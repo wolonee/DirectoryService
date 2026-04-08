@@ -4,7 +4,6 @@ using DirectoryService.Application.Locations.CreateLocation;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Presentation.EndpointResults;
-using DirectoryService.Presentation.ResponseExtensions;
 using DirectoryService.Shared;
 using Microsoft.AspNetCore.Mvc;
 

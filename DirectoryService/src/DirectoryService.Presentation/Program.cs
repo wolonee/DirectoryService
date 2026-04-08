@@ -1,5 +1,6 @@
 using DirectoryService.Infrastructure;
 using DirectoryService.Presentation;
+using DirectoryService.Presentation.Extentions;
 using DirectoryService.Presentation.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);

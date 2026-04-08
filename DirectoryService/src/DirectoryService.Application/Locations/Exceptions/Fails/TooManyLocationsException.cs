@@ -1,7 +1,7 @@
-using DirectoryService.Application.Locations.Exceptions;
+using DirectoryService.Application.Exceptions;
 using DirectoryService.Shared;
 
-namespace DirectoryService.Application.Exceptions;
+namespace DirectoryService.Application.Locations.Exceptions.Fails;
 
 public class TooManyLocationsException : BadRequestException
 {

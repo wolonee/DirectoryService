@@ -2,7 +2,6 @@
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Exceptions;
 using DirectoryService.Application.Extentions;
-using DirectoryService.Application.Locations.Exceptions;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Domain.Locations.ValueObjects;

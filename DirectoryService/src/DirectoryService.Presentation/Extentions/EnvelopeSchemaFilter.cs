@@ -2,7 +2,7 @@ using DirectoryService.Shared;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace DirectoryService.Presentation;
+namespace DirectoryService.Presentation.Extentions;
 
 public class EnvelopeSchemaFilter : ISchemaFilter
 {

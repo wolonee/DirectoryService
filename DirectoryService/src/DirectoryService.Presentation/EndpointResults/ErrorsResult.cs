@@ -1,7 +1,6 @@
 using DirectoryService.Shared;
-using Microsoft.AspNetCore.Mvc;
 
-namespace DirectoryService.Presentation.ResponseExtensions;
+namespace DirectoryService.Presentation.EndpointResults;
 
 public sealed class ErrorsResult : IResult
 {
