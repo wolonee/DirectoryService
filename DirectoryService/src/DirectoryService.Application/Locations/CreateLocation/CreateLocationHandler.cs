@@ -1,10 +1,14 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstractions;
+using DirectoryService.Application.Exceptions;
+using DirectoryService.Application.Extentions;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Domain.Locations.ValueObjects;
+using DirectoryService.Shared;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
+using Errors = DirectoryService.Shared.Errors;
 
 namespace DirectoryService.Application.Locations.CreateLocation;
 
@@ -24,15 +28,15 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand
         _logger = logger;
     }
     
-    public async Task<Result<Guid>> Handle(CreateLocationCommand command, CancellationToken cancellationToken = default)
+    public async Task<Result<Guid, Errors>> Handle(CreateLocationCommand command, CancellationToken cancellationToken = default)
     {
         var dto = command.Request;
         
         // валидация входных данных
-        var result = await _validator.ValidateAsync(dto, cancellationToken);
-        if (!result.IsValid)
+        var resultValidation = await _validator.ValidateAsync(dto, cancellationToken);
+        if (!resultValidation.IsValid)
         {
-            return Result.Failure<Guid>("Location not valid");
+            return resultValidation.ToValidationErrors();
         }
         
         // бизнес валидация
@@ -54,5 +58,5 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand
         _logger.LogInformation("Created Location with id {locationId}", saveResult);
         
         return saveResult;
-    } 
+    }
 }

@@ -1,4 +1,5 @@
-﻿using CSharpFunctionalExtensions;
+﻿using System.Text.RegularExpressions;
+using CSharpFunctionalExtensions;
 
 namespace DirectoryService.Domain.Locations.ValueObjects;
 
@@ -18,11 +19,13 @@ public record LocationName
             return Result.Failure<LocationName>("Location name cannot be empty");
         }
 
-        if (value.Length < LengthConstants.LENGTH3 || value.Length > LengthConstants.LENGTH120)
+        string normalized = Regex.Replace(value.Trim(), @"\s+", " ");
+
+        if (normalized.Length < LengthConstants.LENGTH3 || normalized.Length > LengthConstants.LENGTH120)
         {
             return Result.Failure<LocationName>("Location name must be between 3 and 120 characters");
         }
 
-        return new LocationName(value);
+        return new LocationName(normalized);
     }
 }

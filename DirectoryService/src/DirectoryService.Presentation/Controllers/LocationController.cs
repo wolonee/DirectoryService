@@ -3,6 +3,8 @@ using DirectoryService.Application.Locations;
 using DirectoryService.Application.Locations.CreateLocation;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Locations;
+using DirectoryService.Presentation.EndpointResults;
+using DirectoryService.Shared;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DirectoryService.Presentation.Controllers;
@@ -19,19 +21,17 @@ public class LocationController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(
+    [ProducesResponseType<Envelope<Guid>>(200)]
+    [ProducesResponseType<Envelope>(404)]
+    [ProducesResponseType<Envelope>(500)]
+    [ProducesResponseType<Envelope>(401)]
+    public async Task<EndpointResult<Guid>> Create(
         [FromServices] ICommandHandler<Guid, CreateLocationCommand> handler,
         [FromBody] CreateLocationRequest request,
         CancellationToken cancellationToken = default)
     {
         var command = new CreateLocationCommand(request);
 
-        var result = await handler.Handle(command, cancellationToken);
-        if (result.IsFailure)
-        {
-            return BadRequest(result.Error);
-        }
-        
-        return Ok(result.Value);
+        return await handler.Handle(command, cancellationToken);
     }
 }

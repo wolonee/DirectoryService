@@ -1,5 +1,6 @@
 using DirectoryService.Application;
 using DirectoryService.Infrastructure;
+using Microsoft.AspNetCore.Mvc;
 
 namespace DirectoryService.Presentation;
 
@@ -17,6 +18,11 @@ public static class DependencyInjection
     private static IServiceCollection AddWebDependencies(this IServiceCollection services)
     {
         services.AddControllers();
+
+        services.Configure<ApiBehaviorOptions>(options =>
+        {
+            options.SuppressModelStateInvalidFilter = true;
+        });
         
         return services;
     }

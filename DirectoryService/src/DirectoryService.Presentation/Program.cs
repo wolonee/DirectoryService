@@ -1,5 +1,7 @@
 using DirectoryService.Infrastructure;
 using DirectoryService.Presentation;
+using DirectoryService.Presentation.Extentions;
+using DirectoryService.Presentation.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,12 +10,17 @@ var services = builder.Services;
 services.AddProgramDependencies();
 
 services.AddEndpointsApiExplorer();
-services.AddSwaggerGen();
+services.AddSwaggerGen(options =>
+{
+    options.SchemaFilter<EnvelopeSchemaFilter>();
+});
 
 services.AddScoped<DirectoryServiceDbContext>(_ =>
     new DirectoryServiceDbContext(builder.Configuration.GetConnectionString("DirectoryServiceDb")!));
 
 var app = builder.Build();
+
+app.UseExceptionMiddleware();
 
 if (app.Environment.IsDevelopment())
 {
