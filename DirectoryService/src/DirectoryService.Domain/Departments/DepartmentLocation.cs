@@ -12,7 +12,6 @@ public class DepartmentLocation
     {
         DepartmentId = departmentId;
         LocationId = locationId;
-        CreatedAt = DateTime.UtcNow;
     }
     
     public Guid Id { get; private set; }
@@ -23,8 +22,6 @@ public class DepartmentLocation
     
     public Guid LocationId { get; private set; }
     
-    public DateTime CreatedAt { get; private set; }
-
     public static Result<DepartmentLocation> Create(Guid departmentId, Guid locationId)
     {
         if (departmentId == Guid.Empty)

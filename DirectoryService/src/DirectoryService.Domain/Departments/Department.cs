@@ -39,8 +39,8 @@ public class Department
     
     public DepartmentIdentifier DepartmentIdentifier { get; private set; }
     
-    public Department? Parent { get; private set; }
-
+    public Guid? ParentId { get; private set; }
+    
     public IReadOnlyList<Department> ChildrenDepartments => _childrenDepartments;
     
     public IReadOnlyList<DepartmentLocation> DepartmentLocations => _departmentLocations;
@@ -51,7 +51,7 @@ public class Department
     
     public int Depth { get; private set; }
     
-    public int ChildCount { get; private set; }
+    public int ChildrenCount { get; private set; }
     
     public bool IsActive { get; private set; }
     
