@@ -7,6 +7,12 @@ public static class GeneralErrors
         string label = name ?? "значение";
         return Error.Failure("value.is.invalid", $"{label} недействительно");
     }
+    
+    public static Error ValueIsRequired(string? name = null)
+    {
+        string label = name ?? "значение";
+        return Error.Failure("value.is.required", $"{label} обязательно");
+    }
 
     public static Error NotFound(Guid? id = null, string? name = null)
     {

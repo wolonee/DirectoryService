@@ -10,7 +10,7 @@ public class Department
     {
     }
     
-    private readonly List<Department> _children = [];
+    private readonly List<Department> _childrenDepartments = [];
     private readonly List<DepartmentLocation> _departmentLocations = [];
     private readonly List<DepartmentPosition> _departmentPositions = [];
     
@@ -41,7 +41,7 @@ public class Department
     
     public Department? Parent { get; private set; }
 
-    public IReadOnlyList<Department> Children => _children;
+    public IReadOnlyList<Department> ChildrenDepartments => _childrenDepartments;
     
     public IReadOnlyList<DepartmentLocation> DepartmentLocations => _departmentLocations;
     
