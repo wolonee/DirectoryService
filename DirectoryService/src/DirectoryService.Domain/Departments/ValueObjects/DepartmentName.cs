@@ -17,7 +17,7 @@ public record DepartmentName
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            return GeneralErrors.
+            return Result.Failure<DepartmentName>("Name can't be empty");
         }
         
         if (value.Length < MIN_LENGTH || value.Length > MAX_LENGTH)

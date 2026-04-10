@@ -4,8 +4,7 @@ namespace DirectoryService.Domain.Departments.ValueObjects;
 
 public record DepartmentPath
 {
-    public const int MAX_LENGTH = 150;
-    public const int MIN_LENGTH = 3;
+    private const char SEPARATOR = '/';
     
     private DepartmentPath(string value)
     {
@@ -14,18 +13,13 @@ public record DepartmentPath
     
     public string Value { get; }
 
-    public static Result<DepartmentPath> Create(string value)
+    public static DepartmentPath CreateParent(DepartmentIdentifier identifier)
     {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return Result.Failure<DepartmentPath>("Path can't be empty");
-        }
-
-        if (value.StartsWith('.') || value.EndsWith('.') || value.Contains(".."))
-        {
-            return Result.Failure<DepartmentPath>("Path cannot start or end with a dot");
-        }
-
-        return new DepartmentPath(value);
+        return new DepartmentPath(identifier.Value);
+    }
+    
+    public DepartmentPath CreateChild(DepartmentIdentifier identifier)
+    {
+        return new DepartmentPath(Value + SEPARATOR + identifier.Value);
     }
 }
