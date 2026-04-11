@@ -1,5 +1,7 @@
+using System.Collections;
 using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Departments.ValueObjects;
+using DirectoryService.Shared;
 
 namespace DirectoryService.Domain.Departments;
 
@@ -10,27 +12,26 @@ public class Department
     {
     }
     
-    private readonly List<Department> _children = [];
+    private readonly List<Department> _childrenDepartments = [];
     private readonly List<DepartmentLocation> _departmentLocations = [];
     private readonly List<DepartmentPosition> _departmentPositions = [];
     
     private Department(
         DepartmentName departmentName, 
         DepartmentIdentifier departmentIdentifier, 
-        Department? parent, 
         DepartmentPath departmentPath, 
-        int depth, 
-        bool isActive)
+        int depth,
+        IEnumerable<DepartmentLocation> departmentLocations)
     {
         Id = Guid.NewGuid();
         DepartmentName = departmentName;
         DepartmentIdentifier = departmentIdentifier;
-        Parent = parent;
+        IsActive = true;
+        CreatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
         DepartmentPath = departmentPath;
         Depth = depth;
-        IsActive = isActive;
-        CreatedAt = DateTime.UtcNow;
-        UpdatedAt = CreatedAt;
+        _departmentLocations = departmentLocations.ToList();
     }
     
     public Guid Id { get; private set; }
@@ -39,9 +40,9 @@ public class Department
     
     public DepartmentIdentifier DepartmentIdentifier { get; private set; }
     
-    public Department? Parent { get; private set; }
-
-    public IReadOnlyList<Department> Children => _children;
+    public Guid? ParentId { get; private set; }
+    
+    public IReadOnlyList<Department> ChildrenDepartments => _childrenDepartments;
     
     public IReadOnlyList<DepartmentLocation> DepartmentLocations => _departmentLocations;
     
@@ -51,43 +52,49 @@ public class Department
     
     public int Depth { get; private set; }
     
+    public int ChildrenCount { get; private set; }
+    
     public bool IsActive { get; private set; }
     
     public DateTime CreatedAt { get; private set; }
 
     public DateTime UpdatedAt { get; private set; }
 
-    public static Result<Department> Create(
+    public static Result<Department, Error> CreateParent(
         DepartmentName name, 
         DepartmentIdentifier identifier, 
-        Department? parent, 
-        bool isActive,
-        IEnumerable<Guid> locationIds,
-        IEnumerable<Guid> positionsIds)
+        IEnumerable<DepartmentLocation> departmentLocations)
     {
-        string path;
-        int depth;
-        
-        if (parent != null)
+        var departmentLocationsList = departmentLocations.ToList();
+
+        if (departmentLocationsList.Count == 0)
         {
-            path = $"{parent.DepartmentPath.Value}.{identifier.Value}";
-            depth = parent.Depth + 1;
-        }
-        else
-        {
-            path = identifier.Value;
-            depth = 1;
+            return GeneralErrors.ValueIsRequired("Location");
         }
         
-        var pathResult = DepartmentPath.Create(path);
-        if (pathResult.IsFailure)
+        var path = DepartmentPath.CreateParent(identifier);
+        
+        var createdDepartment = new Department(name, identifier, path, 0, departmentLocationsList);
+        
+        return createdDepartment;
+    }
+    
+    public static Result<Department, Error> CreateChild(
+        DepartmentName name, 
+        DepartmentIdentifier identifier, 
+        Department parent,
+        IEnumerable<DepartmentLocation> departmentLocations)
+    {
+        var departmentLocationsList = departmentLocations.ToList();
+
+        if (departmentLocationsList.Count == 0)
         {
-            return Result.Failure<Department>(pathResult.Error);
+            return GeneralErrors.ValueIsRequired("Location");
         }
         
-        var validPath = pathResult.Value;
+        var path = parent.DepartmentPath.CreateChild(identifier);
         
-        var createdDepartment = new Department(name, identifier, parent, validPath, depth, isActive);
+        var createdDepartment = new Department(name, identifier, path, parent.Depth + 1, departmentLocationsList);
         
         return createdDepartment;
     }
@@ -144,25 +151,25 @@ public class Department
     //     return Result.Success();
     // }
 
-    public Result Rename(string name, string identifier)
-    {
-        var nameResult = DepartmentName.Create(name);
-        if (nameResult.IsFailure)
-        {
-            return Result.Failure(nameResult.Error);
-        }
-            
-        var identifierResult = DepartmentIdentifier.Create(identifier);
-        if (identifierResult.IsFailure)
-        {
-            return Result.Failure(identifierResult.Error);
-        }
-        
-        DepartmentName = nameResult.Value;
-        DepartmentIdentifier = identifierResult.Value;
-        
-        return Result.Success();
-    }
+    // public Result Rename(string name, string identifier)
+    // {
+    //     var nameResult = DepartmentName.Create(name);
+    //     if (nameResult.IsFailure)
+    //     {
+    //         return Result.Failure(nameResult.Error);
+    //     }
+    //         
+    //     var identifierResult = DepartmentIdentifier.Create(identifier);
+    //     if (identifierResult.IsFailure)
+    //     {
+    //         return Result.Failure(identifierResult.Error);
+    //     }
+    //     
+    //     DepartmentName = nameResult.Value;
+    //     DepartmentIdentifier = identifierResult.Value;
+    //     
+    //     return Result.Success();
+    // }
 
     public Result Deactivate()
     {

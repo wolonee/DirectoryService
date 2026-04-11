@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using DirectoryService.Shared;
 
 namespace DirectoryService.Domain.Departments.ValueObjects;
 
@@ -14,16 +15,16 @@ public record DepartmentIdentifier
     
     public string Value { get; }
 
-    public static Result<DepartmentIdentifier> Create(string value)
+    public static Result<DepartmentIdentifier, Error> Create(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            return Result.Failure<DepartmentIdentifier>("Identifier can't be empty");
+            return GeneralErrors.ValueIsRequired("Identifier");
         }
         
         if (value.Length < MIN_LENGTH || value.Length > MAX_LENGTH)
         {
-            return Result.Failure<DepartmentIdentifier>("Identifier must be between 3 and 150 characters");
+            return GeneralErrors.ValueHasBoundedLength(MIN_LENGTH, MAX_LENGTH, "Identifier");
         }
 
         return new DepartmentIdentifier(value);

@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using DirectoryService.Shared;
 
 namespace DirectoryService.Domain.Departments;
 
@@ -25,16 +26,16 @@ public class DepartmentPosition
     
     public DateTime CreatedAt { get; private set; }
     
-    public static Result<DepartmentPosition> Create(Guid departmentId, Guid positionId)
+    public static Result<DepartmentPosition, Error> Create(Guid departmentId, Guid positionId)
     {
         if (departmentId == Guid.Empty)
         {
-            return Result.Failure<DepartmentPosition>("DepartmentId cannot be empty");
+            return GeneralErrors.ValueIsRequired("DepartmentId");
         }
 
         if (positionId == Guid.Empty)
         {
-            return Result.Failure<DepartmentPosition>("PositionId cannot be empty");
+            return GeneralErrors.ValueIsRequired("PositionId");
         }
 
         return new DepartmentPosition(departmentId, positionId);
