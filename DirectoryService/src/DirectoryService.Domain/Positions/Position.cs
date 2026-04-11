@@ -40,7 +40,7 @@ public class Position
         var nameResult = PositionName.Create(speciality, direction);
         // if (nameResult.IsFailure)
         // {
-        //     return Result.Failure<Position>(nameResult.Error);
+        //     return Result.Failure<Position>(nameResult.Error); .
         // }
         
         if (description is not null)
