@@ -11,7 +11,13 @@ public static class GeneralErrors
     public static Error ValueIsRequired(string? name = null)
     {
         string label = name ?? "значение";
-        return Error.Failure("value.is.required", $"{label} обязательно");
+        return Error.Validation("value.is.required", $"{label} обязательно");
+    }
+    
+    public static Error ValueHasBoundedLength(int minNameLength, int maxNameLength, string? name = null)
+    {
+        string label = name ?? "значение";
+        return Error.Validation("value.is.required", $"{label} name must be between {minNameLength} and {maxNameLength} characters");
     }
 
     public static Error NotFound(Guid? id = null, string? name = null)

@@ -1,6 +1,7 @@
 using System.Collections;
 using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Departments.ValueObjects;
+using DirectoryService.Shared;
 
 namespace DirectoryService.Domain.Departments;
 
@@ -59,7 +60,7 @@ public class Department
 
     public DateTime UpdatedAt { get; private set; }
 
-    public static Result<Department> CreateParent(
+    public static Result<Department, Error> CreateParent(
         DepartmentName name, 
         DepartmentIdentifier identifier, 
         IEnumerable<DepartmentLocation> departmentLocations)
@@ -68,7 +69,7 @@ public class Department
 
         if (departmentLocationsList.Count == 0)
         {
-            return Result.Failure<Department>("Locations can't be empty");
+            return GeneralErrors.ValueIsRequired("Location");
         }
         
         var path = DepartmentPath.CreateParent(identifier);
@@ -78,7 +79,7 @@ public class Department
         return createdDepartment;
     }
     
-    public static Result<Department> CreateChild(
+    public static Result<Department, Error> CreateChild(
         DepartmentName name, 
         DepartmentIdentifier identifier, 
         Department parent,
@@ -88,7 +89,7 @@ public class Department
 
         if (departmentLocationsList.Count == 0)
         {
-            return Result.Failure<Department>("Locations can't be empty");
+            return GeneralErrors.ValueIsRequired("Location");
         }
         
         var path = parent.DepartmentPath.CreateChild(identifier);
@@ -150,25 +151,25 @@ public class Department
     //     return Result.Success();
     // }
 
-    public Result Rename(string name, string identifier)
-    {
-        var nameResult = DepartmentName.Create(name);
-        if (nameResult.IsFailure)
-        {
-            return Result.Failure(nameResult.Error);
-        }
-            
-        var identifierResult = DepartmentIdentifier.Create(identifier);
-        if (identifierResult.IsFailure)
-        {
-            return Result.Failure(identifierResult.Error);
-        }
-        
-        DepartmentName = nameResult.Value;
-        DepartmentIdentifier = identifierResult.Value;
-        
-        return Result.Success();
-    }
+    // public Result Rename(string name, string identifier)
+    // {
+    //     var nameResult = DepartmentName.Create(name);
+    //     if (nameResult.IsFailure)
+    //     {
+    //         return Result.Failure(nameResult.Error);
+    //     }
+    //         
+    //     var identifierResult = DepartmentIdentifier.Create(identifier);
+    //     if (identifierResult.IsFailure)
+    //     {
+    //         return Result.Failure(identifierResult.Error);
+    //     }
+    //     
+    //     DepartmentName = nameResult.Value;
+    //     DepartmentIdentifier = identifierResult.Value;
+    //     
+    //     return Result.Success();
+    // }
 
     public Result Deactivate()
     {

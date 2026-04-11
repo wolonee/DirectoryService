@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Locations.ValueObjects;
+using DirectoryService.Shared;
 
 namespace DirectoryService.Domain.Locations;
 
@@ -43,25 +44,25 @@ public class Location
         return new Location(addressResult, name, timezone);
     }
 
-    public Result Activate()
+    public Result<bool, Error> Activate()
     {
         if (IsActive)
         {
-            return Result.Failure("Location is already active");
+            return LocationErrors.IsAlreadyActive(Id);
         }
         
         IsActive = true;
-        return Result.Success();
+        return IsActive;
     }
 
-    public Result Deactivate()
+    public Result<bool, Error> Deactivate()
     {
         if (!IsActive)
         {
-            return Result.Failure("Location is not active");
+            return LocationErrors.IsAlreadyInactive(Id);
         }
         
         IsActive = false;
-        return Result.Success();
+        return IsActive;
     }   
 }

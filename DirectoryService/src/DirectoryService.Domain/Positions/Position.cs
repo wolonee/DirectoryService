@@ -1,11 +1,14 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Positions.ValueObjects;
+using DirectoryService.Shared;
 
 namespace DirectoryService.Domain.Positions;
 
 public class Position
 {
     // EF CORE
+    public const int MAX_LENGTH_1000 = 1000;
+    
     private Position()
     {
     }
@@ -32,19 +35,19 @@ public class Position
     
     public DateTime UpdatedAt { get; private set; }
 
-    public static Result<Position> Create(string speciality, string direction, string? description, bool isActive)
+    public static Result<Position, Error> Create(string speciality, string direction, string? description, bool isActive)
     {
         var nameResult = PositionName.Create(speciality, direction);
-        if (nameResult.IsFailure)
-        {
-            return Result.Failure<Position>(nameResult.Error);
-        }
+        // if (nameResult.IsFailure)
+        // {
+        //     return Result.Failure<Position>(nameResult.Error);
+        // }
         
         if (description is not null)
         {
-            if (description.Length > 1000)
+            if (description.Length > MAX_LENGTH_1000)
             {
-                return Result.Failure<Position>("Description is too long");
+                return PositionErrors.ToLongDescription();
             }
         }
         
