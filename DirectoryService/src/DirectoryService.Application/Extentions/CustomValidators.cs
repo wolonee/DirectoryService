@@ -9,11 +9,11 @@ public static class CustomValidators
 {
     public static IRuleBuilderOptionsConditions<T, TElement> MustBeValueObject<T, TElement, TValueObject>(
         this IRuleBuilder<T, TElement> ruleBuilder,
-        Func<TElement, Result<TElement, Error>> factoryMethon)
+        Func<TElement, Result<TValueObject, Error>> factoryMethon)
     {
         return ruleBuilder.Custom((value, context) =>
         {
-            Result<TElement, Error> result = factoryMethon(value);
+            var result = factoryMethon(value);
 
             if (result.IsSuccess)
                 return;

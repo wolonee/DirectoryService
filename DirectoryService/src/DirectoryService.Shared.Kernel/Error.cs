@@ -22,8 +22,7 @@ public record Error
     public static Error NotFound(string? code, string message)  
         => new(code ?? "record.not.found", message, ErrorType.NOT_FOUND);  
   
-    public static Error Validation(string? code, string message, string?
-        invalidField = null)  
+    public static Error Validation(string? code, string message, string? invalidField = null)  
         => new(code ?? "value.is.invalid", message, ErrorType.VALIDATION, invalidField);  
   
     public static Error Conflict(string? code, string message)  
@@ -35,6 +34,7 @@ public record Error
     public Errors ToErrors() => this;
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum ErrorType
 {
     VALIDATION,  

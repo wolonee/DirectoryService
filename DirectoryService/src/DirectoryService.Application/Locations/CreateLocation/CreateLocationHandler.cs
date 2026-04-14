@@ -1,4 +1,5 @@
-﻿using CSharpFunctionalExtensions;
+﻿using System.Text.Json;
+using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Exceptions;
 using DirectoryService.Application.Extentions;
@@ -15,13 +16,13 @@ namespace DirectoryService.Application.Locations.CreateLocation;
 public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand>
 {
     private readonly ILocationsRepository _repository;
-    private readonly IValidator<CreateLocationRequest> _validator;
+    private readonly IValidator<CreateLocationCommand> _validator;
     private readonly ILogger<CreateLocationHandler> _logger;
     
     public CreateLocationHandler(
         ILocationsRepository repository,
-        ILogger<CreateLocationHandler> logger,
-        IValidator<CreateLocationRequest> validator)
+        IValidator<CreateLocationCommand> validator,
+        ILogger<CreateLocationHandler> logger)
     {
         _repository = repository;
         _validator = validator;
@@ -33,10 +34,10 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand
         var dto = command.Request;
         
         // валидация входных данных
-        var resultValidation = await _validator.ValidateAsync(dto, cancellationToken);
+        var resultValidation = await _validator.ValidateAsync(command, cancellationToken);
         if (!resultValidation.IsValid)
         {
-            _logger.LogError("Validation Failed: {Error}", resultValidation.Errors.Select(x => x.ErrorMessage));
+            _logger.LogError("Validation Create Location Failed: {Error}", resultValidation.ToValidationErrors());
             return resultValidation.ToValidationErrors();
         }
         
@@ -44,13 +45,14 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand
         // например локаций не должно быть больше чем 10 и тд.
         
         // создание сущности Location
-        var locationAddress = LocationAddress.Create(dto.Street, dto.City, dto.Country);
+        var addressDto = dto.Address;
+        var locationAddress = LocationAddress.Create(addressDto.Street, addressDto.City, addressDto.Country).Value;
 
-        var locationName = LocationName.Create(dto.Name);
+        var locationName = LocationName.Create(dto.Name).Value;
         
-        var locationTimezone = LocationTimeZone.Create(dto.Timezone);
+        var locationTimezone = LocationTimeZone.Create(dto.Timezone).Value;
 
-        var location = Location.Create(locationAddress.Value, locationName.Value, locationTimezone.Value);
+        var location = Location.Create(locationAddress, locationName, locationTimezone);
         
         // Сохранение сущности Location в базе данных
         var saveResult = await _repository.AddAsync(location.Value, cancellationToken);
