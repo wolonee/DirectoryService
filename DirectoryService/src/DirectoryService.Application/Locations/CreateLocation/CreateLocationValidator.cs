@@ -1,5 +1,7 @@
+using DirectoryService.Application.Validation;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain;
+using DirectoryService.Domain.Locations.ValueObjects;
 using FluentValidation;
 
 namespace DirectoryService.Application.Locations.CreateLocation;
@@ -9,9 +11,7 @@ public class CreateLocationValidator : AbstractValidator<CreateLocationRequest>
     public CreateLocationValidator()
     {
         RuleFor(x => x.Name)
-            .NotEmpty()
-            .WithErrorCode("name.is.empty")
-            .WithMessage("Name is required.")
+            // .MustBeValueObject(LocationName.Create)
             
             .MaximumLength(LengthConstants.LENGTH120)
             .WithErrorCode("name.too.long")
