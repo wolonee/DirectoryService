@@ -36,6 +36,7 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand
         var resultValidation = await _validator.ValidateAsync(dto, cancellationToken);
         if (!resultValidation.IsValid)
         {
+            _logger.LogError("Validation Failed: {Error}", resultValidation.Errors.Select(x => x.ErrorMessage));
             return resultValidation.ToValidationErrors();
         }
         

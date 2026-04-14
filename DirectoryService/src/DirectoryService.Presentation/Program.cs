@@ -1,41 +1,59 @@
+using System.Globalization;
 using DirectoryService.Infrastructure;
 using DirectoryService.Presentation;
 using DirectoryService.Presentation.Extentions;
 using DirectoryService.Presentation.Middlewares;
+using Serilog;
 
-var builder = WebApplication.CreateBuilder(args);
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
+    .CreateBootstrapLogger();
 
-var services = builder.Services;
-
-services.AddProgramDependencies();
-
-services.AddEndpointsApiExplorer();
-services.AddSwaggerGen(options =>
+try
 {
-    options.SchemaFilter<EnvelopeSchemaFilter>();
-});
+    var builder = WebApplication.CreateBuilder(args);
 
-services.AddScoped<DirectoryServiceDbContext>(_ =>
-    new DirectoryServiceDbContext(builder.Configuration.GetConnectionString("DirectoryServiceDb")!));
+    var services = builder.Services;
 
-var app = builder.Build();
+    services.AddProgramDependencies(builder.Configuration);
 
-app.UseExceptionMiddleware();
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
+    services.AddEndpointsApiExplorer();
+    services.AddSwaggerGen(options =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-        c.RoutePrefix = "swagger"; // Можно изменить на string.Empty для корневого URL
+        options.SchemaFilter<EnvelopeSchemaFilter>();
     });
+
+    services.AddScoped<DirectoryServiceDbContext>(_ =>
+        new DirectoryServiceDbContext(builder.Configuration.GetConnectionString("DirectoryServiceDb")!));
+
+    var app = builder.Build();
+
+    app.UseExceptionMiddleware();
+
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI(c =>
+        {
+            c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+            c.RoutePrefix = "swagger"; // Можно изменить на string.Empty для корневого URL
+        });
+    }
+
+    app.UseHttpsRedirection();
+
+    app.UseAuthorization();
+
+    app.MapControllers();
+
+    app.Run();
 }
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}

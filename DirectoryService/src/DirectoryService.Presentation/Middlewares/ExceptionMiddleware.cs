@@ -32,7 +32,7 @@ public class ExceptionMiddleware
 
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        _logger.LogError(exception, exception.Message);
+        _logger.LogError(exception, "Unhandled exception with message {Message}",  exception.Message);
         
         (int code, Errors? errors) = exception switch
         {
