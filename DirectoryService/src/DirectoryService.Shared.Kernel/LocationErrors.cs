@@ -13,4 +13,14 @@ public static class LocationErrors
     
     public static Error IsAlreadyInactive(Guid id) =>
         Error.Failure("location.not.found", $"Location {id} is already inactive.");
+    
+    // DataBase Errors
+    public static Error NameConflict(string name) =>
+        Error.Conflict("location.name.conflict", $"Location with name: {name} is already exists.");
+
+    public static Error DatabaseError() =>
+        Error.Failure("directory.service.database.error", "Database exception with service - DirectoryService.");
+    
+    public static Error OperationCancelled() =>
+        Error.Failure("directory.service.operation.cancelled", "Operation was cancelled.");
 }
