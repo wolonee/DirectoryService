@@ -23,4 +23,10 @@ public static class LocationErrors
     
     public static Error OperationCancelled() =>
         Error.Failure("directory.service.operation.cancelled", "Operation was cancelled.");
+    
+    public static Error NameAlreadyExists(string name) =>
+        Error.Failure("name.already.exists", $"Name: {name} already exists.");
+    
+    public static Error AddressAlreadyExists(string address) =>
+        Error.Failure("name.already.exists", $"Address: {address} already exists.");
 }

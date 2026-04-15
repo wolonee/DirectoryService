@@ -2,7 +2,7 @@
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Exceptions;
-using DirectoryService.Application.Extentions;
+using DirectoryService.Application.Validation;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Domain.Locations.ValueObjects;
@@ -42,7 +42,19 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand
         }
         
         // бизнес валидация
-        // например локаций не должно быть больше чем 10 и тд.
+        var existsNameResult = await _repository.NameExistsAsync(dto.Name, cancellationToken);
+        if (existsNameResult.IsFailure)
+            return existsNameResult.Error.ToErrors();
+
+        if (!existsNameResult.Value)
+            LocationErrors.NameAlreadyExists(dto.Name);
+        
+        var existsAddressResult = await _repository.AddressExistsAsync(dto.Address, cancellationToken);
+        if (existsAddressResult.IsFailure)
+            return existsAddressResult.Error.ToErrors();
+        
+        if (!existsAddressResult.Value)
+            LocationErrors.AddressAlreadyExists(dto.Address.ToString());
         
         // создание сущности Location
         var addressDto = dto.Address;

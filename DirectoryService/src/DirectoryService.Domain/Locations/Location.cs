@@ -12,12 +12,12 @@ public class Location
     }
     
     private Location(
-        LocationAddress locationAddress,
+        LocationAddress address,
         LocationName name,
         LocationTimeZone timezone)
     {
         Id = Guid.NewGuid();
-        LocationAddress = locationAddress;
+        Address = address;
         Name = name;
         Timezone = timezone;
         IsActive = true;
@@ -27,7 +27,7 @@ public class Location
 
     public Guid Id { get; private set; }
 
-    public LocationAddress LocationAddress { get; private set; }
+    public LocationAddress Address { get; private set; }
 
     public LocationName Name { get; private set; }
 

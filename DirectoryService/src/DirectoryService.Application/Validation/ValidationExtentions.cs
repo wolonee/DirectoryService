@@ -2,7 +2,7 @@ using System.Text.Json;
 using DirectoryService.Shared;
 using FluentValidation.Results;
 
-namespace DirectoryService.Application.Extentions;
+namespace DirectoryService.Application.Validation;
 
 public static class ValidationExtentions
 {

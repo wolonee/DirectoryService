@@ -11,6 +11,10 @@ public class CreateLocationValidator : AbstractValidator<CreateLocationCommand>
 {
     public CreateLocationValidator()
     {
+        RuleFor(x => x.Request)
+            .NotNull()
+            .WithError(GeneralErrors.ValueIsRequired("request"));
+            
         RuleFor(x => x.Request.Name)
             .MustBeValueObject(LocationName.Create);
 

@@ -1,5 +1,6 @@
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Locations;
+using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Shared;
 using Microsoft.EntityFrameworkCore;
@@ -48,6 +49,46 @@ public class LocationsRepository : ILocationsRepository
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error while creating location with name {Name}", location.Name.Value);
+            return LocationErrors.DatabaseError();
+        }
+    }
+
+    public async Task<Result<bool, Error>> NameExistsAsync(string name, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await _dbContext.Locations.AnyAsync(x => x.Name.Value == name);
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation was cancelled while checking NameExists with name {Name}", name);
+            return LocationErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while creating NameExists with name {Name}", name);
+            return LocationErrors.DatabaseError();
+        }
+    }
+
+    public async Task<Result<bool, Error>> AddressExistsAsync(CreateLocationAddressRequest address, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await _dbContext.Locations.AnyAsync(
+                x => x.Address.Street == address.Street && 
+                     x.Address.City == address.City && 
+                     x.Address.Country == address.Country, 
+                cancellationToken);
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation was cancelled while checking AddressExists with address {Address}", address.ToString());
+            return LocationErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while creating AddressExists with address {Address}", address.ToString());
             return LocationErrors.DatabaseError();
         }
     }
