@@ -1,3 +1,4 @@
+using CSharpFunctionalExtensions;
 using DirectoryService.Application.Locations;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Shared;
@@ -18,7 +19,7 @@ public class LocationsRepository : ILocationsRepository
         _logger = logger;
     }
     
-    public async Task<Guid, Error> AddAsync(Location location, CancellationToken cancellationToken = default)
+    public async Task<Result<Guid, Error>> AddAsync(Location location, CancellationToken cancellationToken = default)
     {
         _dbContext.Locations.Add(location);
 
@@ -39,13 +40,11 @@ public class LocationsRepository : ILocationsRepository
             _logger.LogError(ex, "Database update error while creating location with name {Name}", location.Name.Value);
             return LocationErrors.DatabaseError();
         }
-
         catch (OperationCanceledException ex)
         {
             _logger.LogError(ex, "Operation was cancelled while creating location with name {Name}", location.Name.Value);
             return LocationErrors.OperationCancelled();
         }
-
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error while creating location with name {Name}", location.Name.Value);
