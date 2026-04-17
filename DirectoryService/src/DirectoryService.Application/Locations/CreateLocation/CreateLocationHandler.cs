@@ -15,16 +15,16 @@ namespace DirectoryService.Application.Locations.CreateLocation;
 
 public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand>
 {
-    private readonly ILocationsRepository _repository;
+    private readonly ILocationsRepository _locationsRepository;
     private readonly IValidator<CreateLocationCommand> _validator;
     private readonly ILogger<CreateLocationHandler> _logger;
     
     public CreateLocationHandler(
-        ILocationsRepository repository,
+        ILocationsRepository locationsRepository,
         IValidator<CreateLocationCommand> validator,
         ILogger<CreateLocationHandler> logger)
     {
-        _repository = repository;
+        _locationsRepository = locationsRepository;
         _validator = validator;
         _logger = logger;
     }
@@ -42,14 +42,14 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand
         }
         
         // бизнес валидация
-        var existsNameResult = await _repository.NameExistsAsync(dto.Name, cancellationToken);
+        var existsNameResult = await _locationsRepository.NameExistsAsync(dto.Name, cancellationToken);
         if (existsNameResult.IsFailure)
             return existsNameResult.Error.ToErrors();
 
         if (!existsNameResult.Value)
             LocationErrors.NameAlreadyExists(dto.Name);
         
-        var existsAddressResult = await _repository.AddressExistsAsync(dto.Address, cancellationToken);
+        var existsAddressResult = await _locationsRepository.AddressExistsAsync(dto.Address, cancellationToken);
         if (existsAddressResult.IsFailure)
             return existsAddressResult.Error.ToErrors();
         
@@ -67,7 +67,7 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand
         var location = Location.Create(locationAddress, locationName, locationTimezone);
         
         // Сохранение сущности Location в базе данных
-        var saveResult = await _repository.AddAsync(location.Value, cancellationToken);
+        var saveResult = await _locationsRepository.AddAsync(location.Value, cancellationToken);
         if (saveResult.IsFailure)
             return saveResult.Error.ToErrors();
 
