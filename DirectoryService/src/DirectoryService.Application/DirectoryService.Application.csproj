@@ -7,7 +7,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Departments\" />
+      <Folder Include="Departments\CreateDepartment\" />
       <Folder Include="Positions\" />
     </ItemGroup>
 

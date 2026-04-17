@@ -16,7 +16,7 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
         builder.Property(l => l.Id)
             .HasColumnName("id");
 
-        builder.ComplexProperty(v => v.LocationAddress, nb =>
+        builder.ComplexProperty(v => v.Address, nb =>
         {
             nb.Property(s => s.Street)
                 .IsRequired()

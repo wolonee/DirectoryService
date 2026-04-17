@@ -1,4 +1,6 @@
 using System.Globalization;
+using DirectoryService.Domain;
+using DirectoryService.Domain.Positions;
 using DirectoryService.Infrastructure;
 using DirectoryService.Presentation;
 using DirectoryService.Presentation.Extentions;
@@ -25,7 +27,7 @@ try
     });
 
     services.AddScoped<DirectoryServiceDbContext>(_ =>
-        new DirectoryServiceDbContext(builder.Configuration.GetConnectionString("DirectoryServiceDb")!));
+        new DirectoryServiceDbContext(builder.Configuration.GetConnectionString(NameConstants.DATABASE)!));
 
     var app = builder.Build();
 
