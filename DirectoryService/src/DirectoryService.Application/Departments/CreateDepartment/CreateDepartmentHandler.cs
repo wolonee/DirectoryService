@@ -26,7 +26,8 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
             validationResult.ToValidationErrors();
         }
         
-        // business validation 
+        // business validation
+        
         
         // Создание сущности Department
         
