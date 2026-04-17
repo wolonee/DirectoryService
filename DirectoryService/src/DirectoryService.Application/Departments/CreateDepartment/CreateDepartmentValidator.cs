@@ -18,5 +18,11 @@ public class CreateDepartmentValidator : AbstractValidator<CreateDepartmentComma
         
         RuleFor(x => x.request.Identifier)
             .MustBeValueObject(DepartmentIdentifier.Create);
+
+        RuleFor(x => x.request.locationIds)
+            .NotNull()
+            .WithError(GeneralErrors.ValueIsRequired("locationIds"))
+            .Must(locationIds => locationIds.Length == locationIds.Distinct().Count())
+            .WithError(DepartmentErrors.HasDuplicatedLocations());
     }
 }
