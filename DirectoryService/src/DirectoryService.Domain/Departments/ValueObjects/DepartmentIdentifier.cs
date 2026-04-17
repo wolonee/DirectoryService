@@ -22,11 +22,18 @@ public record DepartmentIdentifier
             return GeneralErrors.ValueIsRequired("Identifier");
         }
         
+        value = value.Trim();
+        
         if (value.Length < MIN_LENGTH || value.Length > MAX_LENGTH)
         {
             return GeneralErrors.ValueHasBoundedLength(MIN_LENGTH, MAX_LENGTH, "Identifier");
         }
 
+        if (value.Any(c => !char.IsAsciiLetter(c)))
+        {
+            return GeneralErrors.ValueContainsInvalidCharacters("Identifier");
+        }
+        
         return new DepartmentIdentifier(value);
     }
 }

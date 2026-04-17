@@ -1,4 +1,5 @@
-﻿using CSharpFunctionalExtensions;
+﻿using System.Text.RegularExpressions;
+using CSharpFunctionalExtensions;
 using DirectoryService.Shared;
 
 namespace DirectoryService.Domain.Departments.ValueObjects;

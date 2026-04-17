@@ -18,7 +18,5 @@ public class CreateDepartmentValidator : AbstractValidator<CreateDepartmentComma
         
         RuleFor(x => x.request.Identifier)
             .MustBeValueObject(DepartmentIdentifier.Create);
-        
-        
     }
 }
