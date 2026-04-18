@@ -66,11 +66,6 @@ public class Department
         IEnumerable<DepartmentLocation> departmentLocations)
     {
         var departmentLocationsList = departmentLocations.ToList();
-
-        if (departmentLocationsList.Count == 0)
-        {
-            return GeneralErrors.ValueIsRequired("Location");
-        }
         
         var path = DepartmentPath.CreateParent(identifier);
         
@@ -86,11 +81,6 @@ public class Department
         IEnumerable<DepartmentLocation> departmentLocations)
     {
         var departmentLocationsList = departmentLocations.ToList();
-
-        if (departmentLocationsList.Count == 0)
-        {
-            return GeneralErrors.ValueIsRequired("Location");
-        }
         
         var path = parent.DepartmentPath.CreateChild(identifier);
         
