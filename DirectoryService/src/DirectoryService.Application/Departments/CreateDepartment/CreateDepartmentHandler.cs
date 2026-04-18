@@ -42,7 +42,7 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
             validationResult.ToValidationErrors();
         }
 
-        var resultLocationExists = await _locationsRepository.LocationsExistsAsync(request.locationIds, cancellationToken);
+        var resultLocationExists = await _locationsRepository.LocationsExistsAsync(request.LocationIds, cancellationToken);
         if (resultLocationExists.IsFailure)
         {
             return resultLocationExists.Error.ToErrors();
@@ -60,11 +60,11 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
         
         Guid departmentId = Guid.NewGuid();
         
-        var departmentLocationsList = request.locationIds
+        var departmentLocationsList = request.LocationIds
             .Select(locationId => DepartmentLocation.Create(departmentId, locationId).Value)
             .ToList();
         
-        if (request.parentId == Guid.Empty)
+        if (request.ParentId == Guid.Empty)
         {
             var resultDepartment = Department.CreateParent(departmentName, departmentIdentifier, departmentLocationsList);
             if (resultDepartment.IsFailure)
@@ -82,7 +82,7 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
         }
         else
         {
-            var resultParentDepartment = await _departmentsRepository.GetByIdAsync(request.parentId, cancellationToken);
+            var resultParentDepartment = await _departmentsRepository.GetByIdAsync(request.ParentId, cancellationToken);
             if (resultParentDepartment.IsFailure)
                 return resultParentDepartment.Error.ToErrors();
             

@@ -17,7 +17,7 @@ public record PositionName
     public static Result<PositionName, Error> Create(string speciality, string direction)
     {
         const int MIN_LENGTH = 3;
-        const int MAX_LENGTH = 120;
+        const int MAX_LENGTH = 100;
         
         int fullPositionLength = speciality.Length + direction.Length;
 
