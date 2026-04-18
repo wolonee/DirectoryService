@@ -23,7 +23,6 @@ public class LocationsRepository : ILocationsRepository
     public async Task<Result<Guid, Error>> AddAsync(Location location, CancellationToken cancellationToken = default)
     {
         _dbContext.Locations.Add(location);
-
         try
         {
             await _dbContext.SaveChangesAsync(cancellationToken);
@@ -89,6 +88,34 @@ public class LocationsRepository : ILocationsRepository
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error while creating AddressExists with address {Address}", address.ToString());
+            return LocationErrors.DatabaseError();
+        }
+    }
+
+    public async Task<Result<bool, Error>> LocationsExistsAsync(Guid[] locationIds, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var existingLocationIds = await _dbContext.Locations
+                .Where(x => locationIds.Contains(x.Id))
+                .Select(x => x.Id)
+                .ToListAsync(cancellationToken);
+
+            if (existingLocationIds.Count != locationIds.Length)
+            {
+                return false;
+            }
+        
+            return true;
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation cancelled while checking locations existence");
+            return LocationErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while checking locations existence");
             return LocationErrors.DatabaseError();
         }
     }
