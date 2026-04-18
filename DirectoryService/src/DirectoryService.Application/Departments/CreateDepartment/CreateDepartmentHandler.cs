@@ -6,6 +6,7 @@ using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Departments.ValueObjects;
 using DirectoryService.Shared;
 using FluentValidation;
+using Microsoft.Extensions.Logging;
 
 namespace DirectoryService.Application.Departments.CreateDepartment;
 
@@ -14,16 +15,18 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
     private readonly IValidator<CreateDepartmentCommand> _validator;
     private readonly IDepartmentsRepository _departmentsRepository;
     private readonly ILocationsRepository _locationsRepository;
+    private readonly ILogger<CreateDepartmentHandler> _logger;
 
 
     public CreateDepartmentHandler(
         IValidator<CreateDepartmentCommand> validator,
         IDepartmentsRepository departmentsRepository,
-        ILocationsRepository locationsRepository)
+        ILocationsRepository locationsRepository, ILogger<CreateDepartmentHandler> logger)
     {
         _validator = validator;
         _departmentsRepository = departmentsRepository;
         _locationsRepository = locationsRepository;
+        _logger = logger;
     }
 
     public async Task<Result<Guid, Errors>> Handle(
@@ -31,23 +34,13 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
         CancellationToken cancellationToken = default)
     {
         var request = command.request;
+        
         // validation
         var validationResult = await _validator.ValidateAsync(command);
         if (!validationResult.IsValid)
         {
             validationResult.ToValidationErrors();
         }
-        
-        // business validation
-        // if (request.parentId == Guid.Empty)
-        // {
-        //     var depth = 0;
-        //     
-        // }
-        // else
-        // {
-        //
-        // }
 
         var resultLocationExists = await _locationsRepository.LocationsExistsAsync(request.locationIds, cancellationToken);
         if (resultLocationExists.IsFailure)
@@ -61,12 +54,12 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
         }
 
         // Создание сущности Department
-        
         var departmentName = DepartmentName.Create(request.Name).Value;
         
         var departmentIdentifier = DepartmentIdentifier.Create(request.Identifier).Value;
         
         Guid departmentId = Guid.NewGuid();
+        
         var departmentLocationsList = request.locationIds
             .Select(locationId => DepartmentLocation.Create(departmentId, locationId).Value)
             .ToList();
@@ -75,27 +68,37 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
         {
             var resultDepartment = Department.CreateParent(departmentName, departmentIdentifier, departmentLocationsList);
             if (resultDepartment.IsFailure)
-            {
                 return resultDepartment.Error.ToErrors();
-            }
+            
+            // Сохранение в бд
+            var saveResult = await _departmentsRepository.AddAsync(resultDepartment.Value, cancellationToken);
+            if (saveResult.IsFailure)
+                return saveResult.Error.ToErrors();
+            
+            // логирование об успешном сохранении
+            _logger.LogInformation("Created Department with id {departmentId}", saveResult.Value);
+            
+            return saveResult.Value;
         }
         else
         {
             var resultParentDepartment = await _departmentsRepository.GetByIdAsync(request.parentId, cancellationToken);
             if (resultParentDepartment.IsFailure)
-            {
                 return resultParentDepartment.Error.ToErrors();
-            }
             
             var resultDepartment = Department.CreateChild(departmentName, departmentIdentifier, resultParentDepartment.Value, departmentLocationsList);
             if (resultDepartment.IsFailure)
-            {
                 return resultDepartment.Error.ToErrors();
-            }
+            
+            // Сохранение в бд
+            var saveResult = await _departmentsRepository.AddAsync(resultDepartment.Value, cancellationToken);
+            if (saveResult.IsFailure)
+                return saveResult.Error.ToErrors();
+            
+            // логирование об успешном сохранении
+            _logger.LogInformation("Created Department with id {departmentId}", saveResult.Value);
+            
+            return saveResult.Value;
         }
-
-        // Сохранение в бд
-
-        // логирование об успешном сохранении
     }
 }

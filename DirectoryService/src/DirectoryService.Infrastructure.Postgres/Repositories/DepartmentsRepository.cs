@@ -52,7 +52,7 @@ public class DepartmentsRepository : IDepartmentsRepository
         }
     }
     
-    public async Task<Result<Department, Error>> GetById(Guid departmentId, CancellationToken cancellationToken = default)
+    public async Task<Result<Department, Error>> GetByIdAsync(Guid departmentId, CancellationToken cancellationToken = default)
     {
         try
         {
