@@ -2,6 +2,8 @@
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Locations;
 using DirectoryService.Application.Validation;
+using DirectoryService.Domain.Departments;
+using DirectoryService.Domain.Departments.ValueObjects;
 using DirectoryService.Shared;
 using FluentValidation;
 
@@ -57,10 +59,35 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
         {
             return DepartmentErrors.NotAllLocationsExists().ToErrors();
         }
-        
-        
 
         // Создание сущности Department
+        
+        var departmentName = DepartmentName.Create(request.Name).Value;
+        
+        var departmentIdentifier = DepartmentIdentifier.Create(request.Identifier).Value;
+        
+        Guid departmentId = Guid.NewGuid();
+        var departmentLocationsList = request.locationIds
+            .Select(locationId => DepartmentLocation.Create(departmentId, locationId).Value)
+            .ToList();
+        
+        if (request.parentId == Guid.Empty)
+        {
+            var resultDepartment = Department.CreateParent(departmentName, departmentIdentifier, departmentLocationsList);
+            if (resultDepartment.IsFailure)
+            {
+                return resultDepartment.Error.ToErrors();
+            }
+        }
+        else
+        {
+            
+            var resultDepartment = Department.CreateChild(departmentName, departmentIdentifier, departmentLocationsList);
+            if (resultDepartment.IsFailure)
+            {
+                return resultDepartment.Error.ToErrors();
+            }
+        }
 
         // Сохранение в бд
 
