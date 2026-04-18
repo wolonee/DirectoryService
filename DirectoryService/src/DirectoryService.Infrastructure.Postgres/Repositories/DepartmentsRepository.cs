@@ -52,35 +52,30 @@ public class DepartmentsRepository : IDepartmentsRepository
         }
     }
     
-    public async Task<Result<Guid, Error>> GetById(Guid departmentId, CancellationToken cancellationToken = default)
+    public async Task<Result<Department, Error>> GetById(Guid departmentId, CancellationToken cancellationToken = default)
     {
-        _dbContext.
-        
         try
         {
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            var department = await _dbContext.Departments
+                .FirstOrDefaultAsync(x => x.Id == departmentId, cancellationToken);
 
-            return departmant.Id;
-        }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx)
-        {
-            if (pgEx is { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: not null } &&
-                pgEx.ConstraintName.Contains("name", StringComparison.InvariantCultureIgnoreCase))
+            if (department is null)
             {
-                return LocationErrors.NameConflict(departmant.DepartmentName.Value);
+                GeneralErrors.NotFound(departmentId);
             }
-
-            _logger.LogError(ex, "Database update error while creating department with name {Name}", departmant.DepartmentName.Value);
-            return LocationErrors.DatabaseError();
+            else
+            {
+                return department;
+            }
         }
         catch (OperationCanceledException ex)
         {
-            _logger.LogError(ex, "Operation was cancelled while creating department with name {Name}", departmant.DepartmentName.Value);
+            _logger.LogError(ex, "Operation was cancelled while creating department with id {Id}", departmentId);
             return LocationErrors.OperationCancelled();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error while creating department with name {Name}", departmant.DepartmentName.Value);
+            _logger.LogError(ex, "Unexpected error while creating department with name {Id}", departmentId);
             return LocationErrors.DatabaseError();
         }
     }

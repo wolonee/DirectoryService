@@ -29,6 +29,6 @@ public static class GeneralErrors
     public static Error NotFound(Guid? id = null, string? name = null)
     {
         string forId = id == null ? string.Empty : $" no Id '{id}';";
-        return Error.NotFound("record.not.found", $"{name ?? "запись"} не найдена{forId}");
+        return Error.NotFound("record.not.found", $"{name ?? "object"} not found{forId}");
     }
 }
