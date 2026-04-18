@@ -63,10 +63,8 @@ public class DepartmentsRepository : IDepartmentsRepository
             {
                 return GeneralErrors.NotFound(departmentId);
             }
-            else
-            {
-                return department;
-            }
+            
+            return department;
         }
         catch (OperationCanceledException ex)
         {

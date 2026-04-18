@@ -81,8 +81,13 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
         }
         else
         {
+            var resultParentDepartment = await _departmentsRepository.GetByIdAsync(request.parentId, cancellationToken);
+            if (resultParentDepartment.IsFailure)
+            {
+                return resultParentDepartment.Error.ToErrors();
+            }
             
-            var resultDepartment = Department.CreateChild(departmentName, departmentIdentifier, departmentLocationsList);
+            var resultDepartment = Department.CreateChild(departmentName, departmentIdentifier, resultParentDepartment.Value, departmentLocationsList);
             if (resultDepartment.IsFailure)
             {
                 return resultDepartment.Error.ToErrors();
