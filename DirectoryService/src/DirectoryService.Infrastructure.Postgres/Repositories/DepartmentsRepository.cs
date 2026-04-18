@@ -61,7 +61,7 @@ public class DepartmentsRepository : IDepartmentsRepository
 
             if (department is null)
             {
-                GeneralErrors.NotFound(departmentId);
+                return GeneralErrors.NotFound(departmentId);
             }
             else
             {
