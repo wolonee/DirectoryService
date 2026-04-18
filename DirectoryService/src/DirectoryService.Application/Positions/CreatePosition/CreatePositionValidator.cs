@@ -13,6 +13,12 @@ public class CreatePositionValidator : AbstractValidator<CreatePositionCommand>
             .NotNull()
             .WithError(GeneralErrors.ValueIsRequired("request"));
 
-
+        RuleFor(x => x.request.Name)
+            .MustBeValueObject(name =>
+                PositionName.Create(
+                    name.Speciality,
+                    name.Direction));
+        
+        
     }
 }

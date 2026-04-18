@@ -64,7 +64,7 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
             .Select(locationId => DepartmentLocation.Create(departmentId, locationId).Value)
             .ToList();
         
-        if (request.ParentId == Guid.Empty)
+        if (request.ParentId == null)
         {
             var resultDepartment = Department.CreateParent(departmentName, departmentIdentifier, departmentLocationsList);
             if (resultDepartment.IsFailure)
@@ -82,7 +82,7 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
         }
         else
         {
-            var resultParentDepartment = await _departmentsRepository.GetByIdAsync(request.ParentId, cancellationToken);
+            var resultParentDepartment = await _departmentsRepository.GetByIdAsync(request.ParentId.Value, cancellationToken);
             if (resultParentDepartment.IsFailure)
                 return resultParentDepartment.Error.ToErrors();
             
