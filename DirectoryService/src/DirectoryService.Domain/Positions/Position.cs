@@ -13,7 +13,7 @@ public class Position
     {
     }
     
-    private Position(PositionName name, string? description, bool isActive)
+    private Position(PositionName name, PositionDescription? description, bool isActive)
     {
         Id = Guid.NewGuid();
         Name = name;
@@ -27,7 +27,7 @@ public class Position
     
     public PositionName Name { get; private set; }
     
-    public string? Description { get; private set; }
+    public PositionDescription? Description { get; private set; }
     
     public bool IsActive { get; private set; }
     
@@ -35,24 +35,8 @@ public class Position
     
     public DateTime UpdatedAt { get; private set; }
 
-    public static Result<Position, Error> Create(string speciality, string direction, string? description, bool isActive)
+    public static Result<Position, Error> Create(PositionName name, PositionDescription? description, bool isActive)
     {
-        var nameResult = PositionName.Create(speciality, direction);
-        // if (nameResult.IsFailure)
-        // {
-        //     return Result.Failure<Position>(nameResult.Error); .
-        // }
-        
-        if (description is not null)
-        {
-            if (description.Length > MAX_LENGTH_1000)
-            {
-                return PositionErrors.ToLongDescription();
-            }
-        }
-        
-        var validName = nameResult.Value;
-        
-        return new Position(validName, description, isActive);
+        return new Position(name, description, isActive);
     }
 }

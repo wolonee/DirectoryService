@@ -39,6 +39,7 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
         var validationResult = await _validator.ValidateAsync(command);
         if (!validationResult.IsValid)
         {
+            _logger.LogError("Validation Create Department Failed: {Error}", validationResult.ToValidationErrors());
             validationResult.ToValidationErrors();
         }
 

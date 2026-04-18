@@ -18,7 +18,14 @@ public class CreatePositionValidator : AbstractValidator<CreatePositionCommand>
                 PositionName.Create(
                     name.Speciality,
                     name.Direction));
+
+        RuleFor(x => x.request.Description)
+            .MustBeValueObject(PositionDescription.Create);
         
-        
+        RuleFor(x => x.request.DepartmentIds)
+            .NotNull()
+            .WithError(GeneralErrors.ValueIsRequired("departmentIds"))
+            .Must(ids => ids.Length == ids.Distinct().Count())
+            .WithError(PositionErrors.HasDuplicatedDepartments());
     }
 }
