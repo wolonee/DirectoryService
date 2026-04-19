@@ -77,7 +77,7 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
                 return saveResult.Error.ToErrors();
             
             // логирование об успешном сохранении
-            _logger.LogInformation("Created Department with id {departmentId}", saveResult.Value);
+            _logger.LogInformation("Created Parent Department with id {departmentId}", saveResult.Value);
             
             return saveResult.Value;
         }
@@ -97,7 +97,7 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
                 return saveResult.Error.ToErrors();
             
             // логирование об успешном сохранении
-            _logger.LogInformation("Created Department with id {departmentId}", saveResult.Value);
+            _logger.LogInformation("Created Child Department with id {departmentId}", saveResult.Value);
             
             return saveResult.Value;
         }
