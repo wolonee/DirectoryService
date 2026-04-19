@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstractions;
+using DirectoryService.Application.Departments;
 using DirectoryService.Application.Locations;
 using DirectoryService.Application.Validation;
 using DirectoryService.Domain.Positions.ValueObjects;
@@ -13,15 +14,18 @@ public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand
 {
     private readonly IValidator<CreatePositionCommand> _validator;
     private readonly IPositionsRepository _positionsRepository;
+    private readonly IDepartmentsRepository _departmentsRepository;
     private readonly ILogger<CreatePositionHandler> _logger;
 
     public CreatePositionHandler(
         IValidator<CreatePositionCommand> validator,
         IPositionsRepository positionsRepository,
+        IDepartmentsRepository departmentsRepository,
         ILogger<CreatePositionHandler> logger)
     {
         _validator = validator;
         _positionsRepository = positionsRepository;
+        _departmentsRepository = departmentsRepository;
         _logger = logger;
     }
 
@@ -54,13 +58,21 @@ public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand
             if (dbName == requestFullName)
                 return PositionErrors.ActiveNameAlreadyExists().ToErrors();
         }
+
+        var activeDepartmentsResult = await _departmentsRepository.GetActiveDepartmentsAsync(request.DepartmentIds, cancellationToken);
+        if (activeDepartmentsResult.IsFailure)
+            return activeDepartmentsResult.Error.ToErrors();
         
-        var 
-        
+        if (!activeDepartmentsResult.Value.Any())
+            return GeneralErrors.NotFound(null, "departments").ToErrors();
+
+        if (activeDepartmentsResult.Value.Count != request.DepartmentIds.Length)
+            return PositionErrors.NotAllDepartmentsExists().ToErrors();
+
         // create position
-        
+
         // save position in db
-        
+
         // logger about success save
     }
 }

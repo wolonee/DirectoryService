@@ -73,7 +73,31 @@ public class DepartmentsRepository : IDepartmentsRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error while creating department with name {Id}", departmentId);
+            _logger.LogError(ex, "Unexpected error while creating department with id {Id}", departmentId);
+            return GeneralErrors.DatabaseError();
+        }
+    }
+
+    public async Task<Result<List<Department>, Error>> GetActiveDepartmentsAsync(Guid[] departmentIds, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var departments = await _dbContext.Departments
+                .Where(d => d.IsActive)
+                .Where(d => departmentIds.Contains(d.Id))
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+            
+            return departments;
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation was cancelled while checking active departments");
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while creating checking active departments");
             return GeneralErrors.DatabaseError();
         }
     }

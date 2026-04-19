@@ -86,6 +86,8 @@ public class Department
         
         var createdDepartment = new Department(name, identifier, path, parent.Depth + 1, departmentLocationsList);
         
+        parent._childrenDepartments.Add(createdDepartment);
+        
         return createdDepartment;
     }
 

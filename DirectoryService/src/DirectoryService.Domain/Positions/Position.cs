@@ -13,12 +13,12 @@ public class Position
     {
     }
     
-    private Position(PositionName name, PositionDescription? description, bool isActive)
+    private Position(PositionName name, PositionDescription? description)
     {
         Id = Guid.NewGuid();
         Name = name;
         Description = description;
-        IsActive = isActive;
+        IsActive = true;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = CreatedAt;
     }
@@ -35,8 +35,8 @@ public class Position
     
     public DateTime UpdatedAt { get; private set; }
 
-    public static Result<Position, Error> Create(PositionName name, PositionDescription? description, bool isActive)
+    public static Result<Position, Error> Create(PositionName name, PositionDescription? description)
     {
-        return new Position(name, description, isActive);
+        return new Position(name, description);
     }
 }
