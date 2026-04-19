@@ -25,17 +25,14 @@ public class PositionsRepository : IPositionsRepository
     {
         try
         {
-            var getDirection = await _dbContext.Positions
+            var getFullName = await _dbContext.Positions
                 .Where(x => x.IsActive)
                 .Where(d => d.Name.Direction == direction)
                 .Where(s => s.Name.Speciality == speciality)
                 .Select(f => PositionName.GetFullName(f.Name.Speciality, f.Name.Direction))
                 .ToListAsync(cancellationToken: cancellationToken);
 
-            if (!getDirection.Any())
-                return PositionErrors.NotFoundNames();
-
-            return getDirection;
+            return getFullName;
         }
         catch (OperationCanceledException ex)
         {
