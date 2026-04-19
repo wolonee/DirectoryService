@@ -1,0 +1,12 @@
+﻿using System.Runtime.InteropServices.JavaScript;
+using CSharpFunctionalExtensions;
+using DirectoryService.Domain.Departments;
+using DirectoryService.Domain.Positions.ValueObjects;
+using DirectoryService.Shared;
+
+namespace DirectoryService.Application.Positions;
+
+public interface IPositionsRepository
+{
+    Task<Result<bool, Error>> GetActiveNames(string direction, string speciality, CancellationToken cancellationToken = default);
+}

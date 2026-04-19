@@ -13,7 +13,7 @@ public record PositionName
     
     public string Speciality { get; }
     public string Direction { get; }
-
+    
     public static Result<PositionName, Error> Create(string speciality, string direction)
     {
         const int MIN_LENGTH = 3;

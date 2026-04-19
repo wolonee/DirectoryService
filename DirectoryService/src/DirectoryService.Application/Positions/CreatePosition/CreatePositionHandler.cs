@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstractions;
+using DirectoryService.Application.Locations;
 using DirectoryService.Application.Validation;
 using DirectoryService.Shared;
 using FluentValidation;
@@ -10,11 +11,16 @@ namespace DirectoryService.Application.Positions.CreatePosition;
 public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand>
 {
     private readonly IValidator<CreatePositionCommand> _validator;
+    private readonly IPositionsRepository _positionsRepository;
     private readonly ILogger<CreatePositionHandler> _logger;
 
-    public CreatePositionHandler(IValidator<CreatePositionCommand> validator, ILogger<CreatePositionHandler> logger)
+    public CreatePositionHandler(
+        IValidator<CreatePositionCommand> validator,
+        IPositionsRepository positionsRepository,
+        ILogger<CreatePositionHandler> logger)
     {
         _validator = validator;
+        _positionsRepository = positionsRepository;
         _logger = logger;
     }
 
@@ -22,6 +28,8 @@ public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand
         CreatePositionCommand command,
         CancellationToken cancellationToken = default)
     {
+        var request = command.request;
+        
         // validation
         var validationResult = await _validator.ValidateAsync(command, cancellationToken);
         if (!validationResult.IsValid)
@@ -31,7 +39,9 @@ public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand
         }
         
         // business validation
-        
+        var activeNamesResult = await _positionsRepository.GetActiveNames(request.PositionName.Direction, request.PositionName.Speciality, cancellationToken);
+        if (activeNamesResult.IsFailure)
+            return activeNamesResult.Error.ToErrors();
         
         // create position
         
