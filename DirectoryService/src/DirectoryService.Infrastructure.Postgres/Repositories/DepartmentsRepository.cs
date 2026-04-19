@@ -38,17 +38,17 @@ public class DepartmentsRepository : IDepartmentsRepository
             }
 
             _logger.LogError(ex, "Database update error while creating department with name {Name}", department.DepartmentName.Value);
-            return LocationErrors.DatabaseError();
+            return GeneralErrors.DatabaseError();
         }
         catch (OperationCanceledException ex)
         {
             _logger.LogError(ex, "Operation was cancelled while creating department with name {Name}", department.DepartmentName.Value);
-            return LocationErrors.OperationCancelled();
+            return GeneralErrors.OperationCancelled();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error while creating department with name {Name}", department.DepartmentName.Value);
-            return LocationErrors.DatabaseError();
+            return GeneralErrors.DatabaseError();
         }
     }
     
@@ -69,12 +69,12 @@ public class DepartmentsRepository : IDepartmentsRepository
         catch (OperationCanceledException ex)
         {
             _logger.LogError(ex, "Operation was cancelled while creating department with id {Id}", departmentId);
-            return LocationErrors.OperationCancelled();
+            return GeneralErrors.OperationCancelled();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error while creating department with name {Id}", departmentId);
-            return LocationErrors.DatabaseError();
+            return GeneralErrors.DatabaseError();
         }
     }
 }

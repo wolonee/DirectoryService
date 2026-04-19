@@ -2,6 +2,7 @@
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Locations;
 using DirectoryService.Application.Validation;
+using DirectoryService.Domain.Positions.ValueObjects;
 using DirectoryService.Shared;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
@@ -39,9 +40,19 @@ public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand
         }
         
         // business validation
-        var activeNamesResult = await _positionsRepository.GetActiveNames(request.PositionName.Direction, request.PositionName.Speciality, cancellationToken);
+        var activeNamesResult = await _positionsRepository.GetActiveFullNames(request.PositionName.Direction, request.PositionName.Speciality, cancellationToken);
         if (activeNamesResult.IsFailure)
             return activeNamesResult.Error.ToErrors();
+
+        var requestFullName = PositionName.GetFullName(request.PositionName.Speciality, request.PositionName.Direction);
+
+        foreach (var dbName in activeNamesResult.Value)
+        {
+            if (dbName == requestFullName)
+                return PositionErrors.ActiveNameAlreadyExists().ToErrors();
+        }
+        
+        
         
         // create position
         

@@ -5,6 +5,8 @@ namespace DirectoryService.Domain.Positions.ValueObjects;
 
 public record PositionName
 {
+    private const char SEPARATOR = '.';
+    
     private PositionName(string speciality, string direction)
     {
         Speciality = speciality;
@@ -13,6 +15,11 @@ public record PositionName
     
     public string Speciality { get; }
     public string Direction { get; }
+
+    public static string GetFullName(string speciality, string direction)
+    {
+        return direction + SEPARATOR + speciality; // "Backend.Developer"
+    }
     
     public static Result<PositionName, Error> Create(string speciality, string direction)
     {

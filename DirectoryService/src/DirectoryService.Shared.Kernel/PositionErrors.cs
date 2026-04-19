@@ -10,4 +10,10 @@ public static class PositionErrors
     
     public static Error NotAllDepartmentsExists() =>
         Error.Validation("not.all.departments.exists", $"There are departments that don't exists in database.");
+    
+    public static Error NotFoundNames() =>
+        Error.NotFound("not.found.names", "Not found any names.");
+    
+    public static Error ActiveNameAlreadyExists() =>
+        Error.Validation("active.name.already.exists", "Active name already exists.");
 }

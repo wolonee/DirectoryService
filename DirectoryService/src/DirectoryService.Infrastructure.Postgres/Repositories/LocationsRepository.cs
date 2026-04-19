@@ -38,17 +38,17 @@ public class LocationsRepository : ILocationsRepository
             }
 
             _logger.LogError(ex, "Database update error while creating location with name {Name}", location.Name.Value);
-            return LocationErrors.DatabaseError();
+            return GeneralErrors.DatabaseError();
         }
         catch (OperationCanceledException ex)
         {
             _logger.LogError(ex, "Operation was cancelled while creating location with name {Name}", location.Name.Value);
-            return LocationErrors.OperationCancelled();
+            return GeneralErrors.OperationCancelled();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error while creating location with name {Name}", location.Name.Value);
-            return LocationErrors.DatabaseError();
+            return GeneralErrors.DatabaseError();
         }
     }
 
@@ -61,12 +61,12 @@ public class LocationsRepository : ILocationsRepository
         catch (OperationCanceledException ex)
         {
             _logger.LogError(ex, "Operation was cancelled while checking NameExists with name {Name}", name);
-            return LocationErrors.OperationCancelled();
+            return GeneralErrors.OperationCancelled();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error while creating NameExists with name {Name}", name);
-            return LocationErrors.DatabaseError();
+            return GeneralErrors.DatabaseError();
         }
     }
 
@@ -83,12 +83,12 @@ public class LocationsRepository : ILocationsRepository
         catch (OperationCanceledException ex)
         {
             _logger.LogError(ex, "Operation was cancelled while checking AddressExists with address {Address}", address.ToString());
-            return LocationErrors.OperationCancelled();
+            return GeneralErrors.OperationCancelled();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error while creating AddressExists with address {Address}", address.ToString());
-            return LocationErrors.DatabaseError();
+            return GeneralErrors.DatabaseError();
         }
     }
 
@@ -111,12 +111,12 @@ public class LocationsRepository : ILocationsRepository
         catch (OperationCanceledException ex)
         {
             _logger.LogError(ex, "Operation cancelled while checking locations existence");
-            return LocationErrors.OperationCancelled();
+            return GeneralErrors.OperationCancelled();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error while checking locations existence");
-            return LocationErrors.DatabaseError();
+            return GeneralErrors.DatabaseError();
         }
     }
 }

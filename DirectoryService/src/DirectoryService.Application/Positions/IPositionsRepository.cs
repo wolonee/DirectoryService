@@ -8,5 +8,5 @@ namespace DirectoryService.Application.Positions;
 
 public interface IPositionsRepository
 {
-    Task<Result<bool, Error>> GetActiveNames(string direction, string speciality, CancellationToken cancellationToken = default);
+    Task<Result<List<string>, Error>> GetActiveFullNames(string direction, string speciality, CancellationToken cancellationToken = default);
 }

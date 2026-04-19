@@ -31,4 +31,10 @@ public static class GeneralErrors
         string forId = id == null ? string.Empty : $" no Id '{id}';";
         return Error.NotFound("record.not.found", $"{name ?? "object"} not found{forId}");
     }
+
+    public static Error OperationCancelled() =>
+        Error.Failure("directory.service.operation.cancelled", $"Operation with was cancelled.");
+    
+    public static Error DatabaseError() =>
+        Error.Failure("directory.service.database.error", "Database exception with service - DirectoryService.");
 }
