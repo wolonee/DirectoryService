@@ -3,6 +3,7 @@ using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Departments;
 using DirectoryService.Application.Locations;
 using DirectoryService.Application.Validation;
+using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Positions;
 using DirectoryService.Domain.Positions.ValueObjects;
 using DirectoryService.Shared;
@@ -69,39 +70,36 @@ public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand
 
         if (activeDepartmentsResult.Value.Count != request.DepartmentIds.Length)
             return PositionErrors.NotAllDepartmentsExists().ToErrors();
+        
+        var positionId = Guid.NewGuid();
+
+        // add position to each department
+        foreach (var department in activeDepartmentsResult.Value)
+        {
+            var departmentPositionResult = DepartmentPosition.Create(department.Id, positionId);
+            if (departmentPositionResult.IsFailure)
+                return departmentPositionResult.Error.ToErrors();
+            
+            department.AddDepartmentPosition(departmentPositionResult.Value);
+            
+            _logger.LogInformation("Position with id: {Id} was added into Department", department.Id);
+        }
 
         // create position
         var name = PositionName.Create(request.PositionName.Speciality, request.PositionName.Direction).Value;
-
-        if (request.Description != null)
-        {
-            var description = PositionDescription.Create(request.Description).Value;
-            
-            var positionResult = Position.Create(name, description).Value;
-
-            var saveResult = await _positionsRepository.AddAsync(positionResult, cancellationToken);
-            if (saveResult.IsFailure)
-                return saveResult.Error.ToErrors();
-            
-            _logger.LogInformation("Created Location with id {locationId}", saveResult);
-            
-            return saveResult.Value;
-        }
-        else
-        {
-            var positionResult = Position.Create(name).Value;
-            
-            var saveResult = await _positionsRepository.AddAsync(positionResult, cancellationToken);
-            if (saveResult.IsFailure)
-                return saveResult.Error.ToErrors();
-            
-            _logger.LogInformation("Created Location with id {locationId}", saveResult);
-            
-            return saveResult.Value;
-        }
         
-        // save position in db
+        var description = PositionDescription.Create(request.Description).Value;
+        
+        var positionResult = Position.Create(positionId, name, description).Value;
 
+        // save position in db
+        var saveResult = await _positionsRepository.AddAsync(positionResult, cancellationToken);
+        if (saveResult.IsFailure)
+            return saveResult.Error.ToErrors();
+        
         // logger about success save
+        _logger.LogInformation("Created Location with id {locationId}", saveResult);
+        
+        return saveResult.Value;
     }
 }

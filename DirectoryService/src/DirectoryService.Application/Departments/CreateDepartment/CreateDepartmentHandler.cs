@@ -67,7 +67,7 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
         
         if (request.ParentId == null)
         {
-            var resultDepartment = Department.CreateParent(departmentName, departmentIdentifier, departmentLocationsList);
+            var resultDepartment = Department.CreateParent(departmentId, departmentName, departmentIdentifier, departmentLocationsList);
             if (resultDepartment.IsFailure)
                 return resultDepartment.Error.ToErrors();
             
@@ -87,7 +87,7 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
             if (resultParentDepartment.IsFailure)
                 return resultParentDepartment.Error.ToErrors();
             
-            var resultDepartment = Department.CreateChild(departmentName, departmentIdentifier, resultParentDepartment.Value, departmentLocationsList);
+            var resultDepartment = Department.CreateChild(departmentId, departmentName, departmentIdentifier, resultParentDepartment.Value, departmentLocationsList);
             if (resultDepartment.IsFailure)
                 return resultDepartment.Error.ToErrors();
             

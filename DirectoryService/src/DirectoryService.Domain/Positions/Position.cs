@@ -13,11 +13,11 @@ public class Position
     {
     }
     
-    private Position(PositionName name, PositionDescription? description)
+    private Position(Guid? id, PositionName name, PositionDescription? description)
     {
-        Id = Guid.NewGuid();
+        Id = id ?? Guid.NewGuid();
         Name = name;
-        Description = description;
+        Description = description ?? null;
         IsActive = true;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = CreatedAt;
@@ -35,8 +35,8 @@ public class Position
     
     public DateTime UpdatedAt { get; private set; }
 
-    public static Result<Position, Error> Create(PositionName name, PositionDescription? description = null)
+    public static Result<Position, Error> Create(Guid? id, PositionName name, PositionDescription? description)
     {
-        return new Position(name, description);
+        return new Position(id, name, description);
     }
 }

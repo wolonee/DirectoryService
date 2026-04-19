@@ -17,13 +17,14 @@ public class Department
     private readonly List<DepartmentPosition> _departmentPositions = [];
     
     private Department(
+        Guid? id,
         DepartmentName departmentName, 
         DepartmentIdentifier departmentIdentifier, 
         DepartmentPath departmentPath, 
         int depth,
         IEnumerable<DepartmentLocation> departmentLocations)
     {
-        Id = Guid.NewGuid();
+        Id = id ?? Guid.NewGuid();
         DepartmentName = departmentName;
         DepartmentIdentifier = departmentIdentifier;
         IsActive = true;
@@ -61,6 +62,7 @@ public class Department
     public DateTime UpdatedAt { get; private set; }
 
     public static Result<Department, Error> CreateParent(
+        Guid? id,
         DepartmentName name, 
         DepartmentIdentifier identifier, 
         IEnumerable<DepartmentLocation> departmentLocations)
@@ -69,12 +71,13 @@ public class Department
         
         var path = DepartmentPath.CreateParent(identifier);
         
-        var createdDepartment = new Department(name, identifier, path, 0, departmentLocationsList);
+        var createdDepartment = new Department(id, name, identifier, path, 0, departmentLocationsList);
         
         return createdDepartment;
     }
     
     public static Result<Department, Error> CreateChild(
+        Guid? id,
         DepartmentName name, 
         DepartmentIdentifier identifier, 
         Department parent,
@@ -84,11 +87,17 @@ public class Department
         
         var path = parent.DepartmentPath.CreateChild(identifier);
         
-        var createdDepartment = new Department(name, identifier, path, parent.Depth + 1, departmentLocationsList);
+        var createdDepartment = new Department(id, name, identifier, path, parent.Depth + 1, departmentLocationsList);
         
         parent._childrenDepartments.Add(createdDepartment);
         
         return createdDepartment;
+    }
+    
+    public void AddDepartmentPosition(DepartmentPosition departmentPosition)
+    {
+        _departmentPositions.Add(departmentPosition);
+        UpdatedAt = DateTime.UtcNow;
     }
 
     // public Result UpdateLocations(IEnumerable<Guid> locationIds)
@@ -129,19 +138,6 @@ public class Department
     //     }
     // }
     //
-    // public Result AddDepartmentPosition(Guid positionId)
-    // {
-    //     var departmentPositionResult = DepartmentPosition.Create(Id, positionId);
-    //     if (departmentPositionResult.IsFailure)
-    //     {
-    //         return Result.Failure(departmentPositionResult.Error);
-    //     }
-    //     
-    //     _departmentPositions.Add(departmentPositionResult.Value);
-    //     UpdatedAt = DateTime.UtcNow;
-    //     
-    //     return Result.Success();
-    // }
 
     // public Result Rename(string name, string identifier)
     // {
