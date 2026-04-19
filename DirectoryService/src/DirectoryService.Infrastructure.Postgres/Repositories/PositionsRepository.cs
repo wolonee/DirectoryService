@@ -1,9 +1,11 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Positions;
+using DirectoryService.Domain.Positions;
 using DirectoryService.Domain.Positions.ValueObjects;
 using DirectoryService.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Npgsql;
 
 namespace DirectoryService.Infrastructure.Repositories;
 
@@ -18,6 +20,33 @@ public class PositionsRepository : IPositionsRepository
         _logger = logger;
     }
 
+    public async Task<Result<Guid, Error>> AddAsync(Position position, CancellationToken cancellationToken = default)
+    {
+        _dbContext.Positions.Add(position);
+        
+        try
+        {
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
+            return position.Id;
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx)
+        {
+            _logger.LogError(ex, "Database update error while creating position with id {Id}", position.Id);
+            return GeneralErrors.DatabaseError();
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation was cancelled while creating position with id {Id}", position.Id);
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while creating position with id {Id}", position.Id);
+            return GeneralErrors.DatabaseError();
+        }
+    }
+    
     public async Task<Result<List<string>, Error>> GetActiveFullNames(
         string direction, 
         string speciality,

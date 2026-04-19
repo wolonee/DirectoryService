@@ -16,4 +16,7 @@ public static class PositionErrors
     
     public static Error ActiveNameAlreadyExists() =>
         Error.Validation("active.name.already.exists", "Active name already exists.");
+    
+    public static Error NameConflict(string name) =>
+        Error.Conflict("position.name.conflict", $"Position with name: {name} is already exists.");
 }

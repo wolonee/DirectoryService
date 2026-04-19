@@ -35,7 +35,7 @@ public class Position
     
     public DateTime UpdatedAt { get; private set; }
 
-    public static Result<Position, Error> Create(PositionName name, PositionDescription? description)
+    public static Result<Position, Error> Create(PositionName name, PositionDescription? description = null)
     {
         return new Position(name, description);
     }

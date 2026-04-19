@@ -3,6 +3,7 @@ using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Departments;
 using DirectoryService.Application.Locations;
 using DirectoryService.Application.Validation;
+using DirectoryService.Domain.Positions;
 using DirectoryService.Domain.Positions.ValueObjects;
 using DirectoryService.Shared;
 using FluentValidation;
@@ -70,7 +71,35 @@ public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand
             return PositionErrors.NotAllDepartmentsExists().ToErrors();
 
         // create position
+        var name = PositionName.Create(request.PositionName.Speciality, request.PositionName.Direction).Value;
 
+        if (request.Description != null)
+        {
+            var description = PositionDescription.Create(request.Description).Value;
+            
+            var positionResult = Position.Create(name, description).Value;
+
+            var saveResult = await _positionsRepository.AddAsync(positionResult, cancellationToken);
+            if (saveResult.IsFailure)
+                return saveResult.Error.ToErrors();
+            
+            _logger.LogInformation("Created Location with id {locationId}", saveResult);
+            
+            return saveResult.Value;
+        }
+        else
+        {
+            var positionResult = Position.Create(name).Value;
+            
+            var saveResult = await _positionsRepository.AddAsync(positionResult, cancellationToken);
+            if (saveResult.IsFailure)
+                return saveResult.Error.ToErrors();
+            
+            _logger.LogInformation("Created Location with id {locationId}", saveResult);
+            
+            return saveResult.Value;
+        }
+        
         // save position in db
 
         // logger about success save
