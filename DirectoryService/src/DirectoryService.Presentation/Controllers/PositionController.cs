@@ -10,7 +10,7 @@ namespace DirectoryService.Presentation.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class PositionController : ControllerBase
+public class PositionsController : ControllerBase
 {
 
     [HttpPost]

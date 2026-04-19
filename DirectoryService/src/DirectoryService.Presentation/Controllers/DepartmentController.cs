@@ -8,7 +8,7 @@ namespace DirectoryService.Presentation.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class DepartmentController : ControllerBase
+public class DepartmentsController : ControllerBase
 {
     [HttpPost]
     public async Task<EndpointResult<Guid>> Create(
