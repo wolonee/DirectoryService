@@ -50,8 +50,8 @@ public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand
         if (activeNamesResult.IsFailure)
             return activeNamesResult.Error.ToErrors();
         
-        if (!activeNamesResult.Value.Any())
-            return PositionErrors.NotFoundNames().ToErrors();
+        // if (!activeNamesResult.Value.Any())
+        //     return PositionErrors.NotFoundNames().ToErrors();
 
         var requestFullName = PositionName.GetFullName(request.PositionName.Speciality, request.PositionName.Direction);
 

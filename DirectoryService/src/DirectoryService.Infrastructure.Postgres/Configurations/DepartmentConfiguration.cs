@@ -52,7 +52,7 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
             .IsRequired();
         
         builder.Property(d => d.ChildrenCount)
-            .HasColumnName("is_active")
+            .HasColumnName("children_count")
             .IsRequired();
 
         builder.Property(d => d.CreatedAt)

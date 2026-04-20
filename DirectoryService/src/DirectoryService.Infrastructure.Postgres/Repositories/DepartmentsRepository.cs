@@ -136,9 +136,6 @@ public class DepartmentsRepository : IDepartmentsRepository
         if (departmentResult.IsFailure)
             return departmentResult.Error;
         
-        if (departmentResult.Value is null)
-            return GeneralErrors.NotFound();
-        
         return departmentResult.Value;
     }
 
