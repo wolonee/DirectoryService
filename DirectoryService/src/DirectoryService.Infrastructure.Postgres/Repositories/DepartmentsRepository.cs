@@ -1,4 +1,5 @@
-﻿using CSharpFunctionalExtensions;
+﻿using System.Linq.Expressions;
+using CSharpFunctionalExtensions;
 using DirectoryService.Application.Departments;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Shared;
@@ -52,53 +53,106 @@ public class DepartmentsRepository : IDepartmentsRepository
         }
     }
     
-    public async Task<Result<Department, Error>> GetByIdAsync(Guid departmentId, CancellationToken cancellationToken = default)
+    public async Task<Result<List<Department>, Error>> GetAsync(
+        Expression<Func<Department, bool>>? predicate = null,
+        bool asNoTracking = true,
+        CancellationToken cancellationToken = default)
     {
         try
         {
-            var department = await _dbContext.Departments
-                .FirstOrDefaultAsync(x => x.Id == departmentId, cancellationToken);
-
-            if (department is null)
+            var query = _dbContext.Departments.AsQueryable();
+        
+            if (predicate is not null)
             {
-                return GeneralErrors.NotFound(departmentId);
+                query = query.Where(predicate);
             }
-            
-            return department;
-        }
-        catch (OperationCanceledException ex)
-        {
-            _logger.LogError(ex, "Operation was cancelled while creating department with id {Id}", departmentId);
-            return GeneralErrors.OperationCancelled();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected error while creating department with id {Id}", departmentId);
-            return GeneralErrors.DatabaseError();
-        }
-    }
-
-    public async Task<Result<List<Department>, Error>> GetActiveDepartmentsAsync(Guid[] departmentIds, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var departments = await _dbContext.Departments
-                .Where(d => d.IsActive)
-                .Where(d => departmentIds.Contains(d.Id))
-                .AsNoTracking()
-                .ToListAsync(cancellationToken);
-            
+        
+            if (asNoTracking)
+            {
+                query = query.AsNoTracking();
+            }
+        
+            var departments = await query.ToListAsync(cancellationToken);
             return departments;
         }
         catch (OperationCanceledException ex)
         {
-            _logger.LogError(ex, "Operation was cancelled while checking active departments");
+            _logger.LogError(ex, "Operation was cancelled while getting departments");
             return GeneralErrors.OperationCancelled();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error while creating checking active departments");
+            _logger.LogError(ex, "Unexpected error while getting departments");
             return GeneralErrors.DatabaseError();
         }
+    }
+    
+    public async Task<Result<Department, Error>> GetFirstAsync(
+        Expression<Func<Department, bool>>? predicate = null,
+        bool asNoTracking = true,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var query = _dbContext.Departments.AsQueryable();
+        
+            if (predicate is not null)
+            {
+                query = query.Where(predicate);
+            }
+        
+            if (asNoTracking)
+            {
+                query = query.AsNoTracking();
+            }
+        
+            var department = await query.FirstOrDefaultAsync(cancellationToken);
+        
+            if (department is null)
+            {
+                return GeneralErrors.NotFound();
+            }
+        
+            return department;
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation was cancelled while getting department");
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while getting department");
+            return GeneralErrors.DatabaseError();
+        }
+    }
+
+
+    public async Task<Result<Department, Error>> GetByIdAsync(
+        Guid departmentId,
+        CancellationToken cancellationToken = default)
+    {
+        var departmentResult = await GetFirstAsync(x => x.Id == departmentId, cancellationToken: cancellationToken);
+        if (departmentResult.IsFailure)
+            return departmentResult.Error;
+        
+        if (departmentResult.Value is null)
+            return GeneralErrors.NotFound();
+        
+        return departmentResult.Value;
+    }
+
+    public async Task<Result<IReadOnlyList<Department>, Error>> GetActiveDepartmentsAsync(
+        Guid[] departmentIds,
+        CancellationToken cancellationToken = default)
+    {
+        var departmentsResult = await GetAsync(
+            dep => dep.IsActive && departmentIds.Contains(dep.Id),
+            cancellationToken: cancellationToken);
+        
+        if (departmentsResult.IsFailure)
+            return departmentsResult.Error;
+
+        return departmentsResult.Value;
     }
 }

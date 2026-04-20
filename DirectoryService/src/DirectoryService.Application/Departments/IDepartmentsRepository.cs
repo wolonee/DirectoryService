@@ -10,6 +10,6 @@ public interface IDepartmentsRepository
 
     Task<Result<Department, Error>> GetByIdAsync(Guid departmentId, CancellationToken cancellationToken = default);
     
-    Task<Result<List<Department>, Error>> GetActiveDepartmentsAsync(Guid[] departmentId, CancellationToken cancellationToken = default);
+    Task<Result<IReadOnlyList<Department>, Error>> GetActiveDepartmentsAsync(Guid[] departmentId, CancellationToken cancellationToken = default);
 
 }
