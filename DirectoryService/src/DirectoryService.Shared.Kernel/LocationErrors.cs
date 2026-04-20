@@ -17,12 +17,6 @@ public static class LocationErrors
     // DataBase Errors
     public static Error NameConflict(string name) =>
         Error.Conflict("location.name.conflict", $"Location with name: {name} is already exists.");
-
-    public static Error DatabaseError() =>
-        Error.Failure("directory.service.database.error", "Database exception with service - DirectoryService.");
-    
-    public static Error OperationCancelled() =>
-        Error.Failure("directory.service.operation.cancelled", "Operation was cancelled.");
     
     public static Error NameAlreadyExists(string name) =>
         Error.Failure("name.already.exists", $"Name: {name} already exists.");

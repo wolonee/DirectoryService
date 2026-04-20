@@ -34,11 +34,11 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand
         var dto = command.Request;
         
         // валидация входных данных
-        var resultValidation = await _validator.ValidateAsync(command, cancellationToken);
-        if (!resultValidation.IsValid)
+        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
+        if (!validationResult.IsValid)
         {
-            _logger.LogError("Validation Create Location Failed: {Error}", resultValidation.ToValidationErrors());
-            return resultValidation.ToValidationErrors();
+            _logger.LogError("Validation Create Location Failed: {Error}", validationResult.ToValidationErrors());
+            return validationResult.ToValidationErrors();
         }
         
         // бизнес валидация

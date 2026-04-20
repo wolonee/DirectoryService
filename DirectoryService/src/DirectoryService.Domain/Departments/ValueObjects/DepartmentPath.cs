@@ -4,7 +4,7 @@ namespace DirectoryService.Domain.Departments.ValueObjects;
 
 public record DepartmentPath
 {
-    private const char SEPARATOR = '/';
+    private const char SEPARATOR = '.';
     
     private DepartmentPath(string value)
     {
@@ -15,11 +15,11 @@ public record DepartmentPath
 
     public static DepartmentPath CreateParent(DepartmentIdentifier identifier)
     {
-        return new DepartmentPath(identifier.Value);
+        return new DepartmentPath(identifier.Value.ToLower());
     }
     
     public DepartmentPath CreateChild(DepartmentIdentifier identifier)
     {
-        return new DepartmentPath(Value + SEPARATOR + identifier.Value);
+        return new DepartmentPath(Value + SEPARATOR + identifier.Value.ToLower());
     }
 }

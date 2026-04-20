@@ -13,4 +13,7 @@ public interface ILocationsRepository
     Task<Result<bool, Error>> NameExistsAsync(string name, CancellationToken cancellationToken = default);
     
     Task<Result<bool, Error>> AddressExistsAsync(CreateLocationAddressRequest address, CancellationToken cancellationToken = default);
+    
+    Task<Result<bool, Error>> LocationsExistsAsync(Guid[] locationIds, CancellationToken cancellationToken = default);
+
 }

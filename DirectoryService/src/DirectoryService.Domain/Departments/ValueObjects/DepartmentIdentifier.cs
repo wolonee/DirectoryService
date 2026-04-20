@@ -1,4 +1,5 @@
-﻿using CSharpFunctionalExtensions;
+﻿using System.Text.RegularExpressions;
+using CSharpFunctionalExtensions;
 using DirectoryService.Shared;
 
 namespace DirectoryService.Domain.Departments.ValueObjects;
@@ -22,11 +23,24 @@ public record DepartmentIdentifier
             return GeneralErrors.ValueIsRequired("Identifier");
         }
         
+        value = value.Trim();
+        value = Regex.Replace(value, @"\s+", "-");
+        
+        if (value.Any(c => !char.IsAsciiLetter(c) && c != '-'))
+        {
+            return GeneralErrors.ValueContainsInvalidCharacters("Name");
+        }
+        
         if (value.Length < MIN_LENGTH || value.Length > MAX_LENGTH)
         {
             return GeneralErrors.ValueHasBoundedLength(MIN_LENGTH, MAX_LENGTH, "Identifier");
         }
-
+        
+        if (value.StartsWith('-') || value.EndsWith('-') || value.Contains("--"))
+        {
+            return GeneralErrors.ValueContainsInvalidCharacters("Name");
+        }
+        
         return new DepartmentIdentifier(value);
     }
 }

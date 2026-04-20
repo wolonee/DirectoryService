@@ -21,12 +21,18 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
             .HasColumnName("name")
             .HasMaxLength(LengthConstants.LENGTH150)
             .HasConversion(v => v.Value, n => DepartmentName.Create(n).Value);
-        
-        builder.Property(d => d.DepartmentIdentifier)
-            .IsRequired()
-            .HasColumnName("identifier")
-            .HasMaxLength(LengthConstants.LENGTH150)
-            .HasConversion(v => v.Value, i => DepartmentIdentifier.Create(i).Value);
+
+        builder.OwnsOne(d => d.DepartmentIdentifier, identifier =>
+        {
+            identifier.Property(i => i.Value)
+                .IsRequired()
+                .HasColumnName("identifier")
+                .HasMaxLength(LengthConstants.LENGTH150);
+
+            identifier.HasIndex(i => i.Value)
+                .IsUnique()
+                .HasDatabaseName("IX_Departments_Identifier_Unique");
+        });
         
         builder.ComplexProperty(d => d.DepartmentPath, db =>
         {
