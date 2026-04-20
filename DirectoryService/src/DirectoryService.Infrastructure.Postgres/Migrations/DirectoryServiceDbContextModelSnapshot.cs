@@ -259,7 +259,7 @@ namespace DirectoryService.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("DirectoryService.Domain.Positions.Position", null)
-                        .WithMany()
+                        .WithMany("DepartmentPositions")
                         .HasForeignKey("PositionId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -351,6 +351,11 @@ namespace DirectoryService.Infrastructure.Migrations
 
                     b.Navigation("DepartmentLocations");
 
+                    b.Navigation("DepartmentPositions");
+                });
+
+            modelBuilder.Entity("DirectoryService.Domain.Positions.Position", b =>
+                {
                     b.Navigation("DepartmentPositions");
                 });
 #pragma warning restore 612, 618

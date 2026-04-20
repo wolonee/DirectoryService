@@ -73,6 +73,13 @@ public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand
         
         var positionId = Guid.NewGuid();
 
+        // create position
+        var name = PositionName.Create(request.PositionName.Speciality, request.PositionName.Direction).Value;
+        
+        var description = PositionDescription.Create(request.Description).Value;
+        
+        var positionResult = Position.Create(positionId, name, description).Value;
+        
         // add position to each department
         foreach (var department in activeDepartmentsResult.Value)
         {
@@ -80,17 +87,10 @@ public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand
             if (departmentPositionResult.IsFailure)
                 return departmentPositionResult.Error.ToErrors();
             
-            department.AddDepartmentPosition(departmentPositionResult.Value);
+            positionResult.AddDepartmentPosition(departmentPositionResult.Value);
             
             _logger.LogInformation("Position with id: {Id} was added into Department", department.Id);
         }
-
-        // create position
-        var name = PositionName.Create(request.PositionName.Speciality, request.PositionName.Direction).Value;
-        
-        var description = PositionDescription.Create(request.Description).Value;
-        
-        var positionResult = Position.Create(positionId, name, description).Value;
 
         // save position in db
         var saveResult = await _positionsRepository.AddAsync(positionResult, cancellationToken);

@@ -31,7 +31,7 @@ public class DepartmentPositionsConfiguration : IEntityTypeConfiguration<Departm
         
         builder
             .HasOne<Position>()
-            .WithMany()
+            .WithMany(p => p.DepartmentPositions)
             .HasForeignKey(d => d.PositionId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Restrict);

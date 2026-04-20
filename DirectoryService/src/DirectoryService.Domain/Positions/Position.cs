@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Positions.ValueObjects;
 using DirectoryService.Shared;
 
@@ -6,9 +7,11 @@ namespace DirectoryService.Domain.Positions;
 
 public class Position
 {
-    // EF CORE
+    private readonly List<DepartmentPosition> _departmentPositions = [];
+
     public const int MAX_LENGTH_1000 = 1000;
     
+    // EF CORE
     private Position()
     {
     }
@@ -31,6 +34,8 @@ public class Position
     
     public bool IsActive { get; private set; }
     
+    public IReadOnlyList<DepartmentPosition> DepartmentPositions => _departmentPositions;
+    
     public DateTime CreatedAt { get; private set; }
     
     public DateTime UpdatedAt { get; private set; }
@@ -38,5 +43,11 @@ public class Position
     public static Result<Position, Error> Create(Guid? id, PositionName name, PositionDescription? description)
     {
         return new Position(id, name, description);
+    }
+    
+    public void AddDepartmentPosition(DepartmentPosition departmentPosition)
+    {
+        _departmentPositions.Add(departmentPosition);
+        UpdatedAt = DateTime.UtcNow;
     }
 }
