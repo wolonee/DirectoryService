@@ -1,6 +1,6 @@
 using System.Text.Json;
-using DirectoryService.Application.Exceptions;
 using DirectoryService.Shared;
+using DirectoryService.Shared.Exceptions;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace DirectoryService.Presentation.Middlewares;

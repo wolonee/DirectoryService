@@ -2,7 +2,7 @@
 using DirectoryService.Domain.Departments;
 using DirectoryService.Shared;
 
-namespace DirectoryService.Application.Departments;
+namespace DirectoryService.Application.Database;
 
 public interface IDepartmentsRepository
 {

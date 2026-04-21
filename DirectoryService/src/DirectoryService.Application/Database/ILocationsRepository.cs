@@ -1,10 +1,9 @@
 using CSharpFunctionalExtensions;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Locations;
-using DirectoryService.Domain.Locations.ValueObjects;
 using DirectoryService.Shared;
 
-namespace DirectoryService.Application.Locations;
+namespace DirectoryService.Application.Database;
 
 public interface ILocationsRepository
 {

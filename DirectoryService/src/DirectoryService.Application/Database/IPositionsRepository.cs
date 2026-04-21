@@ -1,11 +1,8 @@
-﻿using System.Runtime.InteropServices.JavaScript;
-using CSharpFunctionalExtensions;
-using DirectoryService.Domain.Departments;
+﻿using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Positions;
-using DirectoryService.Domain.Positions.ValueObjects;
 using DirectoryService.Shared;
 
-namespace DirectoryService.Application.Positions;
+namespace DirectoryService.Application.Database;
 
 public interface IPositionsRepository
 {

@@ -1,8 +1,6 @@
-
 using System.Text.Json;
-using DirectoryService.Shared;
 
-namespace DirectoryService.Application.Exceptions;
+namespace DirectoryService.Shared.Exceptions;
 
 public class BadRequestException : Exception
 {

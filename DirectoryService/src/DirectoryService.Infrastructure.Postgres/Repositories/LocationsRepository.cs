@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using CSharpFunctionalExtensions;
+using DirectoryService.Application.Database;
 using DirectoryService.Application.Locations;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Locations;
