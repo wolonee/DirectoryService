@@ -2,6 +2,7 @@
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Locations;
 using DirectoryService.Application.Validation;
+using DirectoryService.Domain.Departments;
 using DirectoryService.Shared;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
@@ -33,14 +34,14 @@ public class UpdateLocationsHandler : ICommandHandler<Guid, UpdateLocationsComma
             return validationResult.ToValidationErrors();
 
         // Business validation
-        var departmentWithLocationsResult = await _departmentsRepository.GetByIdAsync(command.departmentId, cancellationToken);
-        if (departmentWithLocationsResult.IsFailure)
-            return departmentWithLocationsResult.Error.ToErrors();
+        var departmentResult = await _departmentsRepository.GetByIdAsync(command.departmentId, cancellationToken);
+        if (departmentResult.IsFailure)
+            return departmentResult.Error.ToErrors();
         
-        if (departmentWithLocationsResult.Value == null)
+        if (departmentResult.Value == null)
             return GeneralErrors.NotFound(null, "department").ToErrors();
         
-        if (!departmentWithLocationsResult.Value.IsActive)
+        if (!departmentResult.Value.IsActive)
             return DepartmentErrors.IsNotActive().ToErrors();
 
         await _locationsRepository.DeleteLocationsByDepartmentId(command.departmentId, cancellationToken);
@@ -53,6 +54,8 @@ public class UpdateLocationsHandler : ICommandHandler<Guid, UpdateLocationsComma
             return DepartmentErrors.NotAllLocationsActiveOrExists().ToErrors();
 
         // Update Locations
+        var newDepartmentLocations = activeLocationsIdsResult.Value
+            .Select(dl => DepartmentLocation.Create())
 
         // Save in database
 
