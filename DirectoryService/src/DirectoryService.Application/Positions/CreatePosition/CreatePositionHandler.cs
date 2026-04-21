@@ -49,9 +49,6 @@ public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand
         var activeNamesResult = await _positionsRepository.GetActiveFullNames(request.PositionName.Direction, request.PositionName.Speciality, cancellationToken);
         if (activeNamesResult.IsFailure)
             return activeNamesResult.Error.ToErrors();
-        
-        // if (!activeNamesResult.Value.Any())
-        //     return PositionErrors.NotFoundNames().ToErrors();
 
         var requestFullName = PositionName.GetFullName(request.PositionName.Speciality, request.PositionName.Direction);
 
@@ -98,7 +95,7 @@ public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand
             return saveResult.Error.ToErrors();
         
         // logger about success save
-        _logger.LogInformation("Created Location with id {locationId}", saveResult);
+        _logger.LogInformation("Created Position with id {positionId}", saveResult.Value);   
         
         return saveResult.Value;
     }

@@ -2,7 +2,7 @@ namespace DirectoryService.Shared;
 
 public static class LocationErrors
 {
-    public static Error ToManyLocations() =>
+    public static Error TooManyLocations() =>
         Error.Conflict("locations.too.many", "User cannot open more than 3 locations.");
     
     public static Error NotFound(Guid id) =>

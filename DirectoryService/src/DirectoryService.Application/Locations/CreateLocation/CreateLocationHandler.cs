@@ -46,15 +46,15 @@ public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand
         if (existsNameResult.IsFailure)
             return existsNameResult.Error.ToErrors();
 
-        if (!existsNameResult.Value)
-            LocationErrors.NameAlreadyExists(dto.Name);
+        if (existsNameResult.Value)
+            return LocationErrors.NameAlreadyExists(dto.Name).ToErrors();
         
         var existsAddressResult = await _locationsRepository.AddressExistsAsync(dto.Address, cancellationToken);
         if (existsAddressResult.IsFailure)
             return existsAddressResult.Error.ToErrors();
         
-        if (!existsAddressResult.Value)
-            LocationErrors.AddressAlreadyExists(dto.Address.ToString());
+        if (existsAddressResult.Value)
+            return LocationErrors.AddressAlreadyExists(dto.Address.ToString()).ToErrors();
         
         // создание сущности Location
         var addressDto = dto.Address;
