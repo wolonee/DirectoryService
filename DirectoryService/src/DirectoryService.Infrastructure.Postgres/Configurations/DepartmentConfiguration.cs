@@ -21,7 +21,7 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
             .HasColumnName("name")
             .HasMaxLength(LengthConstants.LENGTH150)
             .HasConversion(v => v.Value, n => DepartmentName.Create(n).Value);
-
+        
         builder.OwnsOne(d => d.DepartmentIdentifier, identifier =>
         {
             identifier.Property(i => i.Value)
@@ -62,11 +62,6 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
         builder.Property(d => d.UpdatedAt)
             .HasColumnName("updated_at")
             .IsRequired();
-        
-        // builder.Property(d => d.DepartmentPath)
-        //     .IsRequired()
-        //     .HasMaxLength(LengthConstants.LENGTH150)
-        //     .HasConversion(v => v.Value, p => DepartmentPath.Create(p).Value);
         
         builder
             .HasMany(d => d.DepartmentPositions)

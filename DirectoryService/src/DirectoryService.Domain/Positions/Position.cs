@@ -8,8 +8,6 @@ namespace DirectoryService.Domain.Positions;
 public class Position
 {
     private readonly List<DepartmentPosition> _departmentPositions = [];
-
-    public const int MAX_LENGTH_1000 = 1000;
     
     // EF CORE
     private Position()

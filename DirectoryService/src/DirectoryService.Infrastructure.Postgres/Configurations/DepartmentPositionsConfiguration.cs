@@ -12,14 +12,16 @@ public class DepartmentPositionsConfiguration : IEntityTypeConfiguration<Departm
         builder.ToTable("department_positions");
         
         builder.HasKey(x => x.Id);
-        
         builder.Property(x => x.Id)
+            .HasColumnName("id")
             .IsRequired();
         
         builder.Property(x => x.DepartmentId)
+            .HasColumnName("department_id")
             .IsRequired();
         
         builder.Property(x => x.PositionId)
+            .HasColumnName("position_id")
             .IsRequired();
         
         builder

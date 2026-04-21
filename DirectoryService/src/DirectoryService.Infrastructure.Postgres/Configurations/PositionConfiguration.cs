@@ -38,6 +38,8 @@ public class PositionConfiguration : IEntityTypeConfiguration<Position>
                 .HasColumnName("direction")
                 .IsRequired();
         });
+        builder.Navigation(p => p.Name).IsRequired();
+
 
         builder.OwnsOne(d => d.Description, ob =>
         {
@@ -48,13 +50,7 @@ public class PositionConfiguration : IEntityTypeConfiguration<Position>
         });
         
         builder.Property(a => a.IsActive)
-            .HasColumnName("isActive")
+            .HasColumnName("is_active")
             .IsRequired();
-        
-        // builder.HasOne<DepartmentPosition>()
-        //     .WithMany()
-        //     .HasForeignKey("position_id")
-        //     .IsRequired()
-        //     .OnDelete(DeleteBehavior.Restrict);
     }
 }
