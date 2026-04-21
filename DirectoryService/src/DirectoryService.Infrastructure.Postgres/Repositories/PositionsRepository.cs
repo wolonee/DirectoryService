@@ -1,4 +1,5 @@
-﻿using CSharpFunctionalExtensions;
+﻿using System.Linq.Expressions;
+using CSharpFunctionalExtensions;
 using DirectoryService.Application.Positions;
 using DirectoryService.Domain.Positions;
 using DirectoryService.Domain.Positions.ValueObjects;
@@ -18,6 +19,80 @@ public class PositionsRepository : IPositionsRepository
     {
         _dbContext = dbContext;
         _logger = logger;
+    }
+    
+    public async Task<Result<List<Position>, Error>> GetAsync(
+        Expression<Func<Position, bool>>? predicate = null,
+        bool asNoTracking = true,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var query = _dbContext.Positions.AsQueryable();
+        
+            if (predicate is not null)
+            {
+                query = query.Where(predicate);
+            }
+        
+            if (asNoTracking)
+            {
+                query = query.AsNoTracking();
+            }
+        
+            var positions = await query.ToListAsync(cancellationToken);
+            return positions;
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation was cancelled while getting positions");
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while getting positions");
+            return GeneralErrors.DatabaseError();
+        }
+    }
+    
+    public async Task<Result<Position, Error>> GetFirstAsync(
+        Expression<Func<Position, bool>>? predicate = null,
+        bool asNoTracking = true,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var query = _dbContext.Positions.AsQueryable();
+        
+            if (predicate is not null)
+            {
+                query = query.Where(predicate);
+            }
+        
+            if (asNoTracking)
+            {
+                query = query.AsNoTracking();
+            }
+        
+            var position = await query.FirstOrDefaultAsync(cancellationToken);
+        
+            if (position is null)
+            {
+                return GeneralErrors.NotFound();
+            }
+        
+            return position;
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation was cancelled while getting positions");
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while getting positions");
+            return GeneralErrors.DatabaseError();
+        }
     }
 
     public async Task<Result<Guid, Error>> AddAsync(Position position, CancellationToken cancellationToken = default)

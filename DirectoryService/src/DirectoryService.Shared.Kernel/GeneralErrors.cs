@@ -7,28 +7,28 @@ public static class GeneralErrors
         string label = name ?? "object";
         return Error.Failure("value.is.invalid", $"{label} is invalid");
     }
-    
+
     public static Error ValueIsRequired(string? name = null)
     {
         string label = name ?? "object";
         return Error.Validation("value.is.required", $"{label} is required");
     }
-    
+
     public static Error ValueHasBoundedLength(int minNameLength, int maxNameLength, string? name = null)
     {
         string label = name ?? "object";
-        return Error.Validation("value.is.required", $"{label} name must be between {minNameLength} and {maxNameLength} characters");
+        return Error.Validation("value.has.invalid.length", $"{label} must be between {minNameLength} and {maxNameLength} characters");
     }
     
     public static Error ValueContainsInvalidCharacters(string? name = null)
     {
         string label = name ?? "object";
-        return Error.Validation("value.is.required", $"{label} only english letters (A-Z, a-z) are allowed, no spaces or special characters");
+        return Error.Validation("value.contains.invalid.characters", $"{label} only english letters (A-Z, a-z) are allowed, no spaces or special characters");
     }
 
     public static Error NotFound(Guid? id = null, string? name = null)
     {
-        string forId = id == null ? string.Empty : $" no Id '{id}';";
+        string forId = id == null ? string.Empty : $" with Id '{id}'";
         return Error.NotFound("record.not.found", $"{name ?? "object"} not found{forId}");
     }
 

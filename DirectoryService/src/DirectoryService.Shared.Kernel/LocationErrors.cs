@@ -2,25 +2,25 @@ namespace DirectoryService.Shared;
 
 public static class LocationErrors
 {
-    public static Error ToManyLocations() =>
-         Error.Failure("locations.too.many", "Пользователь не может открыть больше 3 локаций.");
+    public static Error TooManyLocations() =>
+        Error.Conflict("locations.too.many", "User cannot open more than 3 locations.");
     
     public static Error NotFound(Guid id) =>
-        Error.NotFound("location.not.found", $"Локация c id: {id} не найдена.");    
+        Error.NotFound("location.not.found", $"Location with id: {id} not found.");
     
     public static Error IsAlreadyActive(Guid id) =>
-        Error.Failure("location.not.found", $"Location {id} is already active.");
+        Error.Conflict("location.is.already.active", $"Location {id} is already active.");
     
     public static Error IsAlreadyInactive(Guid id) =>
-        Error.Failure("location.not.found", $"Location {id} is already inactive.");
+        Error.Conflict("location.is.already.inactive", $"Location {id} is already inactive.");
     
     // DataBase Errors
     public static Error NameConflict(string name) =>
-        Error.Conflict("location.name.conflict", $"Location with name: {name} is already exists.");
+        Error.Conflict("location.name.conflict", $"Location with name: {name} already exists.");
     
     public static Error NameAlreadyExists(string name) =>
-        Error.Failure("name.already.exists", $"Name: {name} already exists.");
+        Error.Conflict("location.name.already.exists", $"Name: {name} already exists.");
     
     public static Error AddressAlreadyExists(string address) =>
-        Error.Failure("name.already.exists", $"Address: {address} already exists.");
+        Error.Conflict("location.address.already.exists", $"Address: {address} already exists.");
 }

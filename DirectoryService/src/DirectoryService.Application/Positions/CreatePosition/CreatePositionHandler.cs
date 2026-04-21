@@ -49,9 +49,6 @@ public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand
         var activeNamesResult = await _positionsRepository.GetActiveFullNames(request.PositionName.Direction, request.PositionName.Speciality, cancellationToken);
         if (activeNamesResult.IsFailure)
             return activeNamesResult.Error.ToErrors();
-        
-        if (!activeNamesResult.Value.Any())
-            return PositionErrors.NotFoundNames().ToErrors();
 
         var requestFullName = PositionName.GetFullName(request.PositionName.Speciality, request.PositionName.Direction);
 
@@ -73,6 +70,13 @@ public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand
         
         var positionId = Guid.NewGuid();
 
+        // create position
+        var name = PositionName.Create(request.PositionName.Speciality, request.PositionName.Direction).Value;
+        
+        var description = PositionDescription.Create(request.Description).Value;
+        
+        var positionResult = Position.Create(positionId, name, description).Value;
+        
         // add position to each department
         foreach (var department in activeDepartmentsResult.Value)
         {
@@ -80,17 +84,10 @@ public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand
             if (departmentPositionResult.IsFailure)
                 return departmentPositionResult.Error.ToErrors();
             
-            department.AddDepartmentPosition(departmentPositionResult.Value);
+            positionResult.AddDepartmentPosition(departmentPositionResult.Value);
             
             _logger.LogInformation("Position with id: {Id} was added into Department", department.Id);
         }
-
-        // create position
-        var name = PositionName.Create(request.PositionName.Speciality, request.PositionName.Direction).Value;
-        
-        var description = PositionDescription.Create(request.Description).Value;
-        
-        var positionResult = Position.Create(positionId, name, description).Value;
 
         // save position in db
         var saveResult = await _positionsRepository.AddAsync(positionResult, cancellationToken);
@@ -98,7 +95,7 @@ public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand
             return saveResult.Error.ToErrors();
         
         // logger about success save
-        _logger.LogInformation("Created Location with id {locationId}", saveResult);
+        _logger.LogInformation("Created Position with id {positionId}", saveResult.Value);   
         
         return saveResult.Value;
     }

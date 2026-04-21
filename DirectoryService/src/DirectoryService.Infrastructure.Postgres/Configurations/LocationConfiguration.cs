@@ -41,15 +41,16 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
                 .HasColumnName("name")
                 .HasMaxLength(LengthConstants.LENGTH200);
         });
-
-        builder.Navigation(l => l.Name).IsRequired();
+        builder.Navigation(l => l.Name).IsRequired(false);
         
         builder.Property(l => l.Timezone)
             .HasConversion(v => v.Value, tz => LocationTimeZone.Create(tz).Value)
             .IsRequired()
             .HasMaxLength(LengthConstants.LENGTH200)
             .HasColumnName("timezone");
-        
-        builder.Property(l => l.IsActive).IsRequired();
+
+        builder.Property(l => l.IsActive)
+            .IsRequired()
+            .HasColumnName("is_active");
     }
 }

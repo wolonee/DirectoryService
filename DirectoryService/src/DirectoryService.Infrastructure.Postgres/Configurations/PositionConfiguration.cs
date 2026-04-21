@@ -38,20 +38,19 @@ public class PositionConfiguration : IEntityTypeConfiguration<Position>
                 .HasColumnName("direction")
                 .IsRequired();
         });
-        
-        builder.Property(d => d.Description)
-            .HasMaxLength(LengthConstants.LENGTH1000)
-            .HasColumnName("description")
-            .IsRequired(false);
+        builder.Navigation(p => p.Name).IsRequired();
+
+
+        builder.OwnsOne(d => d.Description, ob =>
+        {
+            ob.Property(d => d.Value)
+                .HasColumnName("description")
+                .HasMaxLength(LengthConstants.LENGTH1000)
+                .IsRequired(false);
+        });
         
         builder.Property(a => a.IsActive)
-            .HasColumnName("isActive")
+            .HasColumnName("is_active")
             .IsRequired();
-        
-        // builder.HasOne<DepartmentPosition>()
-        //     .WithMany()
-        //     .HasForeignKey("position_id")
-        //     .IsRequired()
-        //     .OnDelete(DeleteBehavior.Restrict);
     }
 }

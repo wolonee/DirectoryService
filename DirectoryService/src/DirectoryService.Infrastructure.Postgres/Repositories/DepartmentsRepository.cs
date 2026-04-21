@@ -35,7 +35,7 @@ public class DepartmentsRepository : IDepartmentsRepository
             if (pgEx is { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: not null } &&
                 pgEx.ConstraintName.Contains("name", StringComparison.InvariantCultureIgnoreCase))
             {
-                return LocationErrors.NameConflict(department.DepartmentName.Value);
+                return DepartmentErrors.NameConflict(department.DepartmentName.Value);
             }
 
             _logger.LogError(ex, "Database update error while creating department with name {Name}", department.DepartmentName.Value);
@@ -135,9 +135,6 @@ public class DepartmentsRepository : IDepartmentsRepository
         var departmentResult = await GetFirstAsync(x => x.Id == departmentId, cancellationToken: cancellationToken);
         if (departmentResult.IsFailure)
             return departmentResult.Error;
-        
-        if (departmentResult.Value is null)
-            return GeneralErrors.NotFound();
         
         return departmentResult.Value;
     }

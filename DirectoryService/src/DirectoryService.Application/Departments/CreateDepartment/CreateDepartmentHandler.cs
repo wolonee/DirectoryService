@@ -87,6 +87,9 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
             if (resultParentDepartment.IsFailure)
                 return resultParentDepartment.Error.ToErrors();
             
+            if (resultParentDepartment.Value is null)
+                return GeneralErrors.NotFound().ToErrors();
+            
             var resultDepartment = Department.CreateChild(departmentId, departmentName, departmentIdentifier, resultParentDepartment.Value, departmentLocationsList);
             if (resultDepartment.IsFailure)
                 return resultDepartment.Error.ToErrors();
