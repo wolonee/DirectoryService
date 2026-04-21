@@ -55,10 +55,17 @@ public class UpdateLocationsHandler : ICommandHandler<Guid, UpdateLocationsComma
 
         // Update Locations
         var newDepartmentLocations = activeLocationsIdsResult.Value
-            .Select(dl => DepartmentLocation.Create())
+            .Select(locationId => DepartmentLocation.Create(departmentResult.Value.Id, locationId).Value)
+            .ToList();
+        
+        departmentResult.Value.UpdateLocations(newDepartmentLocations);
 
         // Save in database
-
+        await _departmentsRepository.SaveAsync();
+        
         // Logging about success result
+        _logger.LogInformation("Updated department locations.");
+
+        return departmentResult.Value.Id;
     }
 }

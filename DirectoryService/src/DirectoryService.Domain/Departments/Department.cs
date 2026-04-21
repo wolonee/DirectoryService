@@ -12,9 +12,9 @@ public class Department
     {
     }
     
-    private readonly List<Department> _childrenDepartments = [];
-    private readonly List<DepartmentLocation> _departmentLocations = [];
-    private readonly List<DepartmentPosition> _departmentPositions = [];
+    private List<Department> _childrenDepartments = [];
+    private List<DepartmentLocation> _departmentLocations = [];
+    private List<DepartmentPosition> _departmentPositions = [];
     
     private Department(
         Guid? id,
@@ -100,17 +100,12 @@ public class Department
         UpdatedAt = DateTime.UtcNow;
     }
 
-    // public Result UpdateLocations(IEnumerable<Guid> locationIds)
-    // {
-    //     foreach (var locationId in locationIds)
-    //     {
-    //         var addResult = AddDepartmentLocation(locationId);
-    //         if (addResult.IsFailure)
-    //         {
-    //             return Result.Failure<Department>(addResult.Error);
-    //         }
-    //     }
-    // }
+    public void UpdateLocations(IReadOnlyList<DepartmentLocation> departmentLocations)
+    {
+        _departmentLocations = departmentLocations.ToList();
+        UpdatedAt = DateTime.UtcNow;
+    }
+    
     //
     // public Result AddDepartmentLocation(Guid locationId)
     // {

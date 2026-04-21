@@ -152,4 +152,24 @@ public class DepartmentsRepository : IDepartmentsRepository
 
         return departmentsResult.Value;
     }
+
+    public async Task<UnitResult<Error>> SaveAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
+            return UnitResult.Success<Error>();
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Unexpected error while save changes");
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while save changes");
+            return GeneralErrors.DatabaseError();
+        }
+    }
 }
