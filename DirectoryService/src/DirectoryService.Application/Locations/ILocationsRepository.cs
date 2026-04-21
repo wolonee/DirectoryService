@@ -15,5 +15,10 @@ public interface ILocationsRepository
     Task<Result<bool, Error>> AddressExistsAsync(CreateLocationAddressRequest address, CancellationToken cancellationToken = default);
     
     Task<Result<bool, Error>> LocationsExistsAsync(Guid[] locationIds, CancellationToken cancellationToken = default);
+    
+    Task<Result<List<Guid>, Error>> GetActiveLocationsIdsAsync(Guid[] locationIds, CancellationToken cancellationToken = default);
+    
+    Task<UnitResult<Error>> DeleteLocationsByDepartmentId(Guid departmentId, CancellationToken cancellationToken = default);
+
 
 }

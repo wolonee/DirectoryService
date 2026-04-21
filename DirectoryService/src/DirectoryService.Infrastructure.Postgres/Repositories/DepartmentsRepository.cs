@@ -137,7 +137,7 @@ public class DepartmentsRepository : IDepartmentsRepository
             return departmentResult.Error;
         
         return departmentResult.Value;
-    }
+    }    
 
     public async Task<Result<IReadOnlyList<Department>, Error>> GetActiveDepartmentsAsync(
         Guid[] departmentIds,

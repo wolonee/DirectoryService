@@ -194,4 +194,27 @@ public class LocationsRepository : ILocationsRepository
             return GeneralErrors.DatabaseError();
         }
     }
+
+    public async Task<Result<List<Guid>, Error>> GetActiveLocationsIdsAsync(
+        Guid[] locationIds,
+        CancellationToken cancellationToken = default)
+    {
+        var activeLocationsIds = await _dbContext.Locations
+            .Where(x => locationIds.Contains(x.Id) && x.IsActive)
+            .Select(x => x.Id)
+            .ToListAsync(cancellationToken);
+
+        return activeLocationsIds;
+    }
+
+    public async Task<UnitResult<Error>> DeleteLocationsByDepartmentId(
+        Guid departmentId,
+        CancellationToken cancellationToken = default)
+    {
+        await _dbContext.Locations
+            .Where(x => x.Id == departmentId)
+            .ExecuteDeleteAsync(cancellationToken);
+
+        return UnitResult.Success<Error>();
+    }
 }
