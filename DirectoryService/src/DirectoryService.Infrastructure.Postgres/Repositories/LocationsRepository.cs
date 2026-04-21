@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Locations;
 using DirectoryService.Contracts.Locations;
@@ -18,6 +19,80 @@ public class LocationsRepository : ILocationsRepository
     {
         _dbContext = dbContext;
         _logger = logger;
+    }
+    
+    public async Task<Result<List<Location>, Error>> GetAsync(
+        Expression<Func<Location, bool>>? predicate = null,
+        bool asNoTracking = true,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var query = _dbContext.Locations.AsQueryable();
+        
+            if (predicate is not null)
+            {
+                query = query.Where(predicate);
+            }
+        
+            if (asNoTracking)
+            {
+                query = query.AsNoTracking();
+            }
+        
+            var locations = await query.ToListAsync(cancellationToken);
+            return locations;
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation was cancelled while getting locations");
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while getting locations");
+            return GeneralErrors.DatabaseError();
+        }
+    }
+    
+    public async Task<Result<Location, Error>> GetFirstAsync(
+        Expression<Func<Location, bool>>? predicate = null,
+        bool asNoTracking = true,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var query = _dbContext.Locations.AsQueryable();
+        
+            if (predicate is not null)
+            {
+                query = query.Where(predicate);
+            }
+        
+            if (asNoTracking)
+            {
+                query = query.AsNoTracking();
+            }
+        
+            var location = await query.FirstOrDefaultAsync(cancellationToken);
+        
+            if (location is null)
+            {
+                return GeneralErrors.NotFound();
+            }
+        
+            return location;
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation was cancelled while getting locations");
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while getting locations");
+            return GeneralErrors.DatabaseError();
+        }
     }
     
     public async Task<Result<Guid, Error>> AddAsync(Location location, CancellationToken cancellationToken = default)

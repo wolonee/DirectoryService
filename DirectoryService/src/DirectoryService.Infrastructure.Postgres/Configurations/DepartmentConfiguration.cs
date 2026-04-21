@@ -70,10 +70,11 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
         
-        builder.HasMany(d => d.ChildrenDepartments)
+        builder
+            .HasMany(d => d.ChildrenDepartments)
             .WithOne()
-            .IsRequired(false)
             .HasForeignKey(x => x.ParentId)
+            .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }
