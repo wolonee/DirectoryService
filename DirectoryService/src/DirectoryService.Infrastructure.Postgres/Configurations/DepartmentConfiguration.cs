@@ -28,10 +28,10 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
                 .IsRequired()
                 .HasColumnName("identifier")
                 .HasMaxLength(LengthConstants.LENGTH150);
-
-            identifier.HasIndex(i => i.Value)
-                .IsUnique()
-                .HasDatabaseName("IX_Departments_Identifier_Unique");
+            
+            // identifier.HasIndex(i => i.Value)
+            //     .IsUnique()
+            //     .HasDatabaseName("IX_Departments_Identifier_Unique");
         });
         
         builder.ComplexProperty(d => d.DepartmentPath, db =>
@@ -76,5 +76,27 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
             .HasForeignKey(x => x.ParentId)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
+        
+        // indexes
+
+        builder.HasIndex(d => d.DepartmentName.Value)
+            .HasDatabaseName("ix_departments_name");
+        
+        builder.HasIndex(d => d.DepartmentIdentifier.Value)
+            .IsUnique()
+            .HasDatabaseName("ux_departments_identifier");
+        
+        builder.HasIndex(d => d.DepartmentPath.Value)
+            .HasDatabaseName("ix_departments_path");
+
+        builder.HasIndex(d => d.ParentId)
+            .HasDatabaseName("ix_parent_id");
+
+        // builder.HasIndex(d => new { d.Id, d.IsActive });
+        // builder.HasIndex(d => d.CreatedAt)
+        //     .HasDatabaseName("ix_created_at");
+        //
+        // builder.HasIndex(d => d.UpdatedAt)
+        //     .HasDatabaseName("ix_updated_at");
     }
 }

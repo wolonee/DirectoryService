@@ -151,9 +151,9 @@ public class LocationsRepository : ILocationsRepository
         try
         {
             return await _dbContext.Locations.AnyAsync(
-                x => x.Address.Street == address.Street && 
-                     x.Address.City == address.City && 
-                     x.Address.Country == address.Country, 
+                x => x.Address.Country == address.Country && 
+                     x.Address.Street == address.Street && 
+                     x.Address.City == address.City, 
                 cancellationToken);
         }
         catch (OperationCanceledException ex)

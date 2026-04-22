@@ -145,7 +145,7 @@ public class DepartmentsRepository : IDepartmentsRepository
         CancellationToken cancellationToken = default)
     {
         var departmentsResult = await GetAsync(
-            dep => dep.IsActive && departmentIds.Contains(dep.Id),
+            dep => departmentIds.Contains(dep.Id) && dep.IsActive,
             cancellationToken: cancellationToken);
         
         if (departmentsResult.IsFailure)

@@ -14,6 +14,9 @@ public static class DepartmentErrors
     public static Error NotAllLocationsActiveOrExists() =>
         Error.Validation("not.all.locations.active.or.exists", $"There are locations that don't active or exists.");
     
+    public static Error LocationsInvalid() =>
+        Error.Validation("locations.invalid", $"All locations are invalid.");
+    
     public static Error NameConflict(string name) =>
         Error.Conflict("department.name.conflict", $"Department with name: {name} already exists.");
     

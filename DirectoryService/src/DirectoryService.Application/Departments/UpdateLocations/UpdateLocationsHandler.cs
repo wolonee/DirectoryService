@@ -4,6 +4,7 @@ using DirectoryService.Application.Database;
 using DirectoryService.Application.Locations;
 using DirectoryService.Application.Validation;
 using DirectoryService.Domain.Departments;
+using DirectoryService.Infrastructure;
 using DirectoryService.Shared;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
@@ -15,13 +16,20 @@ public class UpdateLocationsHandler : ICommandHandler<Guid, UpdateLocationsComma
     private readonly IValidator<UpdateLocationsCommand> _validator;
     private readonly IDepartmentsRepository _departmentsRepository;
     private readonly ILocationsRepository _locationsRepository;
+    private readonly ITransactionManager _transactionManager;
     private readonly ILogger<UpdateLocationsHandler> _logger;
 
-    public UpdateLocationsHandler(IValidator<UpdateLocationsCommand> validator, ILogger<UpdateLocationsHandler> logger, IDepartmentsRepository departmentsRepository, ILocationsRepository locationsRepository)
+    public UpdateLocationsHandler(
+        IValidator<UpdateLocationsCommand> validator,
+        ILogger<UpdateLocationsHandler> logger, 
+        IDepartmentsRepository departmentsRepository, 
+        ILocationsRepository locationsRepository,
+        ITransactionManager transactionManager)
     {
         _validator = validator;
         _departmentsRepository = departmentsRepository;
         _locationsRepository = locationsRepository;
+        _transactionManager = transactionManager;
         _logger = logger;
     }
 
@@ -35,34 +43,65 @@ public class UpdateLocationsHandler : ICommandHandler<Guid, UpdateLocationsComma
             return validationResult.ToValidationErrors();
 
         // Business validation
+        var transactionScopeResult = await _transactionManager.BeginTransactionAsync(cancellationToken);
+        if (transactionScopeResult.IsFailure)
+            return transactionScopeResult.Error.ToErrors();
+        
+        using var transactionScope = transactionScopeResult.Value;
+        
         var departmentResult = await _departmentsRepository.GetByIdAsync(command.departmentId, cancellationToken);
         if (departmentResult.IsFailure)
+        {
+            transactionScope.Rollback();
             return departmentResult.Error.ToErrors();
+        }
         
-        if (departmentResult.Value == null)
+        var department = departmentResult.Value;
+        
+        if (department == null)
             return GeneralErrors.NotFound(null, "department").ToErrors();
         
-        if (!departmentResult.Value.IsActive)
+        if (!department.IsActive)
             return DepartmentErrors.IsNotActive().ToErrors();
-
-        await _locationsRepository.DeleteLocationsByDepartmentId(command.departmentId, cancellationToken);
         
         var activeLocationsIdsResult = await _locationsRepository.GetActiveLocationsIdsAsync(command.request.LocationsIds, cancellationToken);
         if (activeLocationsIdsResult.IsFailure)
+        {
+            transactionScope.Rollback();
             return activeLocationsIdsResult.Error.ToErrors();
+        }
         
-        if (activeLocationsIdsResult.Value.Count != command.request.LocationsIds.Length)
+        var locationIds = activeLocationsIdsResult.Value;
+        
+        if (locationIds == null)
+            return DepartmentErrors.LocationsInvalid().ToErrors();
+        
+        if (locationIds.Count != command.request.LocationsIds.Length)
             return DepartmentErrors.NotAllLocationsActiveOrExists().ToErrors();
-
+        
         // Update Locations
-        var newDepartmentLocations = activeLocationsIdsResult.Value
-            .Select(locationId => DepartmentLocation.Create(departmentResult.Value.Id, locationId).Value)
+        var newDepartmentLocations = locationIds
+            .Select(locationId => DepartmentLocation.Create(department.Id, locationId).Value)
             .ToList();
         
-        departmentResult.Value.UpdateLocations(newDepartmentLocations);
+        var deleteResult = await _locationsRepository.DeleteLocationsByDepartmentId(command.departmentId, cancellationToken);
+        if (deleteResult.IsFailure)
+        {
+            transactionScope.Rollback();
+            return deleteResult.Error.ToErrors();
+        }
+        
+        department.UpdateLocations(newDepartmentLocations);
 
         // Save in database
-        await _departmentsRepository.SaveAsync();
+        await _transactionManager.SaveChangesAsync(cancellationToken);
+        
+        var commitResult = transactionScope.Commit();
+        if (commitResult.IsFailure)
+        {
+            transactionScope.Rollback();
+            return commitResult.Error.ToErrors();
+        }
         
         // Logging about success result
         _logger.LogInformation("Updated department locations.");

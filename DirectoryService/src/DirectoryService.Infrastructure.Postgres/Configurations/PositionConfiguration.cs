@@ -52,5 +52,25 @@ public class PositionConfiguration : IEntityTypeConfiguration<Position>
         builder.Property(a => a.IsActive)
             .HasColumnName("is_active")
             .IsRequired();
+        
+        // indexes
+        
+        builder.HasIndex("((name ->> 'speciality'))")
+            .HasDatabaseName("ix_position_name_speciality");
+
+        builder.HasIndex("((name ->> 'direction'))")
+            .HasDatabaseName("ix_position_name_direction");
+
+        builder.HasIndex("((name ->> 'speciality'))", "((name ->> 'direction'))")
+            .HasDatabaseName("ix_position_name_full");
+        
+        builder.HasIndex("is_active", "((name ->> 'speciality'))")
+            .HasDatabaseName("ix_position_active_speciality");
+        
+        // builder.HasIndex(p => p.CreatedAt)
+        //     .HasDatabaseName("ix_position_created_at");
+        //     
+        // builder.HasIndex(p => p.UpdatedAt)
+        //     .HasDatabaseName("ix_position_updated_at");
     }
 }
