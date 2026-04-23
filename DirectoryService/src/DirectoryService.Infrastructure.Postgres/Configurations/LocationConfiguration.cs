@@ -55,7 +55,7 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
         
         // indexes
 
-        builder.HasIndex(l => l.Name.Value)
+        builder.HasIndex(l => l.Name)
             .IsUnique()
             .HasDatabaseName("ux_locations_name");
             
@@ -75,7 +75,7 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
         // builder.HasIndex(l => new { l.Id, l.IsActive })  я так понял что это бесполезно
         //     .HasDatabaseName("ix_locations_active_id");  потому что Id уже уникален => у него только один IsActive
         
-        builder.HasIndex(l => new { l.IsActive, l.Name.Value })
+        builder.HasIndex(l => new { l.IsActive, l.Name })
             .HasDatabaseName("ix_locations_active_name");
         
         builder.HasIndex(l => l.Timezone)
