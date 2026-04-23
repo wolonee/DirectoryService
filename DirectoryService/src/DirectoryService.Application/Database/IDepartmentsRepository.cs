@@ -12,5 +12,5 @@ public interface IDepartmentsRepository
     
     Task<Result<IReadOnlyList<Department>, Error>> GetActiveDepartmentsAsync(Guid[] departmentId, CancellationToken cancellationToken = default);
     
-    Task<UnitResult<Error>> SaveAsync(CancellationToken cancellationToken = default);
+    Task<UnitResult<Error>> DeleteLocationsByDepartmentId(Guid departmentId, CancellationToken cancellationToken = default);
 }

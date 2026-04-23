@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DirectoryService.Infrastructure;
 
-public class TransactionManager
+public class TransactionManager : ITransactionManager
 {
     private readonly DirectoryServiceDbContext _dbContext;
     private readonly ILogger<TransactionManager> _logger;

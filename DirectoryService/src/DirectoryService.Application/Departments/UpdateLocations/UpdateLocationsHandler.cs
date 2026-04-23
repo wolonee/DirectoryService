@@ -84,7 +84,7 @@ public class UpdateLocationsHandler : ICommandHandler<Guid, UpdateLocationsComma
             .Select(locationId => DepartmentLocation.Create(department.Id, locationId).Value)
             .ToList();
         
-        var deleteResult = await _locationsRepository.DeleteLocationsByDepartmentId(command.departmentId, cancellationToken);
+        var deleteResult = await _departmentsRepository.DeleteLocationsByDepartmentId(command.departmentId, cancellationToken);
         if (deleteResult.IsFailure)
         {
             transactionScope.Rollback();
