@@ -10,16 +10,13 @@ public class TransactionManager : ITransactionManager
 {
     private readonly DirectoryServiceDbContext _dbContext;
     private readonly ILogger<TransactionManager> _logger;
-    private readonly ILoggerFactory _loggerFactory;
 
     public TransactionManager(
         DirectoryServiceDbContext dbContext,
-        ILogger<TransactionManager> logger,
-        ILoggerFactory loggerFactory)
+        ILogger<TransactionManager> logger)
     {
         _dbContext = dbContext;
         _logger = logger;
-        _loggerFactory = loggerFactory;
     }
 
     public async Task<Result<ITransactionScope, Error>> BeginTransactionAsync(CancellationToken cancellationToken)
@@ -28,9 +25,7 @@ public class TransactionManager : ITransactionManager
         {
             var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
             
-            var transactionScopeLogger = _loggerFactory.CreateLogger<TransactionScope>();
-            
-            var transactionScope = new TransactionScope(transaction.GetDbTransaction(), transactionScopeLogger);
+            var transactionScope = new TransactionScope(transaction.GetDbTransaction());
 
             return transactionScope;
         }
@@ -60,12 +55,10 @@ public class TransactionManager : ITransactionManager
 public class TransactionScope : ITransactionScope
 {
     private readonly IDbTransaction _transaction;
-    private readonly ILogger<TransactionScope> _logger;
-
-    public TransactionScope(IDbTransaction transaction, ILogger<TransactionScope> logger)
+    
+    public TransactionScope(IDbTransaction transaction)
     {
         _transaction = transaction;
-        _logger = logger;
     }
     
     public UnitResult<Error> Commit()
@@ -77,7 +70,6 @@ public class TransactionScope : ITransactionScope
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Failed to commit transaction");
             return Error.Failure("transaction.commit.failed", "Failed to commit transaction");
         }
     }
@@ -91,7 +83,6 @@ public class TransactionScope : ITransactionScope
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Failed to rollback transaction");
             return Error.Failure("transaction.rollback.failed", "Failed to rollback transaction");
         }
     }
