@@ -87,6 +87,10 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
 
         builder.HasIndex(d => d.ParentId)
             .HasDatabaseName("ix_parent_id");
+        
+        builder.HasIndex(d => d.DepartmentIdentifier)
+            .IsUnique()
+            .HasDatabaseName("ux_departments_identifier");
 
         // builder.HasIndex(d => new { d.Id, d.IsActive });
         // builder.HasIndex(d => d.CreatedAt)
