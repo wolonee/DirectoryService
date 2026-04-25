@@ -128,7 +128,6 @@ public class DepartmentsRepository : IDepartmentsRepository
         }
     }
 
-
     public async Task<Result<Department, Error>> GetByIdAsync(
         Guid departmentId,
         CancellationToken cancellationToken = default)
@@ -163,25 +162,5 @@ public class DepartmentsRepository : IDepartmentsRepository
             .ExecuteDeleteAsync(cancellationToken);
         
         return UnitResult.Success<Error>();
-    }
-
-    public async Task<UnitResult<Error>> SaveAsync(CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            await _dbContext.SaveChangesAsync(cancellationToken);
-
-            return UnitResult.Success<Error>();
-        }
-        catch (OperationCanceledException ex)
-        {
-            _logger.LogError(ex, "Unexpected error while save changes");
-            return GeneralErrors.OperationCancelled();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected error while save changes");
-            return GeneralErrors.DatabaseError();
-        }
     }
 }

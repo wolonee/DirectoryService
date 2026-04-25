@@ -207,15 +207,4 @@ public class LocationsRepository : ILocationsRepository
 
         return activeLocationsIds;
     }
-
-    public async Task<UnitResult<Error>> DeleteLocationsByDepartmentId(
-        Guid departmentId,
-        CancellationToken cancellationToken = default)
-    {
-        await _dbContext.Locations
-            .Where(x => x.Id == departmentId)
-            .ExecuteDeleteAsync(cancellationToken);
-
-        return UnitResult.Success<Error>();
-    }
 }
