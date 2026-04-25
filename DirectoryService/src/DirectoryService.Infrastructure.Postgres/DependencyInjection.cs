@@ -2,7 +2,6 @@ using DirectoryService.Application.Database;
 using DirectoryService.Application.Departments;
 using DirectoryService.Application.Locations;
 using DirectoryService.Application.Positions;
-using DirectoryService.Infrastructure.Decorators;
 using DirectoryService.Infrastructure.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,32 +15,11 @@ public static class DependencyInjection
     {
         services.AddScoped<ITransactionManager, TransactionManager>();
         
-        services.AddScoped<DepartmentsRepository>();
-
-        services.AddScoped<IDepartmentsRepository>(sp =>
-        {
-            var repo = sp.GetRequiredService<DepartmentsRepository>();
-            var logger = sp.GetRequiredService<ILogger<DepartmentsRepositoryDecorator>>();
-            return new DepartmentsRepositoryDecorator(repo, logger);
-        });
+        services.AddScoped<IDepartmentsRepository, DepartmentsRepository>();
         
-        services.AddScoped<LocationsRepository>();
-
-        services.AddScoped<ILocationsRepository>(sp =>
-        {
-            var repo = sp.GetRequiredService<LocationsRepository>();
-            var logger = sp.GetRequiredService<ILogger<LocationsRepositoryDecorator>>();
-            return new LocationsRepositoryDecorator(repo, logger);
-        });
-
-        services.AddScoped<PositionsRepository>();
-
-        services.AddScoped<IPositionsRepository>(sp =>
-        {
-            var repo = sp.GetRequiredService<PositionsRepository>();
-            var logger = sp.GetRequiredService<ILogger<PositionsRepositoryDecorator>>();
-            return new PositionsRepositoryDecorator(repo, logger);
-        });
+        services.AddScoped<ILocationsRepository, LocationsRepository>();
+        
+        services.AddScoped<IPositionsRepository, PositionsRepository>();
         
         return services;
     }

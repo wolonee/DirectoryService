@@ -56,4 +56,5 @@ public class DepartmentsRepository : IDepartmentsRepository
 
         return UnitResult.Success<Error>();
     }
+    
 }
