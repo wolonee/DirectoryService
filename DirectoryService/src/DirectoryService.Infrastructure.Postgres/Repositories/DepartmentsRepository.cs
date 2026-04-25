@@ -13,39 +13,147 @@ namespace DirectoryService.Infrastructure.Repositories;
 public class DepartmentsRepository : IDepartmentsRepository
 {
     private readonly DirectoryServiceDbContext _dbContext;
+    private readonly ILogger<DepartmentsRepository> _logger;
 
-    public DepartmentsRepository(DirectoryServiceDbContext dbContext)
+    public DepartmentsRepository(DirectoryServiceDbContext dbContext, ILogger<DepartmentsRepository> logger)
     {
         _dbContext = dbContext;
+        _logger = logger;
     }
 
     public async Task<Result<Guid, Error>> AddAsync(Department department, CancellationToken cancellationToken = default)
     {
-        await _dbContext.Departments.AddAsync(department, cancellationToken);
-        await _dbContext.SaveChangesAsync(cancellationToken);
-        return department.Id;
-    }
-
-    public async Task<Result<Department, Error>> GetByIdAsync(Guid departmentId, CancellationToken cancellationToken = default)
-    {
-        var department = await _dbContext.Departments
-            .FirstOrDefaultAsync(x => x.Id == departmentId, cancellationToken);
+        _dbContext.Departments.Add(department);
         
-        if (department is null)
-            return GeneralErrors.NotFound(departmentId, "department");
+        try
+        {
+            await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return department;
-    }
+            return department.Id;
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx)
+        {
+            if (pgEx is { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: not null } &&
+                pgEx.ConstraintName.Contains("name", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return DepartmentErrors.NameConflict(department.DepartmentName.Value);
+            }
 
-    public async Task<Result<IReadOnlyList<Department>, Error>> GetActiveDepartmentsAsync(
-        Guid[] departmentIds, 
-        CancellationToken cancellationToken = default)
-    {
-        return await _dbContext.Departments
-            .Where(d => departmentIds.Contains(d.Id) && d.IsActive)
-            .ToListAsync(cancellationToken);
+            _logger.LogError(ex, "Database update error while creating department with name {Name}", department.DepartmentName.Value);
+            return GeneralErrors.DatabaseError();
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation was cancelled while creating department with name {Name}", department.DepartmentName.Value);
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while creating department with name {Name}", department.DepartmentName.Value);
+            return GeneralErrors.DatabaseError();
+        }
     }
     
+    public async Task<Result<List<Department>, Error>> GetAsync(
+        Expression<Func<Department, bool>>? predicate = null,
+        bool asNoTracking = true,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var query = _dbContext.Departments.AsQueryable();
+        
+            if (predicate is not null)
+            {
+                query = query.Where(predicate);
+            }
+        
+            if (asNoTracking)
+            {
+                query = query.AsNoTracking();
+            }
+        
+            var departments = await query.ToListAsync(cancellationToken);
+            return departments;
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation was cancelled while getting departments");
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while getting departments");
+            return GeneralErrors.DatabaseError();
+        }
+    }
+    
+    public async Task<Result<Department, Error>> GetFirstAsync(
+        Expression<Func<Department, bool>>? predicate = null,
+        bool asNoTracking = true,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var query = _dbContext.Departments.AsQueryable();
+        
+            if (predicate is not null)
+            {
+                query = query.Where(predicate);
+            }
+        
+            if (asNoTracking)
+            {
+                query = query.AsNoTracking();
+            }
+        
+            var department = await query.FirstOrDefaultAsync(cancellationToken);
+        
+            if (department is null)
+            {
+                return GeneralErrors.NotFound();
+            }
+        
+            return department;
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation was cancelled while getting department");
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while getting department");
+            return GeneralErrors.DatabaseError();
+        }
+    }
+
+
+    public async Task<Result<Department, Error>> GetByIdAsync(
+        Guid departmentId,
+        CancellationToken cancellationToken = default)
+    {
+        var departmentResult = await GetFirstAsync(x => x.Id == departmentId, cancellationToken: cancellationToken);
+        if (departmentResult.IsFailure)
+            return departmentResult.Error;
+        
+        return departmentResult.Value;
+    }    
+
+    public async Task<Result<IReadOnlyList<Department>, Error>> GetActiveDepartmentsAsync(
+        Guid[] departmentIds,
+        CancellationToken cancellationToken = default)
+    {
+        var departmentsResult = await GetAsync(
+            dep => departmentIds.Contains(dep.Id) && dep.IsActive,
+            cancellationToken: cancellationToken);
+        
+        if (departmentsResult.IsFailure)
+            return departmentsResult.Error;
+
+        return departmentsResult.Value;
+    }
+
     public async Task<UnitResult<Error>> DeleteLocationsByDepartmentId(
         Guid departmentId,
         CancellationToken cancellationToken = default)
@@ -53,8 +161,27 @@ public class DepartmentsRepository : IDepartmentsRepository
         await _dbContext.Locations
             .Where(x => x.Id == departmentId)
             .ExecuteDeleteAsync(cancellationToken);
-
+        
         return UnitResult.Success<Error>();
     }
-    
+
+    public async Task<UnitResult<Error>> SaveAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
+            return UnitResult.Success<Error>();
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Unexpected error while save changes");
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while save changes");
+            return GeneralErrors.DatabaseError();
+        }
+    }
 }
