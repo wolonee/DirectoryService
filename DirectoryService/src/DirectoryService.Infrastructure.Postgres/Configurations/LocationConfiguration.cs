@@ -16,30 +16,47 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
         builder.Property(l => l.Id)
             .HasColumnName("id");
 
-        builder.ComplexProperty(v => v.Address, nb =>
+        builder.OwnsOne(v => v.Address, address =>
         {
-            nb.Property(s => s.Street)
-                .IsRequired()
-                .HasMaxLength(LengthConstants.LENGTH200)
-                .HasColumnName("street");
-
-            nb.Property(s => s.City)
-                .IsRequired()
-                .HasMaxLength(LengthConstants.LENGTH200)
-                .HasColumnName("city");
-
-            nb.Property(s => s.Country)
+            address.Property(s => s.Country)
                 .IsRequired()
                 .HasMaxLength(LengthConstants.LENGTH150)
                 .HasColumnName("country");
+            
+            address.HasIndex(l => l.Country)
+                .HasDatabaseName("ix_locations_country");
+            
+            address.Property(s => s.City)
+                .IsRequired()
+                .HasMaxLength(LengthConstants.LENGTH200)
+                .HasColumnName("city");
+            
+            address.HasIndex(l => l.City)
+                .HasDatabaseName("ix_locations_city");
+            
+            address.Property(s => s.Street)
+                .IsRequired()
+                .HasMaxLength(LengthConstants.LENGTH200)
+                .HasColumnName("street");
+        
+            address.HasIndex(l => l.Street)
+                .HasDatabaseName("ix_locations_street");
+            
+            address.HasIndex(l => new { l.Country, l.Street, l.City })
+                .IsUnique()
+                .HasDatabaseName("ux_locations_full_address");
         });
 
-        builder.OwnsOne(l => l.Name, nb =>
+        builder.OwnsOne(l => l.Name, name =>
         {
-            nb.Property(ln => ln.Value)
+            name.Property(ln => ln.Value)
                 .IsRequired()
                 .HasColumnName("name")
                 .HasMaxLength(LengthConstants.LENGTH200);
+            
+            name.HasIndex(l => l.Value)
+                .IsUnique()
+                .HasDatabaseName("ux_locations_name");
         });
         builder.Navigation(l => l.Name).IsRequired(false);
         
@@ -54,37 +71,11 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
             .HasColumnName("is_active");
         
         // indexes
-
-        builder.HasIndex(l => l.Name)
-            .IsUnique()
-            .HasDatabaseName("ux_locations_name");
-            
-        builder.HasIndex(l => l.Address.Country)
-            .HasDatabaseName("ix_locations_country");
         
-        builder.HasIndex(l => l.Address.Street)
-            .HasDatabaseName("ix_locations_street");
-        
-        builder.HasIndex(l => l.Address.City)
-            .HasDatabaseName("ix_locations_city");
-        
-        builder.HasIndex(l => new { l.Address.Country, l.Address.Street, l.Address.City })
-            .IsUnique()
-            .HasDatabaseName("ux_locations_full_address");
-
         // builder.HasIndex(l => new { l.Id, l.IsActive })  я так понял что это бесполезно
         //     .HasDatabaseName("ix_locations_active_id");  потому что Id уже уникален => у него только один IsActive
         
-        builder.HasIndex(l => new { l.IsActive, l.Name })
-            .HasDatabaseName("ix_locations_active_name");
-        
         builder.HasIndex(l => l.Timezone)
             .HasDatabaseName("ix_locations_timezone");
-        
-        // builder.HasIndex(l => l.CreatedAt)
-        //     .HasDatabaseName("ix_locations_created_at");
-        //
-        // builder.HasIndex(l => l.UpdatedAt)
-        //     .HasDatabaseName("ix_locations_updated_at");
     }
 }

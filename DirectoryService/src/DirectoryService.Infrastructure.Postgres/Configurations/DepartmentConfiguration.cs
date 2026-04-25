@@ -34,14 +34,14 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
                 .HasDatabaseName("ux_departments_identifier");
         });
         
-        builder.ComplexProperty(d => d.DepartmentPath, db =>
+        builder.OwnsOne(d => d.DepartmentPath, path =>
         {
-            db.Property(d => d.Value)
+            path.Property(d => d.Value)
                 .IsRequired()
                 .HasColumnName("path")
                 .HasMaxLength(LengthConstants.LENGTH150);
             
-            builder.HasIndex(d => d.DepartmentPath)
+            path.HasIndex(d => d.Value)
                 .HasDatabaseName("ix_departments_path");
         });
         
@@ -88,9 +88,9 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
         builder.HasIndex(d => d.ParentId)
             .HasDatabaseName("ix_parent_id");
         
-        builder.HasIndex(d => d.DepartmentIdentifier)
-            .IsUnique()
-            .HasDatabaseName("ux_departments_identifier");
+        // builder.HasIndex(d => d.DepartmentIdentifier)
+        //     .IsUnique()
+        //     .HasDatabaseName("ux_departments_identifier");
 
         // builder.HasIndex(d => new { d.Id, d.IsActive });
         // builder.HasIndex(d => d.CreatedAt)
