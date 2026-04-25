@@ -100,10 +100,12 @@ public class Department
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void UpdateLocations(IReadOnlyList<DepartmentLocation> departmentLocations)
+    public UnitResult<Error> UpdateLocations(IReadOnlyList<DepartmentLocation> departmentLocations)
     {
         _departmentLocations = departmentLocations.ToList();
         UpdatedAt = DateTime.UtcNow;
+
+        return UnitResult.Success<Error>();
     }
     
     //

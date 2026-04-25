@@ -91,7 +91,9 @@ public class UpdateLocationsHandler : ICommandHandler<Guid, UpdateLocationsComma
             return deleteResult.Error.ToErrors();
         }
         
-        department.UpdateLocations(newDepartmentLocations);
+        var updateResult = department.UpdateLocations(newDepartmentLocations);
+        if (updateResult.IsFailure)
+            return updateResult.Error.ToErrors();
 
         // Save in database
         await _transactionManager.SaveChangesAsync(cancellationToken);
