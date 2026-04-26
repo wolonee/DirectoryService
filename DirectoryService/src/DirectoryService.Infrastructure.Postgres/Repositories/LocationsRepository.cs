@@ -24,7 +24,6 @@ public class LocationsRepository : ILocationsRepository
     
     public async Task<Result<List<Location>, Error>> GetAsync(
         Expression<Func<Location, bool>>? predicate = null,
-        bool asNoTracking = true,
         CancellationToken cancellationToken = default)
     {
         try
@@ -34,11 +33,6 @@ public class LocationsRepository : ILocationsRepository
             if (predicate is not null)
             {
                 query = query.Where(predicate);
-            }
-        
-            if (asNoTracking)
-            {
-                query = query.AsNoTracking();
             }
         
             var locations = await query.ToListAsync(cancellationToken);
@@ -58,7 +52,6 @@ public class LocationsRepository : ILocationsRepository
     
     public async Task<Result<Location, Error>> GetFirstAsync(
         Expression<Func<Location, bool>>? predicate = null,
-        bool asNoTracking = true,
         CancellationToken cancellationToken = default)
     {
         try
@@ -68,11 +61,6 @@ public class LocationsRepository : ILocationsRepository
             if (predicate is not null)
             {
                 query = query.Where(predicate);
-            }
-        
-            if (asNoTracking)
-            {
-                query = query.AsNoTracking();
             }
         
             var location = await query.FirstOrDefaultAsync(cancellationToken);

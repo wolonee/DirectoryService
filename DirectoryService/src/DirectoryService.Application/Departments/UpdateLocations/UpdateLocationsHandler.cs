@@ -52,7 +52,6 @@ public class UpdateLocationsHandler : ICommandHandler<Guid, UpdateLocationsComma
         var departmentResult = await _departmentsRepository.GetByIdAsync(command.departmentId, cancellationToken);
         if (departmentResult.IsFailure)
         {
-            transactionScope.Rollback();
             return departmentResult.Error.ToErrors();
         }
         
@@ -67,7 +66,6 @@ public class UpdateLocationsHandler : ICommandHandler<Guid, UpdateLocationsComma
         var activeLocationsIdsResult = await _locationsRepository.GetActiveLocationsIdsAsync(command.request.LocationsIds, cancellationToken);
         if (activeLocationsIdsResult.IsFailure)
         {
-            transactionScope.Rollback();
             return activeLocationsIdsResult.Error.ToErrors();
         }
         
@@ -81,8 +79,12 @@ public class UpdateLocationsHandler : ICommandHandler<Guid, UpdateLocationsComma
         
         // Update Locations
         var newDepartmentLocations = locationIds
-            .Select(locationId => DepartmentLocation.Create(department.Id, locationId).Value)
+            .Select(locationId => DepartmentLocation.Create(department, locationId).Value)
             .ToList();
+        
+        var updateResult = department.UpdateLocations(newDepartmentLocations);
+        if (updateResult.IsFailure)
+            return updateResult.Error.ToErrors();
         
         var deleteResult = await _departmentsRepository.DeleteLocationsByDepartmentId(command.departmentId, cancellationToken);
         if (deleteResult.IsFailure)
@@ -91,10 +93,6 @@ public class UpdateLocationsHandler : ICommandHandler<Guid, UpdateLocationsComma
             return deleteResult.Error.ToErrors();
         }
         
-        var updateResult = department.UpdateLocations(newDepartmentLocations);
-        if (updateResult.IsFailure)
-            return updateResult.Error.ToErrors();
-
         // Save in database
         await _transactionManager.SaveChangesAsync(cancellationToken);
         

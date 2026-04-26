@@ -56,7 +56,6 @@ public class DepartmentsRepository : IDepartmentsRepository
     
     public async Task<Result<List<Department>, Error>> GetAsync(
         Expression<Func<Department, bool>>? predicate = null,
-        bool asNoTracking = true,
         CancellationToken cancellationToken = default)
     {
         try
@@ -66,11 +65,6 @@ public class DepartmentsRepository : IDepartmentsRepository
             if (predicate is not null)
             {
                 query = query.Where(predicate);
-            }
-        
-            if (asNoTracking)
-            {
-                query = query.AsNoTracking();
             }
         
             var departments = await query.ToListAsync(cancellationToken);
@@ -90,7 +84,6 @@ public class DepartmentsRepository : IDepartmentsRepository
     
     public async Task<Result<Department, Error>> GetFirstAsync(
         Expression<Func<Department, bool>>? predicate = null,
-        bool asNoTracking = true,
         CancellationToken cancellationToken = default)
     {
         try
@@ -100,11 +93,6 @@ public class DepartmentsRepository : IDepartmentsRepository
             if (predicate is not null)
             {
                 query = query.Where(predicate);
-            }
-        
-            if (asNoTracking)
-            {
-                query = query.AsNoTracking();
             }
         
             var department = await query.FirstOrDefaultAsync(cancellationToken);
@@ -157,8 +145,8 @@ public class DepartmentsRepository : IDepartmentsRepository
         Guid departmentId,
         CancellationToken cancellationToken = default)
     {
-        await _dbContext.Locations
-            .Where(x => x.Id == departmentId)
+        await _dbContext.DepartmentLocations
+            .Where(x => x.DepartmentId == departmentId)
             .ExecuteDeleteAsync(cancellationToken);
         
         return UnitResult.Success<Error>();

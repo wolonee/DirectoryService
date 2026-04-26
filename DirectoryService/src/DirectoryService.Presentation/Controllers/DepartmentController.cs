@@ -23,7 +23,6 @@ public class DepartmentsController : ControllerBase
     }
     
     // PUT /api/departments/{departmentId}/locations
-
     [HttpPut("{departmentId:guid}/locations")]
     public async Task<EndpointResult<Guid>> UpdateLocations(
         [FromServices] ICommandHandler<Guid, UpdateLocationsCommand> handler,
