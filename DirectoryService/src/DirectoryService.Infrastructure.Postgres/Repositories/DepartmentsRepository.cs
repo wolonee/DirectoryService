@@ -84,6 +84,7 @@ public class DepartmentsRepository : IDepartmentsRepository
     
     public async Task<Result<Department, Error>> GetFirstAsync(
         Expression<Func<Department, bool>>? predicate = null,
+        Func<IQueryable<Department>, IQueryable<Department>>? include = null,
         CancellationToken cancellationToken = default)
     {
         try
@@ -93,6 +94,11 @@ public class DepartmentsRepository : IDepartmentsRepository
             if (predicate is not null)
             {
                 query = query.Where(predicate);
+            }
+            
+            if (include is not null)
+            {
+                query = include(query);
             }
         
             var department = await query.FirstOrDefaultAsync(cancellationToken);
@@ -133,6 +139,35 @@ public class DepartmentsRepository : IDepartmentsRepository
     {
         var departmentsResult = await GetAsync(
             dep => departmentIds.Contains(dep.Id) && dep.IsActive,
+            cancellationToken: cancellationToken);
+        
+        if (departmentsResult.IsFailure)
+            return departmentsResult.Error;
+
+        return departmentsResult.Value;
+    }
+    
+    public async Task<Result<Department, Error>> GetActiveDepartmentAsync(
+        Guid departmentId,
+        CancellationToken cancellationToken = default)
+    {
+        var departmentsResult = await GetFirstAsync(
+            dep => dep.Id == departmentId && dep.IsActive,
+            query => query.Include(x => x.ChildrenDepartments),
+            cancellationToken: cancellationToken);
+        
+        if (departmentsResult.IsFailure)
+            return departmentsResult.Error;
+
+        return departmentsResult.Value;
+    }
+    
+    public async Task<Result<Department, Error>> GetActiveParentAsync(
+        Guid departmentId,
+        CancellationToken cancellationToken = default)
+    {
+        var departmentsResult = await GetFirstAsync(
+            dep => dep.Id == departmentId && dep.IsActive,
             cancellationToken: cancellationToken);
         
         if (departmentsResult.IsFailure)
