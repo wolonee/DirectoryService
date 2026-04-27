@@ -130,6 +130,10 @@ public class DepartmentsRepository : IDepartmentsRepository
         if (departmentResult.IsFailure)
             return departmentResult.Error;
         
+        var entry = _dbContext.Entry(departmentResult.Value);
+        var isTracked = entry.State != EntityState.Detached;    
+        _logger.LogInformation("Department tracked: {Tracked}, State: {State}", isTracked, entry.State);
+        
         return departmentResult.Value;
     }    
 
