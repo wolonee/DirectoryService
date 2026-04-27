@@ -107,4 +107,41 @@ public class Department
 
         return UnitResult.Success<Error>();
     }
+
+    public UnitResult<Error> UpdateParent(Department parent)
+    {
+        ParentId = parent.Id;
+        Depth = parent.Depth + 1;
+        DepartmentPath = DepartmentPath.CreateChild(parent.DepartmentIdentifier);
+        UpdatedAt = DateTime.UtcNow;
+
+        foreach (var child in _childrenDepartments)
+        {
+            child.UpdateParent(this);
+        }
+        
+        return UnitResult.Success<Error>();
+    }
+    
+    public UnitResult<Error> UpdateNullParent()
+    {
+        ParentId = null;
+        Depth = 0;
+        DepartmentPath = DepartmentPath.CreateParent(DepartmentIdentifier);
+        UpdatedAt = DateTime.UtcNow;
+
+        foreach (var child in _childrenDepartments)
+        {
+            child.UpdateParent(this);
+        }
+        
+        return UnitResult.Success<Error>();
+    }
+
+    // public UnitResult<Error> UpdateParentForChildren(Department parent)
+    // {
+    //     Depth = parent.Depth + 1;
+    //     DepartmentPath = DepartmentPath.CreateChild(parent.DepartmentIdentifier);
+    //     UpdatedAt = DateTime.UtcNow;
+    // }
 }

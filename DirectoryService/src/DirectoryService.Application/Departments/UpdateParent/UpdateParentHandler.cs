@@ -43,23 +43,36 @@ public class UpdateParentHandler : ICommandHandler<Guid, UpdateParentCommand>
 
         if (command.Request.ParentId == command.DepartmentId)
             return DepartmentErrors.ParentIdEqualDepartmentId().ToErrors();
+
+        if (command.Request.ParentId != null)
+        {
+            var parentResult = await _departmentsRepository.GetActiveParentAsync(command.DepartmentId, cancellationToken);
+            if (parentResult.IsFailure)
+                return parentResult.Error.ToErrors();
         
-        var parentResult = await _departmentsRepository.GetActiveParentAsync(command.DepartmentId, cancellationToken);
-        if (parentResult.IsFailure)
-            return parentResult.Error.ToErrors();
+            var parent = parentResult.Value;
         
-        var parent = parentResult.Value;
+            if (parent == null)
+                return GeneralErrors.NotFound(null, "department").ToErrors();
         
-        if (parent == null)
-            return GeneralErrors.NotFound(null, "department").ToErrors();
-        
-        if (department.ChildrenDepartments.Contains(parent))
-            return DepartmentErrors.DepartmentChildrensContainsParent().ToErrors();
-        
-        // Update parent
+            if (department.ChildrenDepartments.Contains(parent))
+                return DepartmentErrors.DepartmentChildrensContainsParent().ToErrors();
+
+            // Update parent
+            var updateDepartmentResult = department.UpdateParent(parent);
+            if (updateDepartmentResult.IsFailure)
+                return updateDepartmentResult.Error.ToErrors();
+        }
+        else
+        {
+            // Update parent
+            var updateDepartmentResult = department.UpdateNullParent();
+            if (updateDepartmentResult.IsFailure)
+                return updateDepartmentResult.Error.ToErrors();
+        }
         
         // Save in database
-
+        
         // Logging about success result
         _logger.LogInformation("Department was successfully updated.");
         
