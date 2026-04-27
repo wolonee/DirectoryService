@@ -171,7 +171,7 @@ public class DepartmentsRepository : IDepartmentsRepository
         CancellationToken cancellationToken = default)
     {
         await _dbContext.Database.ExecuteSqlAsync(
-            $"SELECT * FROM department WHERE id = {departmentId} FOR UPDATE",
+            $"SELECT * FROM department FOR UPDATE",
             cancellationToken);
         
         var departmentsResult = await GetFirstAsync(
