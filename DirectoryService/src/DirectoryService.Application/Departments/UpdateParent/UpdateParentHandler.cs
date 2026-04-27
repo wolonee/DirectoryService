@@ -2,6 +2,7 @@
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Database;
 using DirectoryService.Application.Validation;
+using DirectoryService.Infrastructure;
 using DirectoryService.Shared;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
@@ -12,15 +13,18 @@ public class UpdateParentHandler : ICommandHandler<Guid, UpdateParentCommand>
 {
     private readonly IValidator<UpdateParentCommand> _validator;
     private readonly IDepartmentsRepository _departmentsRepository;
+    private readonly ITransactionManager _transactionManager;
     private readonly ILogger<UpdateParentHandler> _logger;
 
     public UpdateParentHandler(
         IValidator<UpdateParentCommand> validator,
         IDepartmentsRepository departmentsRepository,
+        ITransactionManager transactionManager,
         ILogger<UpdateParentHandler> logger)
     {
         _validator = validator;
         _departmentsRepository = departmentsRepository;
+        _transactionManager = transactionManager;
         _logger = logger;
     }
 
@@ -30,6 +34,12 @@ public class UpdateParentHandler : ICommandHandler<Guid, UpdateParentCommand>
         var validationResult = await _validator.ValidateAsync(command, cancellationToken);
         if (!validationResult.IsValid)
             return validationResult.ToValidationErrors();
+        
+        var transactionScopeResult = await _transactionManager.BeginTransactionAsync(cancellationToken);
+        if (transactionScopeResult.IsFailure)
+            return transactionScopeResult.Error.ToErrors();
+        
+        using var transactionScope = transactionScopeResult.Value;
         
         // Business validation
         var departmentResult = await _departmentsRepository.GetActiveDepartmentAsync(command.DepartmentId, cancellationToken);
@@ -72,6 +82,19 @@ public class UpdateParentHandler : ICommandHandler<Guid, UpdateParentCommand>
         }
         
         // Save in database
+        var saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
+        if (saveResult.IsFailure)
+        {
+            transactionScope.Rollback();
+            return saveResult.Error.ToErrors();
+        }
+        
+        var commitResult = transactionScope.Commit();
+        if (commitResult.IsFailure)
+        {
+            transactionScope.Rollback();
+            return commitResult.Error.ToErrors();
+        }
         
         // Logging about success result
         _logger.LogInformation("Department was successfully updated.");
