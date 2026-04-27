@@ -19,11 +19,12 @@ namespace DirectoryService.Infrastructure.Migrations
                     name = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
                     identifier = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
                     ParentId = table.Column<Guid>(type: "uuid", nullable: true),
-                    DepartmentPath = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
-                    Depth = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    path = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
+                    depth = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    children_count = table.Column<int>(type: "integer", nullable: false),
+                    is_active = table.Column<bool>(type: "boolean", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -32,7 +33,8 @@ namespace DirectoryService.Infrastructure.Migrations
                         name: "FK_department_department_ParentId",
                         column: x => x.ParentId,
                         principalTable: "department",
-                        principalColumn: "id");
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -40,14 +42,14 @@ namespace DirectoryService.Infrastructure.Migrations
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
-                    name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
-                    timezone = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    street = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     city = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     country = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
-                    street = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false)
+                    name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    timezone = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    is_active = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -60,7 +62,7 @@ namespace DirectoryService.Infrastructure.Migrations
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
-                    isActive = table.Column<bool>(type: "boolean", nullable: false),
+                    is_active = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     name = table.Column<string>(type: "jsonb", nullable: false)
@@ -75,22 +77,21 @@ namespace DirectoryService.Infrastructure.Migrations
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
-                    DepartmentId = table.Column<Guid>(type: "uuid", nullable: false),
-                    LocationId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    department_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    location_id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_department_locations", x => x.id);
                     table.ForeignKey(
-                        name: "FK_department_locations_department_DepartmentId",
-                        column: x => x.DepartmentId,
+                        name: "FK_department_locations_department_department_id",
+                        column: x => x.department_id,
                         principalTable: "department",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_department_locations_locations_LocationId",
-                        column: x => x.LocationId,
+                        name: "FK_department_locations_locations_location_id",
+                        column: x => x.location_id,
                         principalTable: "locations",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
@@ -100,52 +101,112 @@ namespace DirectoryService.Infrastructure.Migrations
                 name: "department_positions",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    DepartmentId = table.Column<Guid>(type: "uuid", nullable: false),
-                    PositionId = table.Column<Guid>(type: "uuid", nullable: false),
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    department_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    position_id = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_department_positions", x => x.Id);
+                    table.PrimaryKey("PK_department_positions", x => x.id);
                     table.ForeignKey(
-                        name: "FK_department_positions_department_DepartmentId",
-                        column: x => x.DepartmentId,
+                        name: "FK_department_positions_department_department_id",
+                        column: x => x.department_id,
                         principalTable: "department",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_department_positions_position_PositionId",
-                        column: x => x.PositionId,
+                        name: "FK_department_positions_position_position_id",
+                        column: x => x.position_id,
                         principalTable: "position",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_department_ParentId",
+                name: "ix_departments_name",
+                table: "department",
+                column: "name");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_departments_path",
+                table: "department",
+                column: "path");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_parent_id",
                 table: "department",
                 column: "ParentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_department_locations_DepartmentId",
+                name: "ux_departments_identifier",
+                table: "department",
+                column: "identifier",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_department_locations_department_id",
                 table: "department_locations",
-                column: "DepartmentId");
+                column: "department_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_department_locations_LocationId",
+                name: "ix_department_locations_location_id",
                 table: "department_locations",
-                column: "LocationId");
+                column: "location_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_department_positions_DepartmentId",
-                table: "department_positions",
-                column: "DepartmentId");
+                name: "ux_department_locations",
+                table: "department_locations",
+                columns: new[] { "department_id", "location_id" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_department_positions_PositionId",
+                name: "ix_department_positions_department_id",
                 table: "department_positions",
-                column: "PositionId");
+                column: "department_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_department_positions_department_id_position_id",
+                table: "department_positions",
+                columns: new[] { "department_id", "position_id" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_department_positions_position_id",
+                table: "department_positions",
+                column: "position_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_locations_city",
+                table: "locations",
+                column: "city");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_locations_country",
+                table: "locations",
+                column: "country");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_locations_street",
+                table: "locations",
+                column: "street");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_locations_timezone",
+                table: "locations",
+                column: "timezone");
+
+            migrationBuilder.CreateIndex(
+                name: "ux_locations_full_address",
+                table: "locations",
+                columns: new[] { "country", "street", "city" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ux_locations_name",
+                table: "locations",
+                column: "name",
+                unique: true);
         }
 
         /// <inheritdoc />

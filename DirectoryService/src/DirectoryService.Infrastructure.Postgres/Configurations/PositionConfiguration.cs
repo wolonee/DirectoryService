@@ -24,22 +24,29 @@ public class PositionConfiguration : IEntityTypeConfiguration<Position>
         //         json => JsonSerializer.Deserialize<PositionName>(json, JsonSerializerOptions.Default)!)
         //     .HasColumnType("jsonb");
 
-        builder.OwnsOne(p => p.Name, ob =>
+        builder.OwnsOne(p => p.Name, name =>
         {
-            ob.ToJson("name");
+            name.ToJson("name");
 
-            ob.Property(s => s.Speciality)
+            name.Property(s => s.Speciality)
                 .HasMaxLength(LengthConstants.LENGTH200)
                 .HasColumnName("speciality")
                 .IsRequired();
 
-            ob.Property(d => d.Direction)
+            name.Property(d => d.Direction)
                 .HasMaxLength(LengthConstants.LENGTH200)
                 .HasColumnName("direction")
                 .IsRequired();
+            
+            name.HasIndex(p => p.Speciality)
+                .HasDatabaseName("ix_position_name_speciality");
+        
+            name.HasIndex(p => p.Direction)
+                .HasDatabaseName("ix_position_name_direction");
+        
+            name.HasIndex(p => new { p.Speciality, p.Direction })
+                .HasDatabaseName("ix_position_name_full");
         });
-        builder.Navigation(p => p.Name).IsRequired();
-
 
         builder.OwnsOne(d => d.Description, ob =>
         {
@@ -52,5 +59,10 @@ public class PositionConfiguration : IEntityTypeConfiguration<Position>
         builder.Property(a => a.IsActive)
             .HasColumnName("is_active")
             .IsRequired();
+        
+        // indexes
+        
+        // builder.HasIndex("is_active", "((name ->> 'speciality'))")
+        //     .HasDatabaseName("ix_position_active_speciality");
     }
 }

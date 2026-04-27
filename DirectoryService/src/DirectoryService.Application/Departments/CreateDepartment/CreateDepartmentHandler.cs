@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstractions;
+using DirectoryService.Application.Database;
 using DirectoryService.Application.Locations;
 using DirectoryService.Application.Validation;
 using DirectoryService.Domain.Departments;
@@ -36,7 +37,7 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
         var request = command.request;
         
         // validation
-        var validationResult = await _validator.ValidateAsync(command);
+        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
         if (!validationResult.IsValid)
         {
             _logger.LogError("Validation Create Department Failed: {Error}", validationResult.ToValidationErrors());

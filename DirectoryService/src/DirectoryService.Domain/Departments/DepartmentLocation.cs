@@ -9,8 +9,17 @@ public class DepartmentLocation
     {
     }
     
+    private DepartmentLocation(Department department, Guid locationId)
+    {
+        Id = Guid.NewGuid();
+        Department = department;
+        DepartmentId = department.Id;
+        LocationId = locationId;
+    }
+    
     private DepartmentLocation(Guid departmentId, Guid locationId)
     {
+        Id = Guid.NewGuid();
         DepartmentId = departmentId;
         LocationId = locationId;
     }
@@ -22,6 +31,21 @@ public class DepartmentLocation
     public Department Department { get; private set; }
     
     public Guid LocationId { get; private set; }
+    
+    public static Result<DepartmentLocation, Error> Create(Department department, Guid locationId)
+    {
+        if (department.Id == Guid.Empty)
+        {
+            return GeneralErrors.ValueIsRequired("DepartmentId");
+        }
+
+        if (locationId == Guid.Empty)
+        {
+            return GeneralErrors.ValueIsRequired("LocationId");
+        }
+
+        return new DepartmentLocation(department, locationId);
+    }
     
     public static Result<DepartmentLocation, Error> Create(Guid departmentId, Guid locationId)
     {

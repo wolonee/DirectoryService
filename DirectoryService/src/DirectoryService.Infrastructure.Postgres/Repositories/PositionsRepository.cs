@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using CSharpFunctionalExtensions;
+using DirectoryService.Application.Database;
 using DirectoryService.Application.Positions;
 using DirectoryService.Domain.Positions;
 using DirectoryService.Domain.Positions.ValueObjects;
@@ -23,7 +24,6 @@ public class PositionsRepository : IPositionsRepository
     
     public async Task<Result<List<Position>, Error>> GetAsync(
         Expression<Func<Position, bool>>? predicate = null,
-        bool asNoTracking = true,
         CancellationToken cancellationToken = default)
     {
         try
@@ -33,11 +33,6 @@ public class PositionsRepository : IPositionsRepository
             if (predicate is not null)
             {
                 query = query.Where(predicate);
-            }
-        
-            if (asNoTracking)
-            {
-                query = query.AsNoTracking();
             }
         
             var positions = await query.ToListAsync(cancellationToken);
@@ -57,7 +52,6 @@ public class PositionsRepository : IPositionsRepository
     
     public async Task<Result<Position, Error>> GetFirstAsync(
         Expression<Func<Position, bool>>? predicate = null,
-        bool asNoTracking = true,
         CancellationToken cancellationToken = default)
     {
         try
@@ -67,11 +61,6 @@ public class PositionsRepository : IPositionsRepository
             if (predicate is not null)
             {
                 query = query.Where(predicate);
-            }
-        
-            if (asNoTracking)
-            {
-                query = query.AsNoTracking();
             }
         
             var position = await query.FirstOrDefaultAsync(cancellationToken);

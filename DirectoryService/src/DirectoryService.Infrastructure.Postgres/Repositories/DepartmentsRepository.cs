@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using CSharpFunctionalExtensions;
+using DirectoryService.Application.Database;
 using DirectoryService.Application.Departments;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Shared;
@@ -55,7 +56,6 @@ public class DepartmentsRepository : IDepartmentsRepository
     
     public async Task<Result<List<Department>, Error>> GetAsync(
         Expression<Func<Department, bool>>? predicate = null,
-        bool asNoTracking = true,
         CancellationToken cancellationToken = default)
     {
         try
@@ -65,11 +65,6 @@ public class DepartmentsRepository : IDepartmentsRepository
             if (predicate is not null)
             {
                 query = query.Where(predicate);
-            }
-        
-            if (asNoTracking)
-            {
-                query = query.AsNoTracking();
             }
         
             var departments = await query.ToListAsync(cancellationToken);
@@ -89,7 +84,6 @@ public class DepartmentsRepository : IDepartmentsRepository
     
     public async Task<Result<Department, Error>> GetFirstAsync(
         Expression<Func<Department, bool>>? predicate = null,
-        bool asNoTracking = true,
         CancellationToken cancellationToken = default)
     {
         try
@@ -99,11 +93,6 @@ public class DepartmentsRepository : IDepartmentsRepository
             if (predicate is not null)
             {
                 query = query.Where(predicate);
-            }
-        
-            if (asNoTracking)
-            {
-                query = query.AsNoTracking();
             }
         
             var department = await query.FirstOrDefaultAsync(cancellationToken);
@@ -127,7 +116,6 @@ public class DepartmentsRepository : IDepartmentsRepository
         }
     }
 
-
     public async Task<Result<Department, Error>> GetByIdAsync(
         Guid departmentId,
         CancellationToken cancellationToken = default)
@@ -137,19 +125,30 @@ public class DepartmentsRepository : IDepartmentsRepository
             return departmentResult.Error;
         
         return departmentResult.Value;
-    }
+    }    
 
     public async Task<Result<IReadOnlyList<Department>, Error>> GetActiveDepartmentsAsync(
         Guid[] departmentIds,
         CancellationToken cancellationToken = default)
     {
         var departmentsResult = await GetAsync(
-            dep => dep.IsActive && departmentIds.Contains(dep.Id),
+            dep => departmentIds.Contains(dep.Id) && dep.IsActive,
             cancellationToken: cancellationToken);
         
         if (departmentsResult.IsFailure)
             return departmentsResult.Error;
 
         return departmentsResult.Value;
+    }
+
+    public async Task<UnitResult<Error>> DeleteLocationsByDepartmentId(
+        Guid departmentId,
+        CancellationToken cancellationToken = default)
+    {
+        await _dbContext.DepartmentLocations
+            .Where(x => x.DepartmentId == departmentId)
+            .ExecuteDeleteAsync(cancellationToken);
+        
+        return UnitResult.Success<Error>();
     }
 }

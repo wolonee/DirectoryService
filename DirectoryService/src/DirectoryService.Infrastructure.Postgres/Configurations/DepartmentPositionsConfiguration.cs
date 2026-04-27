@@ -37,5 +37,17 @@ public class DepartmentPositionsConfiguration : IEntityTypeConfiguration<Departm
             .HasForeignKey(d => d.PositionId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Restrict);
+        
+        // indexes
+        
+        builder.HasIndex(dp => new { dp.DepartmentId, dp.PositionId })
+            .IsUnique()
+            .HasDatabaseName("ix_department_positions_department_id_position_id");
+
+        builder.HasIndex(dl => dl.DepartmentId)
+            .HasDatabaseName("ix_department_positions_department_id");
+        
+        builder.HasIndex(dl => dl.PositionId)
+            .HasDatabaseName("ix_department_positions_position_id");
     }   
 }

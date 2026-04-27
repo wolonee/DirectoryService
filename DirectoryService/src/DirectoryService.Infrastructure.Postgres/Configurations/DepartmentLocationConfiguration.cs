@@ -38,5 +38,17 @@ public class DepartmentLocationConfiguration : IEntityTypeConfiguration<Departme
             .HasForeignKey(dl => dl.LocationId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
+        
+        // indexes
+        
+        builder.HasIndex(dl => new { dl.DepartmentId, dl.LocationId })
+            .IsUnique()
+            .HasDatabaseName("ux_department_locations");
+        
+        builder.HasIndex(dl => dl.DepartmentId)
+            .HasDatabaseName("ix_department_locations_department_id");
+
+        builder.HasIndex(dl => dl.LocationId)
+            .HasDatabaseName("ix_department_locations_location_id");
     }
 }

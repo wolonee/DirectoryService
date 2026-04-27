@@ -1,10 +1,9 @@
 using CSharpFunctionalExtensions;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Locations;
-using DirectoryService.Domain.Locations.ValueObjects;
 using DirectoryService.Shared;
 
-namespace DirectoryService.Application.Locations;
+namespace DirectoryService.Application.Database;
 
 public interface ILocationsRepository
 {
@@ -15,5 +14,7 @@ public interface ILocationsRepository
     Task<Result<bool, Error>> AddressExistsAsync(CreateLocationAddressRequest address, CancellationToken cancellationToken = default);
     
     Task<Result<bool, Error>> LocationsExistsAsync(Guid[] locationIds, CancellationToken cancellationToken = default);
+    
+    Task<Result<IReadOnlyList<Guid>, Error>> GetActiveLocationsIdsAsync(Guid[] locationIds, CancellationToken cancellationToken = default);
 
 }

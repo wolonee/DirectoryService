@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstractions;
-using DirectoryService.Application.Exceptions;
+using DirectoryService.Application.Database;
 using DirectoryService.Application.Validation;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Locations;

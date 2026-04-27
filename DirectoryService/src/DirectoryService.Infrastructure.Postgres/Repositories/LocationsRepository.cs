@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using CSharpFunctionalExtensions;
+using DirectoryService.Application.Database;
 using DirectoryService.Application.Locations;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Locations;
@@ -23,7 +24,6 @@ public class LocationsRepository : ILocationsRepository
     
     public async Task<Result<List<Location>, Error>> GetAsync(
         Expression<Func<Location, bool>>? predicate = null,
-        bool asNoTracking = true,
         CancellationToken cancellationToken = default)
     {
         try
@@ -33,11 +33,6 @@ public class LocationsRepository : ILocationsRepository
             if (predicate is not null)
             {
                 query = query.Where(predicate);
-            }
-        
-            if (asNoTracking)
-            {
-                query = query.AsNoTracking();
             }
         
             var locations = await query.ToListAsync(cancellationToken);
@@ -57,7 +52,6 @@ public class LocationsRepository : ILocationsRepository
     
     public async Task<Result<Location, Error>> GetFirstAsync(
         Expression<Func<Location, bool>>? predicate = null,
-        bool asNoTracking = true,
         CancellationToken cancellationToken = default)
     {
         try
@@ -67,11 +61,6 @@ public class LocationsRepository : ILocationsRepository
             if (predicate is not null)
             {
                 query = query.Where(predicate);
-            }
-        
-            if (asNoTracking)
-            {
-                query = query.AsNoTracking();
             }
         
             var location = await query.FirstOrDefaultAsync(cancellationToken);
@@ -150,9 +139,9 @@ public class LocationsRepository : ILocationsRepository
         try
         {
             return await _dbContext.Locations.AnyAsync(
-                x => x.Address.Street == address.Street && 
-                     x.Address.City == address.City && 
-                     x.Address.Country == address.Country, 
+                x => x.Address.Country == address.Country && 
+                     x.Address.Street == address.Street && 
+                     x.Address.City == address.City, 
                 cancellationToken);
         }
         catch (OperationCanceledException ex)
@@ -193,5 +182,17 @@ public class LocationsRepository : ILocationsRepository
             _logger.LogError(ex, "Unexpected error while checking locations existence");
             return GeneralErrors.DatabaseError();
         }
+    }
+
+    public async Task<Result<IReadOnlyList<Guid>, Error>> GetActiveLocationsIdsAsync(
+        Guid[] locationIds,
+        CancellationToken cancellationToken = default)
+    {
+        var activeLocationsIds = await _dbContext.Locations
+            .Where(x => locationIds.Contains(x.Id) && x.IsActive)
+            .Select(x => x.Id)
+            .ToListAsync(cancellationToken);
+
+        return activeLocationsIds;
     }
 }
