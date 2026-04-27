@@ -166,6 +166,25 @@ public class DepartmentsRepository : IDepartmentsRepository
         return departmentsResult.Value;
     }
     
+    public async Task<Result<Department, Error>> GetActiveDepartmentWithLock(
+        Guid departmentId,
+        CancellationToken cancellationToken = default)
+    {
+        await _dbContext.Database.ExecuteSqlAsync(
+            $"SELECT * FROM department WHERE id = {departmentId} FOR UPDATE",
+            cancellationToken);
+        
+        var departmentsResult = await GetFirstAsync(
+            dep => dep.Id == departmentId && dep.IsActive,
+            query => query.Include(x => x.ChildrenDepartments),
+            cancellationToken: cancellationToken);
+        
+        if (departmentsResult.IsFailure)
+            return departmentsResult.Error;
+
+        return departmentsResult.Value;
+    }
+    
     public async Task<Result<Department, Error>> GetActiveParentAsync(
         Guid departmentId,
         CancellationToken cancellationToken = default)

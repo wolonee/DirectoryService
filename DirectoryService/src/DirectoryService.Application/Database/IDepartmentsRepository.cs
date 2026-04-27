@@ -14,6 +14,9 @@ public interface IDepartmentsRepository
     
     Task<Result<Department, Error>> GetActiveDepartmentAsync(Guid departmentId, CancellationToken cancellationToken = default);
     
+    Task<Result<Department, Error>> GetActiveDepartmentWithLock(Guid departmentId, CancellationToken cancellationToken = default);
+
+    
     Task<Result<Department, Error>> GetActiveParentAsync(Guid departmentId, CancellationToken cancellationToken = default);
     
     Task<UnitResult<Error>> DeleteLocationsByDepartmentId(Guid departmentId, CancellationToken cancellationToken = default);

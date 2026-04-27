@@ -42,7 +42,7 @@ public class UpdateParentHandler : ICommandHandler<Guid, UpdateParentCommand>
         using var transactionScope = transactionScopeResult.Value;
         
         // Business validation
-        var departmentResult = await _departmentsRepository.GetActiveDepartmentAsync(command.DepartmentId, cancellationToken);
+        var departmentResult = await _departmentsRepository.GetActiveDepartmentWithLock(command.DepartmentId, cancellationToken);
         if (departmentResult.IsFailure)
             return departmentResult.Error.ToErrors();
         
