@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DirectoryService.Application.Departments.UpdateParent;
 
-public class UpdateParentHandler : ICommandHandler<Guid, UpdateParentCommand>
+public class UpdateParentHandler : ICommandHandler<UpdateParentCommand>
 {
     private readonly IValidator<UpdateParentCommand> _validator;
     private readonly IDepartmentsRepository _departmentsRepository;
@@ -28,7 +28,7 @@ public class UpdateParentHandler : ICommandHandler<Guid, UpdateParentCommand>
         _logger = logger;
     }
 
-    public async Task<Result<Guid, Errors>> Handle(UpdateParentCommand command, CancellationToken cancellationToken = default)
+    public async Task<UnitResult<Errors>> Handle(UpdateParentCommand command, CancellationToken cancellationToken = default)
     {
         // Validation
         var validationResult = await _validator.ValidateAsync(command, cancellationToken);

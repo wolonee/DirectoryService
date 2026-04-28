@@ -39,7 +39,7 @@ public class DepartmentsController : ControllerBase
     // PUT /api/departments/{departmentId}/parent
     [HttpPut("{departmentId:guid}/parent")]
     public async Task<EndpointResult> UpdateLocations(
-        [FromServices] ICommandHandler<Guid, UpdateParentCommand> handler,
+        [FromServices] ICommandHandler<UpdateParentCommand> handler,
         [FromRoute] Guid departmentId,
         [FromBody] UpdateParentRequest request,
         CancellationToken cancellationToken = default)
