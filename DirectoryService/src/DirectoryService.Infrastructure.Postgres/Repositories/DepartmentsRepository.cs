@@ -1,7 +1,9 @@
 ﻿using System.Linq.Expressions;
 using CSharpFunctionalExtensions;
+using Dapper;
 using DirectoryService.Application.Database;
 using DirectoryService.Application.Departments;
+using DirectoryService.Contracts.Departments;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Shared;
 using Microsoft.EntityFrameworkCore;
@@ -130,10 +132,6 @@ public class DepartmentsRepository : IDepartmentsRepository
         if (departmentResult.IsFailure)
             return departmentResult.Error;
         
-        var entry = _dbContext.Entry(departmentResult.Value);
-        var isTracked = entry.State != EntityState.Detached;    
-        _logger.LogInformation("Department tracked: {Tracked}, State: {State}", isTracked, entry.State);
-        
         return departmentResult.Value;
     }    
 
@@ -166,12 +164,23 @@ public class DepartmentsRepository : IDepartmentsRepository
         return departmentsResult.Value;
     }
     
+    public async Task<UnitResult<Error>> DeleteLocationsByDepartmentId(
+        Guid departmentId,
+        CancellationToken cancellationToken = default)
+    {
+        await _dbContext.DepartmentLocations
+            .Where(x => x.DepartmentId == departmentId)
+            .ExecuteDeleteAsync(cancellationToken);
+        
+        return UnitResult.Success<Error>();
+    }
+    
     public async Task<Result<Department, Error>> GetActiveDepartmentWithLock(
         Guid departmentId,
         CancellationToken cancellationToken = default)
     {
         await _dbContext.Database.ExecuteSqlAsync(
-            $"SELECT * FROM department FOR UPDATE",
+            $"SELECT * FROM department WHERE id = {departmentId} FOR UPDATE",
             cancellationToken);
         
         var departmentsResult = await GetFirstAsync(
@@ -184,29 +193,70 @@ public class DepartmentsRepository : IDepartmentsRepository
 
         return departmentsResult.Value;
     }
-    
-    public async Task<Result<Department, Error>> GetActiveParentAsync(
-        Guid departmentId,
+
+    public async Task<UnitResult<Error>> LockDescendants(
+        string rootPath,
         CancellationToken cancellationToken = default)
     {
-        var departmentsResult = await GetFirstAsync(
-            dep => dep.Id == departmentId && dep.IsActive,
-            cancellationToken: cancellationToken);
+        const string sql =
+            """
+                SELECT path
+                FROM department
+                WHERE path <@ @rootPath::ltree
+                FOR UPDATE NOWAIT
+            """;
         
-        if (departmentsResult.IsFailure)
-            return departmentsResult.Error;
-
-        return departmentsResult.Value;
-    }
-
-    public async Task<UnitResult<Error>> DeleteLocationsByDepartmentId(
-        Guid departmentId,
-        CancellationToken cancellationToken = default)
-    {
-        await _dbContext.DepartmentLocations
-            .Where(x => x.DepartmentId == departmentId)
-            .ExecuteDeleteAsync(cancellationToken);
+        try
+        {
+            await _dbContext.Database.ExecuteSqlRawAsync(
+                sql,
+                [new NpgsqlParameter("@rootPath", rootPath)],
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while locking descendants");
+            return Error.Failure("lock.descendants", "lock descendants failed");
+        }
         
         return UnitResult.Success<Error>();
+    }
+    
+    public async Task<List<DepartmenDto>> GetHierarchyLtree(string rootPath)
+    {
+        const string sql =
+            """
+            SELECT id, 
+                parent_id, 
+                path, 
+                depth,
+                is_active 
+            FROM departments 
+            WHERE path <@ @rootPath::ltree
+            ORDER BY depth;
+            """;
+
+        var connection = _dbContext.Database.GetDbConnection();
+        
+        var departmentRows = (await connection.QueryAsync<DepartmenDto>(sql, rootPath))
+            .ToList();
+
+        var departmentDictionary = departmentRows.ToDictionary(x => x.Id);
+
+        var roots = new List<DepartmenDto>();
+
+        foreach (var row in departmentRows)
+        {
+            if (row.Parent.HasValue && departmentDictionary.TryGetValue(row.Parent.Value, out var parent))
+            {
+                parent.Children.Add(departmentDictionary[row.Id]);
+            }
+            else
+            {
+                roots.Add(departmentDictionary[row.Id]);
+            }
+        }
+
+        return roots;
     }
 }

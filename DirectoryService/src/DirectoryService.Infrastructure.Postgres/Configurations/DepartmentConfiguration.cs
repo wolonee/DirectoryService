@@ -39,9 +39,11 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
             path.Property(d => d.Value)
                 .IsRequired()
                 .HasColumnName("path")
+                .HasColumnType("ltree")
                 .HasMaxLength(LengthConstants.LENGTH150);
             
             path.HasIndex(d => d.Value)
+                .HasMethod("gist")
                 .HasDatabaseName("ix_departments_path");
         });
         
@@ -53,6 +55,9 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
         builder.Property(d => d.IsActive)
             .HasColumnName("is_active")
             .IsRequired();
+
+        builder.Property(d => d.ParentId)
+            .HasColumnName("parent_id");
         
         builder.Property(d => d.ChildrenCount)
             .HasColumnName("children_count")
