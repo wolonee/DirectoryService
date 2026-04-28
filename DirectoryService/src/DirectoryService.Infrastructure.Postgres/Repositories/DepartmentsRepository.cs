@@ -203,6 +203,7 @@ public class DepartmentsRepository : IDepartmentsRepository
                 SELECT path
                 FROM department
                 WHERE path <@ @rootPath::ltree
+                AND path != @rootPath::ltree
                 FOR UPDATE NOWAIT
             """;
         
