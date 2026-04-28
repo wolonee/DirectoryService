@@ -2,6 +2,7 @@ using System.Globalization;
 using DirectoryService.Domain;
 using DirectoryService.Domain.Positions;
 using DirectoryService.Infrastructure;
+using DirectoryService.Infrastructure.Seeder;
 using DirectoryService.Presentation;
 using DirectoryService.Presentation.Extentions;
 using DirectoryService.Presentation.Middlewares;
@@ -41,6 +42,18 @@ try
             c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
             c.RoutePrefix = "swagger"; // Можно изменить на string.Empty для корневого URL
         });
+    }
+    
+    using (var scope = app.Services.CreateScope())
+    {
+        var context = scope.ServiceProvider.GetRequiredService<DirectoryServiceDbContext>();
+        
+        var seeder = new DepartmentTreeSeeder(context);
+
+        Console.WriteLine("Starting seeding...");
+        
+        var count = await seeder.SeedAsync();
+        Console.WriteLine($"Seeded {count} departments.");
     }
 
     app.UseHttpsRedirection();
