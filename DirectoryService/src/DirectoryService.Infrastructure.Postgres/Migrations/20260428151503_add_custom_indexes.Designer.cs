@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DirectoryService.Infrastructure.Migrations
 {
     [DbContext(typeof(DirectoryServiceDbContext))]
-    [Migration("20260425213218_Initial")]
-    partial class Initial
+    [Migration("20260428151503_add_custom_indexes")]
+    partial class add_custom_indexes
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -23,6 +23,7 @@ namespace DirectoryService.Infrastructure.Migrations
                 .HasAnnotation("ProductVersion", "9.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
+            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "ltree");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("DirectoryService.Domain.Departments.Department", b =>
@@ -57,7 +58,8 @@ namespace DirectoryService.Infrastructure.Migrations
                         .HasColumnName("is_active");
 
                     b.Property<Guid?>("ParentId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("parent_id");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -228,13 +230,15 @@ namespace DirectoryService.Infrastructure.Migrations
                             b1.Property<string>("Value")
                                 .IsRequired()
                                 .HasMaxLength(150)
-                                .HasColumnType("character varying(150)")
+                                .HasColumnType("ltree")
                                 .HasColumnName("path");
 
                             b1.HasKey("DepartmentId");
 
                             b1.HasIndex("Value")
                                 .HasDatabaseName("ix_departments_path");
+
+                            NpgsqlIndexBuilderExtensions.HasMethod(b1.HasIndex("Value"), "gist");
 
                             b1.ToTable("department");
 
