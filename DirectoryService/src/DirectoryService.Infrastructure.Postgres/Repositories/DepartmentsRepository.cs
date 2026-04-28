@@ -222,6 +222,47 @@ public class DepartmentsRepository : IDepartmentsRepository
         
         return UnitResult.Success<Error>();
     }
+
+    public async Task<UnitResult<Error>> UpdateParent(
+        string rootPath,
+        string newParentPath,
+        Guid oldParentId,
+        Guid newParentId,
+        CancellationToken cancellationToken = default)
+    {
+        const string sql =
+            """
+            UPDATE department
+            SET
+                path = (@newParentPath::ltree || subpath(path, nlevel(@rootPath::ltree) - 1, nlevel(path))),
+                depth = nlevel(@newParentPath::ltree || subpath(path, nlevel(@rootPath::ltree) - 1, nlevel(path)))
+            WHERE path <@ @rootPath::ltree
+            
+            UPDATE department
+            SET parent_id = @newParentId
+            WHERE parent_id = @oldParentId
+            """;
+
+        try
+        {
+            await _dbContext.Database.ExecuteSqlRawAsync(
+                sql,
+                [
+                    new NpgsqlParameter("@rootPath", rootPath),
+                    new NpgsqlParameter("@newParentPath", newParentPath),
+                    new NpgsqlParameter("@oldParentId", oldParentId),
+                    new NpgsqlParameter("@newParentId", newParentId),
+                ],
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while updating parent");
+            return Error.Failure("update.parent", "update parent failed");
+        }
+        
+        return UnitResult.Success<Error>();
+    }
     
     public async Task<List<DepartmenDto>> GetHierarchyLtree(string rootPath)
     {
