@@ -226,7 +226,7 @@ public class DepartmentsRepository : IDepartmentsRepository
     public async Task<UnitResult<Error>> UpdateParent(
         string rootPath,
         string newParentPath,
-        Guid oldParentId,
+        Guid departmentId,
         Guid newParentId,
         CancellationToken cancellationToken = default)
     {
@@ -240,7 +240,7 @@ public class DepartmentsRepository : IDepartmentsRepository
             
             UPDATE department
             SET parent_id = @newParentId
-            WHERE parent_id = @oldParentId
+            WHERE id = @departmentId
             """;
 
         try
@@ -250,7 +250,7 @@ public class DepartmentsRepository : IDepartmentsRepository
                 [
                     new NpgsqlParameter("@rootPath", rootPath),
                     new NpgsqlParameter("@newParentPath", newParentPath),
-                    new NpgsqlParameter("@oldParentId", oldParentId),
+                    new NpgsqlParameter("@departmentId", departmentId),
                     new NpgsqlParameter("@newParentId", newParentId),
                 ],
                 cancellationToken);

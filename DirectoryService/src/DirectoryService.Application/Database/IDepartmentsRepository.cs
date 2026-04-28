@@ -17,4 +17,11 @@ public interface IDepartmentsRepository
     Task<Result<Department, Error>> GetActiveDepartmentWithLock(Guid departmentId, CancellationToken cancellationToken = default);
 
     Task<UnitResult<Error>> LockDescendants(string rootPath, CancellationToken cancellationToken = default);
+
+    Task<UnitResult<Error>> UpdateParent(
+        string rootPath,
+        string newParentPath,
+        Guid oldParentId,
+        Guid newParentId,
+        CancellationToken cancellationToken = default);
 }

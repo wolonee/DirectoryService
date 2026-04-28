@@ -73,7 +73,6 @@ public class UpdateParentHandler : ICommandHandler<Guid, UpdateParentCommand>
                 return DepartmentErrors.DepartmentChildrensContainsParent().ToErrors();
 
             // Update parent
-
         }
         else
         {
