@@ -44,17 +44,17 @@ try
         });
     }
     
-    using (var scope = app.Services.CreateScope())
-    {
-        var context = scope.ServiceProvider.GetRequiredService<DirectoryServiceDbContext>();
-        
-        var seeder = new DepartmentTreeSeeder(context);
-
-        Console.WriteLine("Starting seeding...");
-        
-        var count = await seeder.SeedAsync();
-        Console.WriteLine($"Seeded {count} departments.");
-    }
+    // using (var scope = app.Services.CreateScope())
+    // {
+    //     var context = scope.ServiceProvider.GetRequiredService<DirectoryServiceDbContext>();
+    //     
+    //     var seeder = new DepartmentTreeSeeder(context);
+    //
+    //     Console.WriteLine("Starting seeding...");
+    //     
+    //     var count = await seeder.SeedAsync();
+    //     Console.WriteLine($"Seeded {count} departments.");
+    // }
 
     app.UseHttpsRedirection();
 

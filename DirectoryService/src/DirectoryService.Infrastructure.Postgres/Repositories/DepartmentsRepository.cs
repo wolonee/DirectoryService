@@ -230,14 +230,17 @@ public class DepartmentsRepository : IDepartmentsRepository
         Guid? newParentId,
         CancellationToken cancellationToken = default)
     {
-        const string sql =
+        const string updatePathSql = 
             """
             UPDATE department
             SET
                 path = (@newParentPath::ltree || subpath(path, nlevel(@rootPath::ltree) - 1, nlevel(path))),
                 depth = nlevel(@newParentPath::ltree || subpath(path, nlevel(@rootPath::ltree) - 1, nlevel(path)))
             WHERE path <@ @rootPath::ltree
-            
+            """;
+
+        const string updateParentSql = 
+            """
             UPDATE department
             SET parent_id = @newParentId
             WHERE id = @departmentId
@@ -246,10 +249,16 @@ public class DepartmentsRepository : IDepartmentsRepository
         try
         {
             await _dbContext.Database.ExecuteSqlRawAsync(
-                sql,
+                updatePathSql,
                 [
                     new NpgsqlParameter("@rootPath", rootPath),
                     new NpgsqlParameter("@newParentPath", newParentPath),
+                ],
+                cancellationToken);
+
+            await _dbContext.Database.ExecuteSqlRawAsync(
+                updateParentSql,
+                [
                     new NpgsqlParameter("@departmentId", departmentId),
                     new NpgsqlParameter("@newParentId", newParentId.HasValue ? newParentId.Value : DBNull.Value),
                 ],
@@ -260,7 +269,7 @@ public class DepartmentsRepository : IDepartmentsRepository
             _logger.LogError(ex, "Unexpected error while updating parent");
             return Error.Failure("update.parent", "update parent failed");
         }
-        
+    
         return UnitResult.Success<Error>();
     }
     

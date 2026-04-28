@@ -63,7 +63,7 @@ public class UpdateParentHandler : ICommandHandler<UpdateParentCommand>
 
         if (command.Request.ParentId != null)
         {
-            var parentResult = await _departmentsRepository.GetActiveDepartmentWithLock(command.DepartmentId, cancellationToken);
+            var parentResult = await _departmentsRepository.GetActiveDepartmentWithLock(command.Request.ParentId.Value, cancellationToken);
             if (parentResult.IsFailure)
                 return parentResult.Error.ToErrors();
         
