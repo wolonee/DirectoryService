@@ -200,7 +200,7 @@ public class DepartmentsRepository : IDepartmentsRepository
     {
         const string sql =
             """
-                SELECT path
+                SELECT id
                 FROM department
                 WHERE path <@ @rootPath::ltree
                 AND path != @rootPath::ltree
