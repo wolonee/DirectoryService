@@ -22,6 +22,6 @@ public interface IDepartmentsRepository
         string rootPath,
         string newParentPath,
         Guid oldParentId,
-        Guid newParentId,
+        Guid? newParentId,
         CancellationToken cancellationToken = default);
 }

@@ -57,6 +57,9 @@ public class UpdateParentHandler : ICommandHandler<Guid, UpdateParentCommand>
         var lockDescendantsResult = await _departmentsRepository.LockDescendants(department.DepartmentPath.Value, cancellationToken);
         if (lockDescendantsResult.IsFailure)
             return lockDescendantsResult.Error.ToErrors();
+        
+        string rootPath = department.DepartmentPath.Value;
+        string newParentPath = string.Empty;
 
         if (command.Request.ParentId != null)
         {
@@ -72,12 +75,31 @@ public class UpdateParentHandler : ICommandHandler<Guid, UpdateParentCommand>
             if (department.ChildrenDepartments.Contains(parent))
                 return DepartmentErrors.DepartmentChildrensContainsParent().ToErrors();
 
+            newParentPath = parent.DepartmentPath.Value;
+
             // Update parent
+            var updateParentResult = await _departmentsRepository.UpdateParent(
+                rootPath,
+                newParentPath,
+                department.Id,
+                parent.Id,
+                cancellationToken);
+
+            if (updateParentResult.IsFailure)
+                return updateParentResult.Error.ToErrors();
         }
         else
         {
             // Update parent
+            var updateParentResult = await _departmentsRepository.UpdateParent(
+                rootPath,
+                newParentPath,
+                department.Id,
+                null,
+                cancellationToken);
 
+            if (updateParentResult.IsFailure)
+                return updateParentResult.Error.ToErrors();
         }
         
         // Save in database

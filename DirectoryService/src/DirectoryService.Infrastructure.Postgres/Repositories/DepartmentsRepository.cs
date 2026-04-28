@@ -227,7 +227,7 @@ public class DepartmentsRepository : IDepartmentsRepository
         string rootPath,
         string newParentPath,
         Guid departmentId,
-        Guid newParentId,
+        Guid? newParentId,
         CancellationToken cancellationToken = default)
     {
         const string sql =
@@ -251,7 +251,7 @@ public class DepartmentsRepository : IDepartmentsRepository
                     new NpgsqlParameter("@rootPath", rootPath),
                     new NpgsqlParameter("@newParentPath", newParentPath),
                     new NpgsqlParameter("@departmentId", departmentId),
-                    new NpgsqlParameter("@newParentId", newParentId),
+                    new NpgsqlParameter("@newParentId", newParentId.HasValue ? newParentId.Value : DBNull.Value),
                 ],
                 cancellationToken);
         }
