@@ -73,16 +73,12 @@ public class UpdateParentHandler : ICommandHandler<Guid, UpdateParentCommand>
                 return DepartmentErrors.DepartmentChildrensContainsParent().ToErrors();
 
             // Update parent
-            var updateDepartmentResult = department.UpdateParent(parent);
-            if (updateDepartmentResult.IsFailure)
-                return updateDepartmentResult.Error.ToErrors();
+
         }
         else
         {
             // Update parent
-            var updateDepartmentResult = department.UpdateNullParent();
-            if (updateDepartmentResult.IsFailure)
-                return updateDepartmentResult.Error.ToErrors();
+
         }
         
         // Save in database
