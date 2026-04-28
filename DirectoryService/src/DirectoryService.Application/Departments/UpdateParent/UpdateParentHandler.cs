@@ -120,6 +120,6 @@ public class UpdateParentHandler : ICommandHandler<Guid, UpdateParentCommand>
         // Logging about success result
         _logger.LogInformation("Department was successfully updated.");
         
-        return Guid.NewGuid();
+        return department.Id;
     }
 }
