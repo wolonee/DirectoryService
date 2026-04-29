@@ -179,19 +179,35 @@ public class DepartmentsRepository : IDepartmentsRepository
         Guid departmentId,
         CancellationToken cancellationToken = default)
     {
-        await _dbContext.Database.ExecuteSqlAsync(
-            $"SELECT * FROM department WHERE id = {departmentId} FOR UPDATE",
-            cancellationToken);
-        
-        var departmentsResult = await GetFirstAsync(
-            dep => dep.Id == departmentId && dep.IsActive,
-            query => query.Include(x => x.ChildrenDepartments),
-            cancellationToken: cancellationToken);
-        
-        if (departmentsResult.IsFailure)
-            return departmentsResult.Error;
+        try
+        {
+            var department = await _dbContext.Departments
+                .FromSqlRaw(
+                    @"
+                SELECT * 
+                FROM ""department"" 
+                WHERE ""id"" = {0} AND ""is_active"" = true 
+                FOR UPDATE
+            ", departmentId)
+                .Include(d => d.ChildrenDepartments)
+                .AsSingleQuery()
+                .FirstOrDefaultAsync(cancellationToken);
 
-        return departmentsResult.Value;
+            if (department is null)
+                return GeneralErrors.NotFound(null, "department");
+
+            return department;
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation getting department");
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected getting department");
+            return GeneralErrors.DatabaseError();
+        }
     }
 
     public async Task<UnitResult<Error>> LockDescendants(
