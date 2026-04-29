@@ -23,3 +23,19 @@ public sealed class SuccessResult<TValue> : IResult
         return httpContext.Response.WriteAsJsonAsync(envelope);
     }
 }
+
+public sealed class SuccessResult : IResult
+{
+    public SuccessResult() { }
+    
+    public Task ExecuteAsync(HttpContext httpContext)
+    {
+        ArgumentNullException.ThrowIfNull(httpContext);
+        
+        var envelope = Envelope.Ok();
+
+        httpContext.Response.StatusCode = (int)HttpStatusCode.OK;
+        
+        return httpContext.Response.WriteAsJsonAsync(envelope);
+    }
+}

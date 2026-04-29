@@ -5,7 +5,7 @@
 namespace DirectoryService.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class CustomIndexes : Migration
+    public partial class add_custom_indexes : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

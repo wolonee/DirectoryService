@@ -107,4 +107,11 @@ public class Department
 
         return UnitResult.Success<Error>();
     }
+
+    // public UnitResult<Error> UpdateParentForChildren(Department parent)
+    // {
+    //     Depth = parent.Depth + 1;
+    //     DepartmentPath = DepartmentPath.CreateChild(parent.DepartmentIdentifier);
+    //     UpdatedAt = DateTime.UtcNow;
+    // }
 }

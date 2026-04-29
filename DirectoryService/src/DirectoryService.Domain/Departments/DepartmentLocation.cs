@@ -11,7 +11,6 @@ public class DepartmentLocation
     
     private DepartmentLocation(Department department, Guid locationId)
     {
-        Id = Guid.NewGuid();
         Department = department;
         DepartmentId = department.Id;
         LocationId = locationId;
@@ -19,7 +18,6 @@ public class DepartmentLocation
     
     private DepartmentLocation(Guid departmentId, Guid locationId)
     {
-        Id = Guid.NewGuid();
         DepartmentId = departmentId;
         LocationId = locationId;
     }
