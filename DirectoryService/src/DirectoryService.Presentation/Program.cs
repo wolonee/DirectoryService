@@ -72,3 +72,8 @@ finally
 {
     Log.CloseAndFlush();
 }
+
+namespace DirectoryService.Presentation
+{
+    public partial class Program;
+}
