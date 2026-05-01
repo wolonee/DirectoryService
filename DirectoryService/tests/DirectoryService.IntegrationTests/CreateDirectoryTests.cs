@@ -7,8 +7,15 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectoryService.IntegrationTests;
 
-public class CreateDirectoryTests : DirectoryTestWebFactory
+public class CreateDirectoryTests : IClassFixture<DirectoryTestWebFactory>
 {
+    private IServiceProvider Services { get; set; }
+    
+    public CreateDirectoryTests(DirectoryTestWebFactory factory)
+    {
+        Services = factory.Services;
+    }
+    
     [Fact]
     public async Task CreateDirectory_with_valid_data_should_succeed()
     {
@@ -30,6 +37,28 @@ public class CreateDirectoryTests : DirectoryTestWebFactory
         // assert
         Assert.True(result.IsSuccess);
         Assert.NotEqual(Guid.Empty, result.Value);
+    }
+    
+    [Fact]
+    public async Task CreateDirectory_with_valid_data_should_failed()
+    {
+        // arrange
+        Guid locationId = await CreateLocation();
+
+        await using var scope = Services.CreateAsyncScope();
+
+        var sut = scope.ServiceProvider.GetRequiredService<CreateDepartmentHandler>();
+        
+        var cancellationToken = CancellationToken.None;
+
+        var command = new CreateDepartmentCommand(new CreateDepartmentRequest(
+            " ", "podrazelenie", null, [locationId]));
+        
+        // act
+        var result = await sut.Handle(command, cancellationToken);
+        
+        // assert
+        Assert.True(result.IsFailure);
     }
 
     private async Task<Guid> CreateLocation()
