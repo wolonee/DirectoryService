@@ -52,7 +52,7 @@ public class CreateDirectoryTests : IClassFixture<DirectoryTestWebFactory>
         var cancellationToken = CancellationToken.None;
 
         var command = new CreateDepartmentCommand(new CreateDepartmentRequest(
-            " ", "podrazelenie", null, [locationId]));
+            "a", "podrazelenie", null, [locationId]));
         
         // act
         var result = await sut.Handle(command, cancellationToken);
