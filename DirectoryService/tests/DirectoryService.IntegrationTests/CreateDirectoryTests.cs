@@ -1,10 +1,50 @@
-﻿namespace DirectoryService.IntegrationTests;
+﻿using DirectoryService.Application.Departments.CreateDepartment;
+using DirectoryService.Contracts.Departments;
+using DirectoryService.Domain.Locations;
+using DirectoryService.Domain.Locations.ValueObjects;
+using DirectoryService.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 
-public class CreateDirectoryTests
+namespace DirectoryService.IntegrationTests;
+
+public class CreateDirectoryTests : DirectoryTestWebFactory
 {
     [Fact]
-    public void CreateDirectory_with_valid_data_should_succeed()
+    public async Task CreateDirectory_with_valid_data_should_succeed()
     {
+        // arrange
+        Guid locationId = await CreateLocation();
+
+        await using var scope = Services.CreateAsyncScope();
+
+        var sut = scope.ServiceProvider.GetRequiredService<CreateDepartmentHandler>();
         
+        var cancellationToken = CancellationToken.None;
+
+        var command = new CreateDepartmentCommand(new CreateDepartmentRequest(
+            "Подразделение", "podrazelenie", null, [locationId]));
+        
+        // act
+        var result = await sut.Handle(command, cancellationToken);
+        
+        // assert
+        Assert.True(result.IsSuccess);
+        Assert.NotEqual(Guid.Empty, result.Value);
+    }
+
+    private async Task<Guid> CreateLocation()
+    {
+        await using var initializerScope = Services.CreateAsyncScope();
+        var dbContext = initializerScope.ServiceProvider.GetRequiredService<DirectoryServiceDbContext>();
+
+        var location = Location.Create(
+            LocationAddress.Create("pepe", "Togliatti", "Russia").Value,
+            LocationName.Create("Локация").Value,
+            LocationTimeZone.Create("Europe/Moscow").Value).Value;
+            
+        dbContext.Locations.Add(location);
+        await dbContext.SaveChangesAsync();
+            
+        return location.Id;
     }
 }
