@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Data.Common;
+using System.Reflection;
 using DirectoryService.Infrastructure;
 using DirectoryService.Presentation;
 using Microsoft.AspNetCore.Hosting;
@@ -22,6 +23,7 @@ public class DirectoryTestWebFactory : WebApplicationFactory<Program>, IAsyncLif
         .Build();
     
     private Respawner _respawner = null!;
+    private DbConnection _dbConnection = null!;
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -43,6 +45,9 @@ public class DirectoryTestWebFactory : WebApplicationFactory<Program>, IAsyncLif
         
         await dbContext.Database.EnsureDeletedAsync();
         await dbContext.Database.EnsureCreatedAsync();
+        
+        _dbConnection = new NpgsqlConnection(_dbContainer.GetConnectionString());
+        await _dbConnection.OpenAsync();
 
         await InitializeRespawner();
     }
@@ -51,13 +56,14 @@ public class DirectoryTestWebFactory : WebApplicationFactory<Program>, IAsyncLif
     {
         await _dbContainer.StopAsync();
         await _dbContainer.DisposeAsync();
+        
+        await _dbConnection.DisposeAsync();
     }
 
     private async Task InitializeRespawner()
     {
-        var connection = new NpgsqlConnection(_dbContainer.GetConnectionString());
         _respawner = await Respawner.CreateAsync(
-            connection,
+            _dbConnection,
             new RespawnerOptions
             {
                 DbAdapter = DbAdapter.Postgres, 
@@ -67,7 +73,6 @@ public class DirectoryTestWebFactory : WebApplicationFactory<Program>, IAsyncLif
 
     public async Task ResetDatabaseAsync()
     {
-        var connection = new NpgsqlConnection(_dbContainer.GetConnectionString());
-        await _respawner.ResetAsync(connection);    
+        await _respawner.ResetAsync(_dbConnection);    
     }
 }

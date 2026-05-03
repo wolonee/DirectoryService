@@ -8,24 +8,16 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectoryService.IntegrationTests;
 
-public class CreateDirectoryTests : IClassFixture<DirectoryTestWebFactory>, IAsyncLifetime
+public class CreateDepartmentTests : DirectoryBaseTests
 {
-    private readonly Func<Task> _resetDatabase;
+    public CreateDepartmentTests(DirectoryTestWebFactory factory)
+        : base(factory) { }
     
-    private IServiceProvider Services { get; set; }
-    
-    public CreateDirectoryTests(DirectoryTestWebFactory factory)
-    {
-        Services = factory.Services;
-        _resetDatabase = factory.ResetDatabaseAsync;
-    }
-
     [Fact]
     public async Task CreateDirectory_with_valid_data_should_succeed()
     {
         // arrange
-        Guid locationId = await CreateLocation();
-
+        var locationId = await CreateLocation();
         var cancellationToken = CancellationToken.None;
 
         var result = await ExecuteHandler((sut) =>
@@ -55,8 +47,7 @@ public class CreateDirectoryTests : IClassFixture<DirectoryTestWebFactory>, IAsy
     public async Task CreateDirectory_with_invalid_data_should_failed()
     {
         // arrange
-        Guid locationId = await CreateLocation();
-        
+        var locationId = await CreateLocation();
         var cancellationToken = CancellationToken.None;
 
         var result = await ExecuteHandler((sut) =>
@@ -94,26 +85,5 @@ public class CreateDirectoryTests : IClassFixture<DirectoryTestWebFactory>, IAsy
         await using var scope = Services.CreateAsyncScope();
         var sut = scope.ServiceProvider.GetRequiredService<CreateDepartmentHandler>();
         return await action(sut);
-    }
-
-    private async Task<T> ExecuteInDb<T>(Func<DirectoryServiceDbContext, Task<T>> action)
-    {
-        await using var scope = Services.CreateAsyncScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<DirectoryServiceDbContext>();
-        return await action(dbContext);
-    }
-    
-    private async Task ExecuteInDb(Func<DirectoryServiceDbContext, Task> action)
-    {
-        await using var scope = Services.CreateAsyncScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<DirectoryServiceDbContext>(); 
-        await action(dbContext);
-    }
-
-    public Task InitializeAsync() => Task.CompletedTask;
-
-    public async Task DisposeAsync()
-    {
-        await _resetDatabase();
     }
 }
