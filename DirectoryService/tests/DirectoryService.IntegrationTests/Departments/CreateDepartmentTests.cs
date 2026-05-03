@@ -14,7 +14,7 @@ public class CreateDepartmentTests : DirectoryBaseTests
         : base(factory) { }
     
     [Fact]
-    public async Task CreateDirectory_with_valid_data_should_succeed()
+    public async Task CreateDepartment_with_valid_data_should_succeed()
     {
         // arrange
         var locationId = await CreateLocation();
@@ -44,7 +44,7 @@ public class CreateDepartmentTests : DirectoryBaseTests
     }
     
     [Fact]
-    public async Task CreateDirectory_with_invalid_data_should_failed()
+    public async Task CreateDepartment_with_invalid_name_should_failed()
     {
         // arrange
         var locationId = await CreateLocation();
