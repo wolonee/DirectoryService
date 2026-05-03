@@ -62,10 +62,10 @@ public class Department
     public DateTime UpdatedAt { get; private set; }
 
     public static Result<Department, Error> CreateParent(
-        Guid? id,
         DepartmentName name, 
         DepartmentIdentifier identifier, 
-        IEnumerable<DepartmentLocation> departmentLocations)
+        IEnumerable<DepartmentLocation> departmentLocations, 
+        Guid? id)
     {
         var departmentLocationsList = departmentLocations.ToList();
         
