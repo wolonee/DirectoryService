@@ -1,10 +1,12 @@
-﻿using DirectoryService.Application.Departments.CreateDepartment;
+﻿using System.Text.Json;
+using DirectoryService.Application.Departments.CreateDepartment;
 using DirectoryService.Contracts.Departments;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Departments.ValueObjects;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Domain.Locations.ValueObjects;
 using DirectoryService.Infrastructure;
+using DirectoryService.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,7 +22,7 @@ public class CreateDepartmentTests : DirectoryBaseTests
     public async Task CreateDepartment_with_one_location_should_succeed()
     {
         // arrange
-        var locationId = await CreateLocation();
+        var locationId = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
         var cancellationToken = CancellationToken.None;
 
         var result = await ExecuteHandler((sut) =>
@@ -38,11 +40,15 @@ public class CreateDepartmentTests : DirectoryBaseTests
             var department = await dbContext.Departments
                 .FirstAsync(d => d.Id == result.Value, cancellationToken: cancellationToken);
 
-            Assert.NotNull(department);
-            Assert.Equal(department.Id, result.Value);
+            var departmentLocations = await dbContext.DepartmentLocations
+                .FirstAsync(l => l.LocationId == locationId, cancellationToken: cancellationToken);
 
+            Assert.NotNull(department);
+            Assert.NotEqual(Guid.Empty, department.Id);
             Assert.True(result.IsSuccess);
-            Assert.NotEqual(Guid.Empty, result.Value);
+            
+            Assert.NotNull(departmentLocations);
+            Assert.Equal(departmentLocations.DepartmentId, department.Id);
         });
     }
 
@@ -50,9 +56,9 @@ public class CreateDepartmentTests : DirectoryBaseTests
     public async Task CreateDepartment_with_many_locations_should_succeed()
     {
         // arrange
-        var locationId1 = await CreateLocation();
-        var locationId2 = await CreateLocation();
-        var locationId3 = await CreateLocation();
+        var locationId1 = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
+        var locationId2 = await CreateLocation("dddd", "Moscow", "Russia", "Office_2");
+        var locationId3 = await CreateLocation("aaaa", "Moscow", "Russia", "Office_3");
 
         var locationArray = new[] { locationId1, locationId2, locationId3 };
         
@@ -71,7 +77,7 @@ public class CreateDepartmentTests : DirectoryBaseTests
         await ExecuteInDb(async dbContext =>
         {
             var department = await dbContext.Departments
-                .FirstOrDefaultAsync(d => d.Id == result.Value, cancellationToken: cancellationToken);
+                .FirstAsync(d => d.Id == result.Value, cancellationToken: cancellationToken);
 
             var locations = dbContext.DepartmentLocations
                 .Where(x => locationArray.Contains(x.LocationId) && x.DepartmentId == result.Value)
@@ -90,7 +96,7 @@ public class CreateDepartmentTests : DirectoryBaseTests
     public async Task CreateDepartment_with_parent_should_succeed()
     {
         // arrange
-        var locationId = await CreateLocation();
+        var locationId = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
         var parentDepartmentId = await CreateDepartment();
         
         var cancellationToken = CancellationToken.None;
@@ -98,7 +104,7 @@ public class CreateDepartmentTests : DirectoryBaseTests
         var result = await ExecuteHandler(sut =>
         {
             var command = new CreateDepartmentCommand(new CreateDepartmentRequest(
-                "ChildDepartment", "child.department", parentDepartmentId, [locationId]));
+                "ChildDepartment", "child_department", parentDepartmentId, [locationId]));
         
             // act
             return sut.Handle(command, cancellationToken);
@@ -108,16 +114,16 @@ public class CreateDepartmentTests : DirectoryBaseTests
         await ExecuteInDb(async dbContext =>
         {
             var department = await dbContext.Departments
-                .FirstOrDefaultAsync(d => d.Id == result.Value, cancellationToken: cancellationToken);
+                .FirstAsync(d => d.Id == result.Value, cancellationToken: cancellationToken);
             
             var parentDepartment = await dbContext.Departments
-                .FirstOrDefaultAsync(d => d.Id == parentDepartmentId, cancellationToken: cancellationToken);
+                .FirstAsync(d => d.Id == parentDepartmentId, cancellationToken: cancellationToken);
             
             Assert.NotNull(department);
             Assert.NotNull(parentDepartment);
             
             Assert.Equal(department.ParentId, parentDepartment.Id);
-            
+            Assert.Equal(0, parentDepartment.Depth);
             Assert.True(result.IsSuccess);
             Assert.NotEqual(Guid.Empty, result.Value);
             Assert.NotEqual(Guid.Empty, parentDepartment.Id);
@@ -125,31 +131,38 @@ public class CreateDepartmentTests : DirectoryBaseTests
     }
     
     [Fact]
-    public async Task CreateDepartment_with_invalid_data_should_failed()
+    public async Task CreateDepartment_with_short_name_should_failed()
     {
         // arrange
-        var locationId = await CreateLocation();
+        var locationId = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
         var cancellationToken = CancellationToken.None;
 
         var result = await ExecuteHandler((sut) =>
         {
             var command = new CreateDepartmentCommand(new CreateDepartmentRequest(
-                "d", "_department", null, [locationId]));
+                "d", "identifier", null, [locationId]));
         
             // act
             return sut.Handle(command, cancellationToken);
         });
         
         // assert
-        Assert.True(result.IsFailure);
-        Assert.NotEmpty(result.Error);
+        await ExecuteInDb(async dbContext =>
+        {
+            var department = await dbContext.Departments
+                .FirstOrDefaultAsync(d => d.DepartmentIdentifier.Value == "identifier", cancellationToken: cancellationToken);
+            
+            Assert.Null(department);
+            Assert.True(result.IsFailure);
+            Assert.NotEmpty(result.Error);
+        });
     }
     
     [Fact]
     public async Task CreateDepartment_with_invalid_parentId_should_failed()
     {
         // arrange
-        var locationId = await CreateLocation();
+        var locationId = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
         var cancellationToken = CancellationToken.None;
 
         var result = await ExecuteHandler((sut) =>
@@ -162,25 +175,24 @@ public class CreateDepartmentTests : DirectoryBaseTests
         });
         
         // assert
-        Assert.True(result.IsFailure);
-        Assert.NotEmpty(result.Error);
-    
         await ExecuteInDb(async dbContext =>
         {
             var department = await dbContext.Departments
                 .FirstOrDefaultAsync(d => d.DepartmentName == DepartmentName.Create("department").Value, cancellationToken);
         
             Assert.Null(department);
+            Assert.True(result.IsFailure);
+            Assert.NotEmpty(result.Error);
         });
     }
 
-    private async Task<Guid> CreateLocation()
+    private async Task<Guid> CreateLocation(string street, string city, string country, string name)
     {
         return await ExecuteInDb(async dbContext =>
         {
             var location = Location.Create(
-                LocationAddress.Create("pepe", "Togliatti", "Russia").Value,
-                LocationName.Create("Локация").Value,
+                LocationAddress.Create(street, city, country).Value,
+                LocationName.Create(name).Value,
                 LocationTimeZone.Create("Europe/Moscow").Value).Value;
 
             dbContext.Locations.Add(location);
@@ -194,7 +206,7 @@ public class CreateDepartmentTests : DirectoryBaseTests
     {
         return await ExecuteInDb(async dbContext =>
         {
-            var locationId = await CreateLocation();
+            var locationId = await CreateLocation("specialStreet", "Moscow", "Russia", "specialOffice");
             
             var departmentId = Guid.NewGuid();
             var departmentLocations = DepartmentLocation.Create(departmentId, locationId).Value;
