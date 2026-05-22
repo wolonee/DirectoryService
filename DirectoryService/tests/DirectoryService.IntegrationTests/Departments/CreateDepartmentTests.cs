@@ -159,6 +159,150 @@ public class CreateDepartmentTests : DirectoryBaseTests
     }
     
     [Fact]
+    public async Task CreateDepartment_with_long_name_should_failed()
+    {
+        // arrange
+        var locationId = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
+        var cancellationToken = CancellationToken.None;
+        
+        var name = new string('a', 200);
+
+        var result = await ExecuteHandler((sut) =>
+        {
+            var command = new CreateDepartmentCommand(new CreateDepartmentRequest(
+                name, "identifier", null, [locationId]));
+        
+            // act
+            return sut.Handle(command, cancellationToken);
+        });
+        
+        // assert
+        await ExecuteInDb(async dbContext =>
+        {
+            var department = await dbContext.Departments
+                .FirstOrDefaultAsync(d => d.DepartmentIdentifier.Value == "identifier", cancellationToken: cancellationToken);
+            
+            Assert.Null(department);
+            Assert.True(result.IsFailure);
+            Assert.NotEmpty(result.Error);
+        });
+    }
+    
+    [Fact]
+    public async Task CreateDepartment_with_short_identifier_should_failed()
+    {
+        // arrange
+        var locationId = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
+        var cancellationToken = CancellationToken.None;
+
+        var result = await ExecuteHandler((sut) =>
+        {
+            var command = new CreateDepartmentCommand(new CreateDepartmentRequest(
+                "department", "i", null, [locationId]));
+        
+            // act
+            return sut.Handle(command, cancellationToken);
+        });
+        
+        // assert
+        await ExecuteInDb(async dbContext =>
+        {
+            var department = await dbContext.Departments
+                .FirstOrDefaultAsync(d => d.DepartmentName == DepartmentName.Create("department").Value, cancellationToken: cancellationToken);
+            
+            Assert.Null(department);
+            Assert.True(result.IsFailure);
+            Assert.NotEmpty(result.Error);
+        });
+    }
+    
+    [Fact]
+    public async Task CreateDepartment_with_long_identifier_should_failed()
+    {
+        // arrange
+        var locationId = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
+        var cancellationToken = CancellationToken.None;
+        
+        var identifier = new string('a', 200);
+
+        var result = await ExecuteHandler((sut) =>
+        {
+            var command = new CreateDepartmentCommand(new CreateDepartmentRequest(
+                "department", identifier, null, [locationId]));
+        
+            // act
+            return sut.Handle(command, cancellationToken);
+        });
+        
+        // assert
+        await ExecuteInDb(async dbContext =>
+        {
+            var department = await dbContext.Departments
+                .FirstOrDefaultAsync(d => d.DepartmentName == DepartmentName.Create("department").Value, cancellationToken: cancellationToken);
+            
+            Assert.Null(department);
+            Assert.True(result.IsFailure);
+            Assert.NotEmpty(result.Error);
+        });
+    }
+    
+    [Fact]
+    public async Task CreateDepartment_with_identifier_starts_with_underscore_should_failed()
+    {
+        // arrange
+        var locationId = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
+        var cancellationToken = CancellationToken.None;
+
+        var result = await ExecuteHandler((sut) =>
+        {
+            var command = new CreateDepartmentCommand(new CreateDepartmentRequest(
+                "department", "_identifier", null, [locationId]));
+        
+            // act
+            return sut.Handle(command, cancellationToken);
+        });
+        
+        // assert
+        await ExecuteInDb(async dbContext =>
+        {
+            var department = await dbContext.Departments
+                .FirstOrDefaultAsync(d => d.DepartmentName == DepartmentName.Create("department").Value, cancellationToken: cancellationToken);
+            
+            Assert.Null(department);
+            Assert.True(result.IsFailure);
+            Assert.NotEmpty(result.Error);
+        });
+    }
+    
+    [Fact]
+    public async Task CreateDepartment_with_identifier_ends_with_underscore_should_failed()
+    {
+        // arrange
+        var locationId = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
+        var cancellationToken = CancellationToken.None;
+
+        var result = await ExecuteHandler((sut) =>
+        {
+            var command = new CreateDepartmentCommand(new CreateDepartmentRequest(
+                "department", "identifier_", null, [locationId]));
+        
+            // act
+            return sut.Handle(command, cancellationToken);
+        });
+        
+        // assert
+        await ExecuteInDb(async dbContext =>
+        {
+            var department = await dbContext.Departments
+                .FirstOrDefaultAsync(d => d.DepartmentName == DepartmentName.Create("department").Value, cancellationToken: cancellationToken);
+            
+            Assert.Null(department);
+            Assert.True(result.IsFailure);
+            Assert.NotEmpty(result.Error);
+        });
+    }
+    
+    [Fact]
     public async Task CreateDepartment_with_invalid_parentId_should_failed()
     {
         // arrange
@@ -185,7 +329,39 @@ public class CreateDepartmentTests : DirectoryBaseTests
             Assert.NotEmpty(result.Error);
         });
     }
+    
+    [Fact]
+    public async Task CreateDepartment_with_empty_locationId_should_failed()
+    {
+        // arrange
+        var cancellationToken = CancellationToken.None;
 
+        var result = await ExecuteHandler((sut) =>
+        {
+            var command = new CreateDepartmentCommand(new CreateDepartmentRequest(
+                "department", "department", null, [Guid.Empty]));
+        
+            // act
+            return sut.Handle(command, cancellationToken);
+        });
+        
+        // assert
+        await ExecuteInDb(async dbContext =>
+        {
+            var department = await dbContext.Departments
+                .FirstOrDefaultAsync(d => d.DepartmentName == DepartmentName.Create("department").Value, cancellationToken);
+        
+            var departmentLocations = await dbContext.DepartmentLocations
+                .FirstOrDefaultAsync(dp => dp.LocationId == Guid.Empty, cancellationToken);
+            
+            Assert.Null(departmentLocations);
+            Assert.Null(department);
+            Assert.True(result.IsFailure);
+            Assert.NotEmpty(result.Error);
+        });
+    }
+    
+    // Extensions
     private async Task<Guid> CreateLocation(string street, string city, string country, string name)
     {
         return await ExecuteInDb(async dbContext =>
