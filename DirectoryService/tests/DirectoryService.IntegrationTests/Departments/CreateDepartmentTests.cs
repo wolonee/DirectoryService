@@ -23,7 +23,6 @@ public class CreateDepartmentTests : DirectoryBaseTests
     {
         // arrange
         var locationId = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
-        var cancellationToken = CancellationToken.None;
 
         var result = await ExecuteHandler((sut) =>
         {
@@ -62,8 +61,6 @@ public class CreateDepartmentTests : DirectoryBaseTests
 
         var locationArray = new[] { locationId1, locationId2, locationId3 };
         
-        var cancellationToken = CancellationToken.None;
-
         var result = await ExecuteHandler(sut =>
         {
             var command = new CreateDepartmentCommand(new CreateDepartmentRequest(
@@ -99,8 +96,6 @@ public class CreateDepartmentTests : DirectoryBaseTests
         var locationId = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
         var parentDepartmentId = await CreateDepartment();
         
-        var cancellationToken = CancellationToken.None;
-
         var result = await ExecuteHandler(sut =>
         {
             var command = new CreateDepartmentCommand(new CreateDepartmentRequest(
@@ -135,7 +130,6 @@ public class CreateDepartmentTests : DirectoryBaseTests
     {
         // arrange
         var locationId = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
-        var cancellationToken = CancellationToken.None;
 
         var result = await ExecuteHandler((sut) =>
         {
@@ -163,7 +157,6 @@ public class CreateDepartmentTests : DirectoryBaseTests
     {
         // arrange
         var locationId = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
-        var cancellationToken = CancellationToken.None;
 
         var result = await ExecuteHandler((sut) =>
         {
@@ -191,7 +184,6 @@ public class CreateDepartmentTests : DirectoryBaseTests
     {
         // arrange
         var locationId = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
-        var cancellationToken = CancellationToken.None;
 
         var result = await ExecuteHandler((sut) =>
         {
@@ -218,8 +210,6 @@ public class CreateDepartmentTests : DirectoryBaseTests
     public async Task CreateDepartment_with_empty_locationId_should_failed()
     {
         // arrange
-        var cancellationToken = CancellationToken.None;
-
         var result = await ExecuteHandler((sut) =>
         {
             var command = new CreateDepartmentCommand(new CreateDepartmentRequest(
