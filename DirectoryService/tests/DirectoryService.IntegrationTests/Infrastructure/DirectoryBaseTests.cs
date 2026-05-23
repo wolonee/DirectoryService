@@ -42,7 +42,7 @@ public class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory>, IAsync
         return await action(dbContext);
     }
     
-    protected async Task<Guid> CreateLocation(string street, string city, string country, string name)
+    protected async Task<Guid> CreateLocation(string street, string city, string country, string name, bool? active = null)
     {
         return await ExecuteInDb(async dbContext =>
         {
@@ -50,15 +50,18 @@ public class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory>, IAsync
                 LocationAddress.Create(street, city, country).Value,
                 LocationName.Create(name).Value,
                 LocationTimeZone.Create("Europe/Moscow").Value).Value;
-
+            
+            if (active == false)
+                location.Activate(false);
+            
             dbContext.Locations.Add(location);
-            await dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync(cancellationToken);
 
             return location.Id;
         });
     }
     
-    protected async Task<Guid> CreateDepartment()
+    protected async Task<Guid> CreateDepartment(bool? active = null)
     {
         return await ExecuteInDb(async dbContext =>
         {
@@ -73,8 +76,13 @@ public class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory>, IAsync
                 [departmentLocations],
                 departmentId).Value;
 
+
+            if (active == false)
+                department.Activate(false);
+
+
             dbContext.Departments.Add(department);
-            await dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync(cancellationToken);
 
             return department.Id;
         });

@@ -108,6 +108,11 @@ public class Department
         return UnitResult.Success<Error>();
     }
 
+    public void Activate(bool boolean)
+    {
+        IsActive = boolean;
+    }
+
     // public UnitResult<Error> UpdateParentForChildren(Department parent)
     // {
     //     Depth = parent.Depth + 1;
