@@ -12,6 +12,9 @@ public class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory>, IAsync
     private readonly Func<Task> _resetDatabase;
     protected IServiceProvider Services { get; set; }
     
+    protected CancellationToken cancellationToken = CancellationToken.None;
+
+    
     public DirectoryBaseTests(DirectoryTestWebFactory factory)
     {
         Services = factory.Services;
