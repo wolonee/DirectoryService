@@ -6,7 +6,6 @@ namespace DirectoryService.IntegrationTests;
 public class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory>, IAsyncLifetime
 {
     private readonly Func<Task> _resetDatabase;
-    
     protected IServiceProvider Services { get; set; }
     
     public DirectoryBaseTests(DirectoryTestWebFactory factory)
