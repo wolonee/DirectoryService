@@ -23,10 +23,8 @@ public class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory>, IAsync
 
     public Task InitializeAsync() => Task.CompletedTask;
 
-    public async Task DisposeAsync()
-    {
+    public async Task DisposeAsync() =>
         await _resetDatabase();
-    }
     
     protected async Task ExecuteInDb(Func<DirectoryServiceDbContext, Task> action)
     {

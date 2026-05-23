@@ -25,17 +25,6 @@ public class DirectoryTestWebFactory : WebApplicationFactory<Program>, IAsyncLif
     private Respawner _respawner = null!;
     private DbConnection _dbConnection = null!;
 
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
-    {
-        builder.ConfigureTestServices(services =>
-        {
-            services.RemoveAll<DirectoryServiceDbContext>();
-
-            services.AddScoped<DirectoryServiceDbContext>(_ =>
-                new DirectoryServiceDbContext(_dbContainer.GetConnectionString()));
-        });
-    }
-
     public async Task InitializeAsync()
     {
         await _dbContainer.StartAsync(); 
@@ -57,7 +46,24 @@ public class DirectoryTestWebFactory : WebApplicationFactory<Program>, IAsyncLif
         await _dbContainer.StopAsync();
         await _dbContainer.DisposeAsync();
         
+        await _dbConnection.CloseAsync();
         await _dbConnection.DisposeAsync();
+    }
+    
+    public async Task ResetDatabaseAsync()
+    {
+        await _respawner.ResetAsync(_dbConnection);    
+    }
+    
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        builder.ConfigureTestServices(services =>
+        {
+            services.RemoveAll<DirectoryServiceDbContext>();
+
+            services.AddScoped<DirectoryServiceDbContext>(_ =>
+                new DirectoryServiceDbContext(_dbContainer.GetConnectionString()));
+        });
     }
 
     private async Task InitializeRespawner()
@@ -69,10 +75,5 @@ public class DirectoryTestWebFactory : WebApplicationFactory<Program>, IAsyncLif
                 DbAdapter = DbAdapter.Postgres, 
                 SchemasToInclude = ["public"],
             });
-    }
-
-    public async Task ResetDatabaseAsync()
-    {
-        await _respawner.ResetAsync(_dbConnection);    
     }
 }
