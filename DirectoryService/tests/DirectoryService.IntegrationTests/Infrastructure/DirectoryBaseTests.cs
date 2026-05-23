@@ -1,4 +1,8 @@
-﻿using DirectoryService.Infrastructure;
+﻿using DirectoryService.Domain.Departments;
+using DirectoryService.Domain.Departments.ValueObjects;
+using DirectoryService.Domain.Locations;
+using DirectoryService.Domain.Locations.ValueObjects;
+using DirectoryService.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectoryService.IntegrationTests;
@@ -33,5 +37,43 @@ public class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory>, IAsync
         await using var scope = Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<DirectoryServiceDbContext>();
         return await action(dbContext);
+    }
+    
+    protected async Task<Guid> CreateLocation(string street, string city, string country, string name)
+    {
+        return await ExecuteInDb(async dbContext =>
+        {
+            var location = Location.Create(
+                LocationAddress.Create(street, city, country).Value,
+                LocationName.Create(name).Value,
+                LocationTimeZone.Create("Europe/Moscow").Value).Value;
+
+            dbContext.Locations.Add(location);
+            await dbContext.SaveChangesAsync();
+
+            return location.Id;
+        });
+    }
+    
+    protected async Task<Guid> CreateDepartment()
+    {
+        return await ExecuteInDb(async dbContext =>
+        {
+            var locationId = await CreateLocation("specialStreet", "Moscow", "Russia", "specialOffice");
+            
+            var departmentId = Guid.NewGuid();
+            var departmentLocations = DepartmentLocation.Create(departmentId, locationId).Value;
+
+            var department = Department.CreateParent(
+                DepartmentName.Create("ParentDepartment").Value,
+                DepartmentIdentifier.Create("parent").Value,
+                [departmentLocations],
+                departmentId).Value;
+
+            dbContext.Departments.Add(department);
+            await dbContext.SaveChangesAsync();
+
+            return department.Id;
+        });
     }
 }

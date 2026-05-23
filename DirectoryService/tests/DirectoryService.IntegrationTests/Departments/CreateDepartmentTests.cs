@@ -246,44 +246,6 @@ public class CreateDepartmentTests : DirectoryBaseTests
     }
     
     // Extensions
-    private async Task<Guid> CreateLocation(string street, string city, string country, string name)
-    {
-        return await ExecuteInDb(async dbContext =>
-        {
-            var location = Location.Create(
-                LocationAddress.Create(street, city, country).Value,
-                LocationName.Create(name).Value,
-                LocationTimeZone.Create("Europe/Moscow").Value).Value;
-
-            dbContext.Locations.Add(location);
-            await dbContext.SaveChangesAsync();
-
-            return location.Id;
-        });
-    }
-    
-    private async Task<Guid> CreateDepartment()
-    {
-        return await ExecuteInDb(async dbContext =>
-        {
-            var locationId = await CreateLocation("specialStreet", "Moscow", "Russia", "specialOffice");
-            
-            var departmentId = Guid.NewGuid();
-            var departmentLocations = DepartmentLocation.Create(departmentId, locationId).Value;
-
-            var department = Department.CreateParent(
-                DepartmentName.Create("ParentDepartment").Value,
-                DepartmentIdentifier.Create("parent").Value,
-                [departmentLocations],
-                departmentId).Value;
-
-            dbContext.Departments.Add(department);
-            await dbContext.SaveChangesAsync();
-
-            return department.Id;
-        });
-    }
-    
     private async Task<T> ExecuteHandler<T>(Func<CreateDepartmentHandler, Task<T>> action)
     {
         await using var scope = Services.CreateAsyncScope();
