@@ -17,9 +17,10 @@ public class DirectoryTestWebFactory : WebApplicationFactory<Program>, IAsyncLif
 {
     private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder()
         .WithImage("postgres")
-        .WithDatabase("directory_service_db")
+        .WithDatabase("directory_service_db_tests")
         .WithUsername("postgres")
         .WithPassword("postgres")
+        .WithPortBinding(62210, 5432)
         .Build();
     
     private Respawner _respawner = null!;
@@ -36,6 +37,7 @@ public class DirectoryTestWebFactory : WebApplicationFactory<Program>, IAsyncLif
         await dbContext.Database.EnsureCreatedAsync();
         
         _dbConnection = new NpgsqlConnection(_dbContainer.GetConnectionString());
+        Console.WriteLine(_dbContainer.GetConnectionString());
         await _dbConnection.OpenAsync();
 
         await InitializeRespawner();

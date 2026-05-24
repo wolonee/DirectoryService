@@ -15,10 +15,10 @@ public class UpdateParentTests : DirectoryBaseTests
     {
         var mainParentDepartment = await CreateParentDepartment();
         
-        var department_l1 = await CreateChildDepartment(mainParentDepartment, "left1");
-        var department_r1 = await CreateChildDepartment(mainParentDepartment, "right1"); // переносим этого
-        var department_r11 = await CreateChildDepartment(department_r1, "right11");
-        var department_r12 = await CreateChildDepartment(department_r1, "right12");
+        var department_l1 = await CreateChildDepartment(mainParentDepartment, "aaa");
+        var department_r1 = await CreateChildDepartment(mainParentDepartment, "bbb"); // переносим этого
+        var department_r11 = await CreateChildDepartment(department_r1, "ccc");
+        var department_r12 = await CreateChildDepartment(department_r1, "ddd");
 
         var result = await ExecuteHandler(async handler =>
         {
@@ -29,19 +29,29 @@ public class UpdateParentTests : DirectoryBaseTests
 
         await ExecuteInDb(async dbContext =>
         {
-            var goalDepartment = await dbContext.Departments
+            var childrenListOfDepartment_l1 = await dbContext.Departments
+                .Where(d => d.Id == department_l1.Id)
                 .Include(d => d.ChildrenDepartments)
-                .FirstAsync(d => d.Id == department_l1.Id, cancellationToken);
+                .SelectMany(d => d.ChildrenDepartments.Select(c => c.Id))
+                .ToListAsync(cancellationToken);
             
-            var parentDepartment = await dbContext.Departments
+            var childrenListOfDepartment_r1 = await dbContext.Departments
+                .Where(d => d.Id == department_r1.Id)
                 .Include(d => d.ChildrenDepartments)
-                .FirstAsync(d => d.Id == mainParentDepartment.Id, cancellationToken);
+                .SelectMany(d => d.ChildrenDepartments.Select(c => c.Id))
+                .ToListAsync(cancellationToken);
+            
+            var childrenListOfparentDepartment = await dbContext.Departments
+                .Where(d => d.Id == mainParentDepartment.Id)
+                .Include(d => d.ChildrenDepartments)
+                .SelectMany(d => d.ChildrenDepartments.Select(c => c.Id))
+                .ToListAsync(cancellationToken);
             
             Assert.True(result.IsSuccess);
-            Assert.Contains(department_r1, goalDepartment.ChildrenDepartments);
-            Assert.Contains(department_r11, goalDepartment.ChildrenDepartments);
-            Assert.Contains(department_r12, goalDepartment.ChildrenDepartments);
-            Assert.DoesNotContain(department_r1, parentDepartment.ChildrenDepartments);
+            Assert.Contains(department_r1.Id, childrenListOfDepartment_l1);
+            Assert.Contains(department_r11.Id, childrenListOfDepartment_r1);
+            Assert.Contains(department_r12.Id, childrenListOfDepartment_r1);
+            Assert.DoesNotContain(department_r1.Id, childrenListOfparentDepartment);
         });
 
     }

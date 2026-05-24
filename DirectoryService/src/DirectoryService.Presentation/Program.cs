@@ -46,7 +46,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-        c.RoutePrefix = "swagger"; // Можно изменить на string.Empty для корневого URL
+        c.RoutePrefix = string.Empty; // Можно изменить на string.Empty для корневого URL
     });
 }
 
