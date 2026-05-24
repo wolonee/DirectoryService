@@ -187,7 +187,7 @@ public class DepartmentsRepository : IDepartmentsRepository
                 SELECT * 
                 FROM ""department"" 
                 WHERE ""id"" = {0} AND ""is_active"" = true 
-                FOR UPDATE
+                FOR UPDATE NOWAIT
             ", departmentId)
                 .Include(d => d.ChildrenDepartments)
                 .AsSingleQuery()

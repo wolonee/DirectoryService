@@ -117,7 +117,7 @@ public class UpdateLocationsTests : DirectoryBaseTests
     public async Task Department_not_active_should_failed()
     {
         // arrange
-        var department = await CreateParentDepartment();
+        var department = await CreateParentDepartment(active: false);
         var departmentId = department.Id;        
         var locationId1 = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
 

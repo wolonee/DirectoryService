@@ -20,7 +20,7 @@ public class DirectoryTestWebFactory : WebApplicationFactory<Program>, IAsyncLif
         .WithDatabase("directory_service_db_tests")
         .WithUsername("postgres")
         .WithPassword("postgres")
-        .WithPortBinding(62210, 5432)
+        // .WithPortBinding(62210, 5432)
         .Build();
     
     private Respawner _respawner = null!;
