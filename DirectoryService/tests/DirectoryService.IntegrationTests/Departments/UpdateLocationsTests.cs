@@ -11,16 +11,18 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectoryService.IntegrationTests;
 
-public class UpdateDepartmentLocationsTests : DirectoryBaseTests
+public class UpdateLocationsTests : DirectoryBaseTests
 {
-    public UpdateDepartmentLocationsTests(DirectoryTestWebFactory factory)
+    public UpdateLocationsTests(DirectoryTestWebFactory factory)
         : base(factory) { }
     
     [Fact]
     public async Task Update_many_location_should_succeed()
     {
         // arrange
-        var departmentId = await CreateDepartment();
+        var department = await CreateParentDepartment();
+        var departmentId = department.Id;
+
         var locationId1 = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
         var locationId2 = await CreateLocation("dddd", "Moscow", "Russia", "Office_2");
         var locationId3 = await CreateLocation("aaaa", "Moscow", "Russia", "Office_3");
@@ -55,7 +57,8 @@ public class UpdateDepartmentLocationsTests : DirectoryBaseTests
     public async Task Update_one_location_should_succeed()
     {
         // arrange
-        var departmentId = await CreateDepartment();
+        var department = await CreateParentDepartment();
+        var departmentId = department.Id;        
         var locationId1 = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
 
         var locationsIds = new[] { locationId1 };
@@ -114,7 +117,8 @@ public class UpdateDepartmentLocationsTests : DirectoryBaseTests
     public async Task Department_not_active_should_failed()
     {
         // arrange
-        var departmentId = await CreateDepartment(active: false);
+        var department = await CreateParentDepartment();
+        var departmentId = department.Id;        
         var locationId1 = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
 
         var locationsIds = new[] { locationId1 };
@@ -144,7 +148,8 @@ public class UpdateDepartmentLocationsTests : DirectoryBaseTests
     public async Task One_of_locations_not_exists_should_failed()
     {
         // arrange
-        var departmentId = await CreateDepartment();
+        var department = await CreateParentDepartment();
+        var departmentId = department.Id;        
         var locationId1 = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
 
         var locationsIds = new[] { locationId1, Guid.NewGuid() };
@@ -165,7 +170,8 @@ public class UpdateDepartmentLocationsTests : DirectoryBaseTests
     public async Task Has_duplicate_locations_should_failed()
     {
         // arrange
-        var departmentId = await CreateDepartment();
+        var department = await CreateParentDepartment();
+        var departmentId = department.Id;        
         var locationId1 = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
         var locationId2 = await CreateLocation("hhhh", "Moscow", "Russia", "Office_2");
 
@@ -187,7 +193,8 @@ public class UpdateDepartmentLocationsTests : DirectoryBaseTests
     public async Task Empty_locations_request_should_failed()
     {
         // arrange
-        var departmentId = await CreateDepartment();
+        var department = await CreateParentDepartment();
+        var departmentId = department.Id;        
         Guid[] locationsIds = [];
         
         // act

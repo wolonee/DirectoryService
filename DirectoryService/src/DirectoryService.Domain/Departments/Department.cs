@@ -32,6 +32,7 @@ public class Department
         UpdatedAt = DateTime.UtcNow;
         DepartmentPath = departmentPath;
         Depth = depth;
+        ChildrenCount = ChildrenDepartments.Count;
         _departmentLocations = departmentLocations.ToList();
     }
     

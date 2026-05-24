@@ -94,7 +94,8 @@ public class CreateDepartmentTests : DirectoryBaseTests
     {
         // arrange
         var locationId = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
-        var parentDepartmentId = await CreateDepartment();
+        var parentDepartment = await CreateParentDepartment();
+        var parentDepartmentId = parentDepartment.Id;
         
         var result = await ExecuteHandler(sut =>
         {
