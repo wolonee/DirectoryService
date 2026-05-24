@@ -59,7 +59,7 @@ public class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory>, IAsync
         });
     }
     
-    protected async Task<Guid> CreateDepartment(bool? active = null)
+    protected async Task<Department> CreateParentDepartment(bool? active = null)
     {
         return await ExecuteInDb(async dbContext =>
         {
@@ -73,16 +73,41 @@ public class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory>, IAsync
                 DepartmentIdentifier.Create("parent").Value,
                 [departmentLocations],
                 departmentId).Value;
-
-
+            
             if (active == false)
                 department.Activate(false);
-
 
             dbContext.Departments.Add(department);
             await dbContext.SaveChangesAsync(cancellationToken);
 
-            return department.Id;
+            return department;
+        });
+    }
+    
+    protected async Task<Department> CreateChildDepartment(Department parent, string? difference = "special",  bool? active = null)
+    {
+        return await ExecuteInDb(async dbContext =>
+        {
+            difference = difference?.ToLower();
+            var locationId = await CreateLocation($"{difference}Street", "Moscow", "Russia", $"{difference}Office");
+            
+            var departmentId = Guid.NewGuid();
+            var departmentLocations = DepartmentLocation.Create(departmentId, locationId).Value;
+
+            var department = Department.CreateChild(
+                departmentId,
+                DepartmentName.Create($"{difference}DepartmentName").Value,
+                DepartmentIdentifier.Create($"{difference}_child").Value,
+                parent,
+                [departmentLocations]).Value;
+            
+            if (active == false)
+                department.Activate(false);
+            
+            dbContext.Departments.Add(department);
+            await dbContext.SaveChangesAsync(cancellationToken);
+
+            return department;
         });
     }
 }
