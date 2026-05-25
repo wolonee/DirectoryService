@@ -20,6 +20,8 @@ public class UpdateLocationsTests : DirectoryBaseTests
     public async Task Update_many_location_should_succeed()
     {
         // arrange
+        var cancellationToken = new CancellationTokenSource().Token;
+
         var department = await CreateParentDepartment();
         var departmentId = department.Id;
 
@@ -57,6 +59,8 @@ public class UpdateLocationsTests : DirectoryBaseTests
     public async Task Update_one_location_should_succeed()
     {
         // arrange
+        var cancellationToken = new CancellationTokenSource().Token;
+
         var department = await CreateParentDepartment();
         var departmentId = department.Id;        
         var locationId1 = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
@@ -89,6 +93,8 @@ public class UpdateLocationsTests : DirectoryBaseTests
     public async Task Department_not_found_should_failed()
     {
         // arrange
+        var cancellationToken = new CancellationTokenSource().Token;
+
         var departmentId = Guid.NewGuid();
         var locationId1 = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
 
@@ -117,6 +123,8 @@ public class UpdateLocationsTests : DirectoryBaseTests
     public async Task Department_not_active_should_failed()
     {
         // arrange
+        var cancellationToken = new CancellationTokenSource().Token;
+
         var department = await CreateParentDepartment(active: false);
         var departmentId = department.Id;        
         var locationId1 = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
@@ -148,6 +156,8 @@ public class UpdateLocationsTests : DirectoryBaseTests
     public async Task One_of_locations_not_exists_should_failed()
     {
         // arrange
+        var cancellationToken = new CancellationTokenSource().Token;
+
         var department = await CreateParentDepartment();
         var departmentId = department.Id;        
         var locationId1 = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
@@ -170,6 +180,8 @@ public class UpdateLocationsTests : DirectoryBaseTests
     public async Task Has_duplicate_locations_should_failed()
     {
         // arrange
+        var cancellationToken = new CancellationTokenSource().Token;
+
         var department = await CreateParentDepartment();
         var departmentId = department.Id;        
         var locationId1 = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
@@ -193,6 +205,8 @@ public class UpdateLocationsTests : DirectoryBaseTests
     public async Task Empty_locations_request_should_failed()
     {
         // arrange
+        var cancellationToken = new CancellationTokenSource().Token;
+
         var department = await CreateParentDepartment();
         var departmentId = department.Id;        
         Guid[] locationsIds = [];

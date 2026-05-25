@@ -10,17 +10,21 @@ namespace DirectoryService.IntegrationTests;
 public class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory>, IAsyncLifetime
 {
     private readonly Func<Task> _resetDatabase;
+    
     protected IServiceProvider Services { get; set; }
     
-    protected CancellationToken cancellationToken = CancellationToken.None;
-
+    protected HttpClient AppHttpClient { get; set; }
+    
+    protected HttpClient HttpClient { get; set; }
     
     public DirectoryBaseTests(DirectoryTestWebFactory factory)
     {
+        AppHttpClient = factory.CreateClient();
+        HttpClient = new HttpClient();
         Services = factory.Services;
         _resetDatabase = factory.ResetDatabaseAsync;
     }
-
+    
     public Task InitializeAsync() => Task.CompletedTask;
 
     public async Task DisposeAsync() =>
@@ -44,6 +48,8 @@ public class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory>, IAsync
     {
         return await ExecuteInDb(async dbContext =>
         {
+            var cancellationToken = new CancellationTokenSource().Token;
+            
             var location = Location.Create(
                 LocationAddress.Create(street, city, country).Value,
                 LocationName.Create(name).Value,
@@ -63,6 +69,8 @@ public class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory>, IAsync
     {
         return await ExecuteInDb(async dbContext =>
         {
+            var cancellationToken = new CancellationTokenSource().Token;
+            
             var locationId = await CreateLocation("specialStreet", "Moscow", "Russia", "specialOffice");
             
             var departmentId = Guid.NewGuid();
@@ -88,6 +96,8 @@ public class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory>, IAsync
     {
         return await ExecuteInDb(async dbContext =>
         {
+            var cancellationToken = new CancellationTokenSource().Token;
+            
             difference = difference?.ToLower();
             var locationId = await CreateLocation($"{difference}Street", "Moscow", "Russia", $"{difference}Office");
             

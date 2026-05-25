@@ -13,6 +13,8 @@ public class UpdateParentTests : DirectoryBaseTests
     [Fact]
     public async Task Update_parent_with_childrens_should_succeed()
     {
+        var cancellationToken = new CancellationTokenSource().Token;
+
         var mainParentDepartment = await CreateParentDepartment();
         
         var department_l1 = await CreateChildDepartment(mainParentDepartment, "aaa");
@@ -58,6 +60,8 @@ public class UpdateParentTests : DirectoryBaseTests
     [Fact]
     public async Task Update_parent_without_childrens_should_succeed()
     {
+        var cancellationToken = new CancellationTokenSource().Token;
+
         var mainParentDepartment = await CreateParentDepartment();
         
         var department_l1 = await CreateChildDepartment(mainParentDepartment, "aaa");
@@ -93,6 +97,8 @@ public class UpdateParentTests : DirectoryBaseTests
     [Fact]
     public async Task Update_parent_with_childrens_to_root_should_succeed()
     {
+        var cancellationToken = new CancellationTokenSource().Token;
+
         var mainParentDepartment = await CreateParentDepartment();
         
         var department_r1 = await CreateChildDepartment(mainParentDepartment, "aaa");
@@ -138,6 +144,8 @@ public class UpdateParentTests : DirectoryBaseTests
     [Fact]
     public async Task Update_parent_without_childrens_to_root_should_succeed()
     {
+        var cancellationToken = new CancellationTokenSource().Token;
+
         var mainParentDepartment = await CreateParentDepartment();
         
         var department_r1 = await CreateChildDepartment(mainParentDepartment, "aaa");
@@ -173,6 +181,8 @@ public class UpdateParentTests : DirectoryBaseTests
     [Fact]
     public async Task Invalid_parent_active_should_failed()
     {
+        var cancellationToken = new CancellationTokenSource().Token;
+
         var mainParentDepartment = await CreateParentDepartment(active: false);
         
         var department_l1 = await CreateChildDepartment(mainParentDepartment, "aaa");
@@ -208,6 +218,8 @@ public class UpdateParentTests : DirectoryBaseTests
     [Fact]
     public async Task Parent_not_active_should_failed()
     {
+        var cancellationToken = new CancellationTokenSource().Token;
+
         var mainParentDepartment = await CreateParentDepartment();
         
         var department_l1 = await CreateChildDepartment(mainParentDepartment, "aaa", active: false);
@@ -243,6 +255,8 @@ public class UpdateParentTests : DirectoryBaseTests
     [Fact]
     public async Task Child_not_active_should_failed()
     {
+        var cancellationToken = new CancellationTokenSource().Token;
+
         var mainParentDepartment = await CreateParentDepartment();
         
         var department_l1 = await CreateChildDepartment(mainParentDepartment, "aaa");
@@ -278,6 +292,8 @@ public class UpdateParentTests : DirectoryBaseTests
     [Fact]
     public async Task Invalid_child_should_failed()
     {
+        var cancellationToken = new CancellationTokenSource().Token;
+
         var mainParentDepartment = await CreateParentDepartment();
         
         var department_l1 = await CreateChildDepartment(mainParentDepartment, "aaa");
@@ -313,6 +329,8 @@ public class UpdateParentTests : DirectoryBaseTests
     [Fact]
     public async Task Parent_equal_child_should_failed()
     {
+        var cancellationToken = new CancellationTokenSource().Token;
+
         var mainParentDepartment = await CreateParentDepartment();
         
         var department_l1 = await CreateChildDepartment(mainParentDepartment, "aaa");
@@ -348,6 +366,8 @@ public class UpdateParentTests : DirectoryBaseTests
     [Fact]
     public async Task Update_parent_equal_child_should_failed()
     {
+        var cancellationToken = new CancellationTokenSource().Token;
+
         var mainParentDepartment = await CreateParentDepartment();
         
         var department_r1 = await CreateChildDepartment(mainParentDepartment, "aaa");
@@ -383,6 +403,8 @@ public class UpdateParentTests : DirectoryBaseTests
     [Fact]
     public async Task Concurrent_update_parent_for_same_department_should_apply_only_one_operation()
     {
+        var cancellationToken = new CancellationTokenSource().Token;
+
         var rootDepartment = await CreateParentDepartment();
         
         var alternativeParentDepartment = await CreateChildDepartment(rootDepartment, "alternative_parent");

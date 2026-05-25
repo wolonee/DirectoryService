@@ -1,6 +1,9 @@
-﻿using System.Text.Json;
+﻿using System.Net.Http.Json;
+using System.Text.Json;
+using CSharpFunctionalExtensions;
 using DirectoryService.Application.Departments.CreateDepartment;
 using DirectoryService.Contracts.Departments;
+using DirectoryService.Contracts.Departments.Response;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Departments.ValueObjects;
 using DirectoryService.Domain.Locations;
@@ -9,6 +12,8 @@ using DirectoryService.Infrastructure;
 using DirectoryService.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
+using Xunit.Abstractions;
 
 namespace DirectoryService.IntegrationTests;
 
@@ -22,32 +27,35 @@ public class CreateDepartmentTests : DirectoryBaseTests
     public async Task CreateDepartment_with_one_location_should_succeed()
     {
         // arrange
+        var cancellationToken = new CancellationTokenSource().Token;
+        
         var locationId = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
 
-        var result = await ExecuteHandler((sut) =>
-        {
-            var command = new CreateDepartmentCommand(new CreateDepartmentRequest(
-                "Подразделение", "podrazelenie", null, [locationId]));
+        var request = new CreateDepartmentRequest(
+            "Подразделение", 
+            "podrazelenie", 
+            null, 
+            [locationId]);
+        
+        HttpResponseMessage response = await AppHttpClient.PostAsJsonAsync("/api/departments", request, cancellationToken);
 
-            // act
-            return sut.Handle(command, cancellationToken);
-        });
-
+        var result = await response.HandleResponseAsync<Guid>(cancellationToken: cancellationToken);
+        
         // assert
+        Assert.True(result.IsSuccess);
+        Assert.NotEqual(Guid.Empty, result.Value);
+        
         await ExecuteInDb(async dbContext =>
         {
             var department = await dbContext.Departments
                 .FirstAsync(d => d.Id == result.Value, cancellationToken: cancellationToken);
-
+        
             var departmentLocations = await dbContext.DepartmentLocations
                 .FirstAsync(l => l.LocationId == locationId, cancellationToken: cancellationToken);
-
+        
             Assert.NotNull(department);
-            Assert.NotEqual(Guid.Empty, department.Id);
-            Assert.True(result.IsSuccess);
-            
             Assert.NotNull(departmentLocations);
-            Assert.Equal(departmentLocations.DepartmentId, department.Id);
+            Assert.Equal(result.Value, department.Id);
         });
     }
 
@@ -55,6 +63,8 @@ public class CreateDepartmentTests : DirectoryBaseTests
     public async Task CreateDepartment_with_many_locations_should_succeed()
     {
         // arrange
+        var cancellationToken = new CancellationTokenSource().Token;
+        
         var locationId1 = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
         var locationId2 = await CreateLocation("dddd", "Moscow", "Russia", "Office_2");
         var locationId3 = await CreateLocation("aaaa", "Moscow", "Russia", "Office_3");
@@ -93,6 +103,8 @@ public class CreateDepartmentTests : DirectoryBaseTests
     public async Task CreateDepartment_with_parent_should_succeed()
     {
         // arrange
+        var cancellationToken = new CancellationTokenSource().Token;
+
         var locationId = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
         var parentDepartment = await CreateParentDepartment();
         var parentDepartmentId = parentDepartment.Id;
@@ -130,6 +142,8 @@ public class CreateDepartmentTests : DirectoryBaseTests
     public async Task CreateDepartment_with_invalid_name_should_failed()
     {
         // arrange
+        var cancellationToken = new CancellationTokenSource().Token;
+
         var locationId = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
 
         var result = await ExecuteHandler((sut) =>
@@ -157,6 +171,8 @@ public class CreateDepartmentTests : DirectoryBaseTests
     public async Task CreateDepartment_with_invalid_identifier_should_failed()
     {
         // arrange
+        var cancellationToken = new CancellationTokenSource().Token;
+
         var locationId = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
 
         var result = await ExecuteHandler((sut) =>
@@ -184,6 +200,8 @@ public class CreateDepartmentTests : DirectoryBaseTests
     public async Task CreateDepartment_with_invalid_parentId_should_failed()
     {
         // arrange
+        var cancellationToken = new CancellationTokenSource().Token;
+
         var locationId = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
 
         var result = await ExecuteHandler((sut) =>
@@ -211,6 +229,8 @@ public class CreateDepartmentTests : DirectoryBaseTests
     public async Task CreateDepartment_with_empty_locationId_should_failed()
     {
         // arrange
+        var cancellationToken = new CancellationTokenSource().Token;
+
         var result = await ExecuteHandler((sut) =>
         {
             var command = new CreateDepartmentCommand(new CreateDepartmentRequest(
