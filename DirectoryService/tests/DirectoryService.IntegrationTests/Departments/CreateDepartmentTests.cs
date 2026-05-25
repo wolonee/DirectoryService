@@ -70,17 +70,18 @@ public class CreateDepartmentTests : DirectoryBaseTests
         var locationId3 = await CreateLocation("aaaa", "Moscow", "Russia", "Office_3");
 
         var locationArray = new[] { locationId1, locationId2, locationId3 };
+
+        var request = new CreateDepartmentRequest(
+            "Подразделение", "podrazelenie", null, locationArray);
         
-        var result = await ExecuteHandler(sut =>
-        {
-            var command = new CreateDepartmentCommand(new CreateDepartmentRequest(
-                "Подразделение", "podrazelenie", null, locationArray));
+        HttpResponseMessage response = await AppHttpClient.PostAsJsonAsync("/api/departments", request, cancellationToken);
         
-            // act
-            return sut.Handle(command, cancellationToken);
-        });
+        var result = await response.HandleResponseAsync<Guid>(cancellationToken: cancellationToken);
         
         // assert
+        Assert.True(result.IsSuccess);
+        Assert.NotEqual(Guid.Empty, result.Value);
+        
         await ExecuteInDb(async dbContext =>
         {
             var department = await dbContext.Departments
@@ -93,9 +94,6 @@ public class CreateDepartmentTests : DirectoryBaseTests
             Assert.NotNull(department);
             Assert.NotNull(locations);
             Assert.Equal(locations.Count, locationArray.Length);
-            
-            Assert.True(result.IsSuccess);
-            Assert.NotEqual(Guid.Empty, result.Value);
         });
     }
     
@@ -108,17 +106,18 @@ public class CreateDepartmentTests : DirectoryBaseTests
         var locationId = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
         var parentDepartment = await CreateParentDepartment();
         var parentDepartmentId = parentDepartment.Id;
+
+        var request = new CreateDepartmentRequest(
+            "ChildDepartment", "child_department", parentDepartmentId, [locationId]);
         
-        var result = await ExecuteHandler(sut =>
-        {
-            var command = new CreateDepartmentCommand(new CreateDepartmentRequest(
-                "ChildDepartment", "child_department", parentDepartmentId, [locationId]));
+        var response = await AppHttpClient.PostAsJsonAsync("/api/departments", request, cancellationToken);
         
-            // act
-            return sut.Handle(command, cancellationToken);
-        });
+        var result = await response.HandleResponseAsync<Guid>(cancellationToken: cancellationToken);
         
         // assert
+        Assert.True(result.IsSuccess);
+        Assert.NotEqual(Guid.Empty, result.Value);
+        
         await ExecuteInDb(async dbContext =>
         {
             var department = await dbContext.Departments
@@ -133,7 +132,6 @@ public class CreateDepartmentTests : DirectoryBaseTests
             Assert.Equal(department.ParentId, parentDepartment.Id);
             Assert.Equal(0, parentDepartment.Depth);
             Assert.True(result.IsSuccess);
-            Assert.NotEqual(Guid.Empty, result.Value);
             Assert.NotEqual(Guid.Empty, parentDepartment.Id);
         });
     }
@@ -146,24 +144,24 @@ public class CreateDepartmentTests : DirectoryBaseTests
 
         var locationId = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
 
-        var result = await ExecuteHandler((sut) =>
-        {
-            var command = new CreateDepartmentCommand(new CreateDepartmentRequest(
-                "d", "identifier", null, [locationId]));
+        var request = new CreateDepartmentRequest(
+            "d", "identifier", null, [locationId]);
         
-            // act
-            return sut.Handle(command, cancellationToken);
-        });
+        var response = await AppHttpClient.PostAsJsonAsync("/api/departments", request, cancellationToken);
+        
+        var result = await response.HandleResponseAsync<Guid?>(cancellationToken: cancellationToken);
         
         // assert
+        Assert.True(result.IsFailure);
+        Assert.NotNull(result.Error);
+        Assert.Contains(result.Error, e => e.Type == ErrorType.VALIDATION);
+        
         await ExecuteInDb(async dbContext =>
         {
             var department = await dbContext.Departments
                 .FirstOrDefaultAsync(d => d.DepartmentIdentifier.Value == "identifier", cancellationToken: cancellationToken);
             
             Assert.Null(department);
-            Assert.True(result.IsFailure);
-            Assert.NotEmpty(result.Error);
         });
     }
     
@@ -175,24 +173,24 @@ public class CreateDepartmentTests : DirectoryBaseTests
 
         var locationId = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
 
-        var result = await ExecuteHandler((sut) =>
-        {
-            var command = new CreateDepartmentCommand(new CreateDepartmentRequest(
-                "department", "_identifier", null, [locationId]));
+        var request = new CreateDepartmentRequest(
+            "department", "_identifier", null, [locationId]);
         
-            // act
-            return sut.Handle(command, cancellationToken);
-        });
+        var response = await AppHttpClient.PostAsJsonAsync("/api/departments", request, cancellationToken);
+        
+        var result = await response.HandleResponseAsync<Guid?>(cancellationToken: cancellationToken);
         
         // assert
+        Assert.True(result.IsFailure);
+        Assert.NotNull(result.Error);
+        Assert.Contains(result.Error, e => e.Type == ErrorType.VALIDATION);
+        
         await ExecuteInDb(async dbContext =>
         {
             var department = await dbContext.Departments
                 .FirstOrDefaultAsync(d => d.DepartmentName == DepartmentName.Create("department").Value, cancellationToken: cancellationToken);
             
             Assert.Null(department);
-            Assert.True(result.IsFailure);
-            Assert.NotEmpty(result.Error);
         });
     }
     
@@ -204,14 +202,17 @@ public class CreateDepartmentTests : DirectoryBaseTests
 
         var locationId = await CreateLocation("ffff", "Moscow", "Russia", "Office_1");
 
-        var result = await ExecuteHandler((sut) =>
-        {
-            var command = new CreateDepartmentCommand(new CreateDepartmentRequest(
-                "department", "department", Guid.Empty, [locationId]));
+        var request = new CreateDepartmentRequest(
+            "department", "department", Guid.Empty, [locationId]);
         
-            // act
-            return sut.Handle(command, cancellationToken);
-        });
+        var response = await AppHttpClient.PostAsJsonAsync("/api/departments", request, cancellationToken);
+        
+        var result = await response.HandleResponseAsync<Guid?>(cancellationToken: cancellationToken);
+        
+        // assert
+        Assert.True(result.IsFailure);
+        Assert.NotNull(result.Error);
+        Assert.Contains(result.Error, e => e.Type == ErrorType.NOT_FOUND);
         
         // assert
         await ExecuteInDb(async dbContext =>
@@ -220,8 +221,6 @@ public class CreateDepartmentTests : DirectoryBaseTests
                 .FirstOrDefaultAsync(d => d.DepartmentName == DepartmentName.Create("department").Value, cancellationToken);
         
             Assert.Null(department);
-            Assert.True(result.IsFailure);
-            Assert.NotEmpty(result.Error);
         });
     }
     
@@ -231,16 +230,18 @@ public class CreateDepartmentTests : DirectoryBaseTests
         // arrange
         var cancellationToken = new CancellationTokenSource().Token;
 
-        var result = await ExecuteHandler((sut) =>
-        {
-            var command = new CreateDepartmentCommand(new CreateDepartmentRequest(
-                "department", "department", null, [Guid.Empty]));
+        var request = new CreateDepartmentRequest(
+            "department", "department", null, [Guid.Empty]);
         
-            // act
-            return sut.Handle(command, cancellationToken);
-        });
+        var response = await AppHttpClient.PostAsJsonAsync("/api/departments", request, cancellationToken);
+        
+        var result = await response.HandleResponseAsync<Guid?>(cancellationToken: cancellationToken);
         
         // assert
+        Assert.True(result.IsFailure);
+        Assert.NotNull(result.Error);
+        Assert.Contains(result.Error, e => e.Type == ErrorType.VALIDATION);
+        
         await ExecuteInDb(async dbContext =>
         {
             var department = await dbContext.Departments
@@ -251,16 +252,14 @@ public class CreateDepartmentTests : DirectoryBaseTests
             
             Assert.Null(departmentLocations);
             Assert.Null(department);
-            Assert.True(result.IsFailure);
-            Assert.NotEmpty(result.Error);
         });
     }
     
     // Extensions
-    private async Task<T> ExecuteHandler<T>(Func<CreateDepartmentHandler, Task<T>> action)
-    {
-        await using var scope = Services.CreateAsyncScope();
-        var sut = scope.ServiceProvider.GetRequiredService<CreateDepartmentHandler>();
-        return await action(sut);
-    }
+    // private async Task<T> ExecuteHandler<T>(Func<CreateDepartmentHandler, Task<T>> action)
+    // {
+    //     await using var scope = Services.CreateAsyncScope();
+    //     var sut = scope.ServiceProvider.GetRequiredService<CreateDepartmentHandler>();
+    //     return await action(sut);
+    // }
 }

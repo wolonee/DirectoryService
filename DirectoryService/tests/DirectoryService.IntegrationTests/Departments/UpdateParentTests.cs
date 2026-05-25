@@ -1,5 +1,7 @@
-﻿using DirectoryService.Application.Departments.UpdateParent;
+﻿using System.Net.Http.Json;
+using DirectoryService.Application.Departments.UpdateParent;
 using DirectoryService.Contracts.Departments;
+using DirectoryService.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,20 +17,22 @@ public class UpdateParentTests : DirectoryBaseTests
     {
         var cancellationToken = new CancellationTokenSource().Token;
 
-        var mainParentDepartment = await CreateParentDepartment();
+        var root = await CreateParentDepartment();
         
-        var department_l1 = await CreateChildDepartment(mainParentDepartment, "aaa");
-        var department_r1 = await CreateChildDepartment(mainParentDepartment, "bbb"); // переносим этого
+        var department_l1 = await CreateChildDepartment(root, "aaa");
+        var department_r1 = await CreateChildDepartment(root, "bbb"); // переносим этого
         var department_r11 = await CreateChildDepartment(department_r1, "ccc");
         var department_r12 = await CreateChildDepartment(department_r1, "ddd");
+        
+        var request = new UpdateParentRequest(department_l1.Id);
 
-        var result = await ExecuteHandler(async handler =>
-        {
-            var command = new UpdateParentCommand(department_r1.Id, new UpdateParentRequest(department_l1.Id));
+        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{department_r1.Id}/parent", request, cancellationToken);
 
-            return await handler.Handle(command, cancellationToken);
-        });
+        var result = await response.HandleResponseAsync(cancellationToken: cancellationToken);
 
+        // assert
+        Assert.True(result.IsSuccess);
+        
         await ExecuteInDb(async dbContext =>
         {
             var childrenListOfDepartment_l1 = await dbContext.Departments
@@ -44,12 +48,11 @@ public class UpdateParentTests : DirectoryBaseTests
                 .ToListAsync(cancellationToken);
             
             var childrenListOfparentDepartment = await dbContext.Departments
-                .Where(d => d.Id == mainParentDepartment.Id)
+                .Where(d => d.Id == root.Id)
                 .Include(d => d.ChildrenDepartments)
                 .SelectMany(d => d.ChildrenDepartments.Select(c => c.Id))
                 .ToListAsync(cancellationToken);
             
-            Assert.True(result.IsSuccess);
             Assert.Contains(department_r1.Id, childrenListOfDepartment_l1);
             Assert.Contains(department_r11.Id, childrenListOfDepartment_r1);
             Assert.Contains(department_r12.Id, childrenListOfDepartment_r1);
@@ -62,17 +65,19 @@ public class UpdateParentTests : DirectoryBaseTests
     {
         var cancellationToken = new CancellationTokenSource().Token;
 
-        var mainParentDepartment = await CreateParentDepartment();
+        var root = await CreateParentDepartment();
         
-        var department_l1 = await CreateChildDepartment(mainParentDepartment, "aaa");
-        var department_r1 = await CreateChildDepartment(mainParentDepartment, "bbb"); // переносим этого
+        var department_l1 = await CreateChildDepartment(root, "aaa");
+        var department_r1 = await CreateChildDepartment(root, "bbb");
+        
+        var request = new UpdateParentRequest(department_l1.Id);
 
-        var result = await ExecuteHandler(async handler =>
-        {
-            var command = new UpdateParentCommand(department_r1.Id, new UpdateParentRequest(department_l1.Id));
+        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{department_r1.Id}/parent", request, cancellationToken);
 
-            return await handler.Handle(command, cancellationToken);
-        });
+        var result = await response.HandleResponseAsync(cancellationToken: cancellationToken);
+
+        // assert
+        Assert.True(result.IsSuccess);
 
         await ExecuteInDb(async dbContext =>
         {
@@ -83,12 +88,11 @@ public class UpdateParentTests : DirectoryBaseTests
                 .ToListAsync(cancellationToken);
             
             var childrenListOfParentDepartment = await dbContext.Departments
-                .Where(d => d.Id == mainParentDepartment.Id)
+                .Where(d => d.Id == root.Id)
                 .Include(d => d.ChildrenDepartments)
                 .SelectMany(d => d.ChildrenDepartments.Select(c => c.Id))
                 .ToListAsync(cancellationToken);
             
-            Assert.True(result.IsSuccess);
             Assert.Contains(department_r1.Id, childrenListOfDepartment_l1);
             Assert.DoesNotContain(department_r1.Id, childrenListOfParentDepartment);
         });
@@ -99,19 +103,21 @@ public class UpdateParentTests : DirectoryBaseTests
     {
         var cancellationToken = new CancellationTokenSource().Token;
 
-        var mainParentDepartment = await CreateParentDepartment();
+        var root = await CreateParentDepartment();
         
-        var department_r1 = await CreateChildDepartment(mainParentDepartment, "aaa");
-        var department_r11 = await CreateChildDepartment(department_r1, "bbb"); // переносим этого
+        var department_r1 = await CreateChildDepartment(root, "aaa");
+        var department_r11 = await CreateChildDepartment(department_r1, "bbb");
         var department_r111 = await CreateChildDepartment(department_r11, "ccc"); 
         var department_r112 = await CreateChildDepartment(department_r11, "ddd");
+        
+        var request = new UpdateParentRequest(root.Id);
 
-        var result = await ExecuteHandler(async handler =>
-        {
-            var command = new UpdateParentCommand(department_r11.Id, new UpdateParentRequest(mainParentDepartment.Id));
+        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{department_r11.Id}/parent", request, cancellationToken);
 
-            return await handler.Handle(command, cancellationToken);
-        });
+        var result = await response.HandleResponseAsync(cancellationToken: cancellationToken);
+
+        // assert
+        Assert.True(result.IsSuccess);
 
         await ExecuteInDb(async dbContext =>
         {
@@ -128,12 +134,11 @@ public class UpdateParentTests : DirectoryBaseTests
                 .ToListAsync(cancellationToken);
             
             var childrenListOfparentDepartment = await dbContext.Departments
-                .Where(d => d.Id == mainParentDepartment.Id)
+                .Where(d => d.Id == root.Id)
                 .Include(d => d.ChildrenDepartments)
                 .SelectMany(d => d.ChildrenDepartments.Select(c => c.Id))
                 .ToListAsync(cancellationToken);
             
-            Assert.True(result.IsSuccess);
             Assert.Contains(department_r11.Id, childrenListOfparentDepartment);
             Assert.DoesNotContain(department_r11.Id, childrenListOfDepartment_r1);
             Assert.Contains(department_r111.Id, childrenListOfDepartment_r11);
@@ -146,17 +151,19 @@ public class UpdateParentTests : DirectoryBaseTests
     {
         var cancellationToken = new CancellationTokenSource().Token;
 
-        var mainParentDepartment = await CreateParentDepartment();
+        var root = await CreateParentDepartment();
         
-        var department_r1 = await CreateChildDepartment(mainParentDepartment, "aaa");
+        var department_r1 = await CreateChildDepartment(root, "aaa");
         var department_r11 = await CreateChildDepartment(department_r1, "bbb"); 
+        
+        var request = new UpdateParentRequest(root.Id);
 
-        var result = await ExecuteHandler(async handler =>
-        {
-            var command = new UpdateParentCommand(department_r11.Id, new UpdateParentRequest(mainParentDepartment.Id));
+        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{department_r11.Id}/parent", request, cancellationToken);
 
-            return await handler.Handle(command, cancellationToken);
-        });
+        var result = await response.HandleResponseAsync(cancellationToken: cancellationToken);
+
+        // assert
+        Assert.True(result.IsSuccess);
 
         await ExecuteInDb(async dbContext =>
         {
@@ -167,33 +174,36 @@ public class UpdateParentTests : DirectoryBaseTests
                 .ToListAsync(cancellationToken);            
             
             var childrenListOfparentDepartment = await dbContext.Departments
-                .Where(d => d.Id == mainParentDepartment.Id)
+                .Where(d => d.Id == root.Id)
                 .Include(d => d.ChildrenDepartments)
                 .SelectMany(d => d.ChildrenDepartments.Select(c => c.Id))
                 .ToListAsync(cancellationToken);
             
-            Assert.True(result.IsSuccess);
             Assert.Contains(department_r11.Id, childrenListOfparentDepartment);
             Assert.DoesNotContain(department_r11.Id, childrenListOfDepartment_r1);
         });
     }
     
     [Fact]
-    public async Task Invalid_parent_active_should_failed()
+    public async Task Invalid_parent_should_failed()
     {
         var cancellationToken = new CancellationTokenSource().Token;
 
-        var mainParentDepartment = await CreateParentDepartment(active: false);
+        var root = await CreateParentDepartment(); // active: false
         
-        var department_l1 = await CreateChildDepartment(mainParentDepartment, "aaa");
-        var department_r1 = await CreateChildDepartment(mainParentDepartment, "bbb"); // переносим этого
+        var department_l1 = await CreateChildDepartment(root, "aaa");
+        var department_r1 = await CreateChildDepartment(root, "bbb");
+        
+        var request = new UpdateParentRequest(Guid.NewGuid());
 
-        var result = await ExecuteHandler(async handler =>
-        {
-            var command = new UpdateParentCommand(department_r1.Id, new UpdateParentRequest(Guid.NewGuid()));
+        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{department_r1.Id}/parent", request, cancellationToken);
 
-            return await handler.Handle(command, cancellationToken);
-        });
+        var result = await response.HandleResponseAsync(cancellationToken: cancellationToken);
+
+        // assert
+        Assert.True(result.IsFailure);
+        Assert.NotNull(result.Error);
+        Assert.Contains(result.Error, e => e.Type == ErrorType.NOT_FOUND);
 
         await ExecuteInDb(async dbContext =>
         {
@@ -204,12 +214,11 @@ public class UpdateParentTests : DirectoryBaseTests
                 .ToListAsync(cancellationToken);
             
             var childrenListOfParentDepartment = await dbContext.Departments
-                .Where(d => d.Id == mainParentDepartment.Id)
+                .Where(d => d.Id == root.Id)
                 .Include(d => d.ChildrenDepartments)
                 .SelectMany(d => d.ChildrenDepartments.Select(c => c.Id))
                 .ToListAsync(cancellationToken);
             
-            Assert.True(result.IsFailure);
             Assert.DoesNotContain(department_r1.Id, childrenListOfDepartment_l1);
             Assert.Contains(department_r1.Id, childrenListOfParentDepartment);
         });
@@ -220,18 +229,22 @@ public class UpdateParentTests : DirectoryBaseTests
     {
         var cancellationToken = new CancellationTokenSource().Token;
 
-        var mainParentDepartment = await CreateParentDepartment();
+        var root = await CreateParentDepartment();
         
-        var department_l1 = await CreateChildDepartment(mainParentDepartment, "aaa", active: false);
-        var department_r1 = await CreateChildDepartment(mainParentDepartment, "bbb"); // переносим этого
+        var department_l1 = await CreateChildDepartment(root, "aaa", active: false);
+        var department_r1 = await CreateChildDepartment(root, "bbb");
+        
+        var request = new UpdateParentRequest(department_l1.Id);
 
-        var result = await ExecuteHandler(async handler =>
-        {
-            var command = new UpdateParentCommand(department_r1.Id, new UpdateParentRequest(department_l1.Id));
+        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{department_r1.Id}/parent", request, cancellationToken);
 
-            return await handler.Handle(command, cancellationToken);
-        });
+        var result = await response.HandleResponseAsync(cancellationToken: cancellationToken);
 
+        // assert
+        Assert.True(result.IsFailure);
+        Assert.NotNull(result.Error);
+        Assert.Contains(result.Error, e => e.Type == ErrorType.NOT_FOUND);
+        
         await ExecuteInDb(async dbContext =>
         {
             var childrenListOfDepartment_l1 = await dbContext.Departments
@@ -241,12 +254,11 @@ public class UpdateParentTests : DirectoryBaseTests
                 .ToListAsync(cancellationToken);
             
             var childrenListOfParentDepartment = await dbContext.Departments
-                .Where(d => d.Id == mainParentDepartment.Id)
+                .Where(d => d.Id == root.Id)
                 .Include(d => d.ChildrenDepartments)
                 .SelectMany(d => d.ChildrenDepartments.Select(c => c.Id))
                 .ToListAsync(cancellationToken);
             
-            Assert.True(result.IsFailure);
             Assert.DoesNotContain(department_r1.Id, childrenListOfDepartment_l1);
             Assert.Contains(department_r1.Id, childrenListOfParentDepartment);
         });
@@ -257,18 +269,22 @@ public class UpdateParentTests : DirectoryBaseTests
     {
         var cancellationToken = new CancellationTokenSource().Token;
 
-        var mainParentDepartment = await CreateParentDepartment();
+        var root = await CreateParentDepartment();
         
-        var department_l1 = await CreateChildDepartment(mainParentDepartment, "aaa");
-        var department_r1 = await CreateChildDepartment(mainParentDepartment, "bbb", active: false); // переносим этого
+        var department_l1 = await CreateChildDepartment(root, "aaa");
+        var department_r1 = await CreateChildDepartment(root, "bbb", active: false); // переносим этого
 
-        var result = await ExecuteHandler(async handler =>
-        {
-            var command = new UpdateParentCommand(department_r1.Id, new UpdateParentRequest(department_l1.Id));
+        var request = new UpdateParentRequest(department_l1.Id);
 
-            return await handler.Handle(command, cancellationToken);
-        });
+        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{department_r1.Id}/parent", request, cancellationToken);
 
+        var result = await response.HandleResponseAsync(cancellationToken: cancellationToken);
+
+        // assert
+        Assert.True(result.IsFailure);
+        Assert.NotNull(result.Error);
+        Assert.Contains(result.Error, e => e.Type == ErrorType.NOT_FOUND);
+        
         await ExecuteInDb(async dbContext =>
         {
             var childrenListOfDepartment_l1 = await dbContext.Departments
@@ -278,12 +294,11 @@ public class UpdateParentTests : DirectoryBaseTests
                 .ToListAsync(cancellationToken);
             
             var childrenListOfParentDepartment = await dbContext.Departments
-                .Where(d => d.Id == mainParentDepartment.Id)
+                .Where(d => d.Id == root.Id)
                 .Include(d => d.ChildrenDepartments)
                 .SelectMany(d => d.ChildrenDepartments.Select(c => c.Id))
                 .ToListAsync(cancellationToken);
             
-            Assert.True(result.IsFailure);
             Assert.DoesNotContain(department_r1.Id, childrenListOfDepartment_l1);
             Assert.Contains(department_r1.Id, childrenListOfParentDepartment);
         });
@@ -294,17 +309,21 @@ public class UpdateParentTests : DirectoryBaseTests
     {
         var cancellationToken = new CancellationTokenSource().Token;
 
-        var mainParentDepartment = await CreateParentDepartment();
+        var root = await CreateParentDepartment();
         
-        var department_l1 = await CreateChildDepartment(mainParentDepartment, "aaa");
-        var department_r1 = await CreateChildDepartment(mainParentDepartment, "bbb"); // переносим этого
+        var department_l1 = await CreateChildDepartment(root, "aaa");
+        var department_r1 = await CreateChildDepartment(root, "bbb");
+        
+        var request = new UpdateParentRequest(department_l1.Id);
 
-        var result = await ExecuteHandler(async handler =>
-        {
-            var command = new UpdateParentCommand(Guid.NewGuid(), new UpdateParentRequest(department_l1.Id));
+        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{Guid.NewGuid()}/parent", request, cancellationToken);
 
-            return await handler.Handle(command, cancellationToken);
-        });
+        var result = await response.HandleResponseAsync(cancellationToken: cancellationToken);
+
+        // assert
+        Assert.True(result.IsFailure);
+        Assert.NotNull(result.Error);
+        Assert.Contains(result.Error, e => e.Type == ErrorType.NOT_FOUND);
 
         await ExecuteInDb(async dbContext =>
         {
@@ -315,12 +334,11 @@ public class UpdateParentTests : DirectoryBaseTests
                 .ToListAsync(cancellationToken);
             
             var childrenListOfParentDepartment = await dbContext.Departments
-                .Where(d => d.Id == mainParentDepartment.Id)
+                .Where(d => d.Id == root.Id)
                 .Include(d => d.ChildrenDepartments)
                 .SelectMany(d => d.ChildrenDepartments.Select(c => c.Id))
                 .ToListAsync(cancellationToken);
             
-            Assert.True(result.IsFailure);
             Assert.DoesNotContain(department_r1.Id, childrenListOfDepartment_l1);
             Assert.Contains(department_r1.Id, childrenListOfParentDepartment);
         });
@@ -331,17 +349,21 @@ public class UpdateParentTests : DirectoryBaseTests
     {
         var cancellationToken = new CancellationTokenSource().Token;
 
-        var mainParentDepartment = await CreateParentDepartment();
+        var root = await CreateParentDepartment();
         
-        var department_l1 = await CreateChildDepartment(mainParentDepartment, "aaa");
-        var department_r1 = await CreateChildDepartment(mainParentDepartment, "bbb"); // переносим этого
+        var department_l1 = await CreateChildDepartment(root, "aaa");
+        var department_r1 = await CreateChildDepartment(root, "bbb"); // переносим этого
+        
+        var request = new UpdateParentRequest(department_r1.Id);
 
-        var result = await ExecuteHandler(async handler =>
-        {
-            var command = new UpdateParentCommand(department_r1.Id, new UpdateParentRequest(department_r1.Id));
+        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{department_r1.Id}/parent", request, cancellationToken);
 
-            return await handler.Handle(command, cancellationToken);
-        });
+        var result = await response.HandleResponseAsync(cancellationToken: cancellationToken);
+
+        // assert
+        Assert.True(result.IsFailure);
+        Assert.NotNull(result.Error);
+        Assert.Contains(result.Error, e => e.Type == ErrorType.VALIDATION);
 
         await ExecuteInDb(async dbContext =>
         {
@@ -352,12 +374,11 @@ public class UpdateParentTests : DirectoryBaseTests
                 .ToListAsync(cancellationToken);
             
             var childrenListOfParentDepartment = await dbContext.Departments
-                .Where(d => d.Id == mainParentDepartment.Id)
+                .Where(d => d.Id == root.Id)
                 .Include(d => d.ChildrenDepartments)
                 .SelectMany(d => d.ChildrenDepartments.Select(c => c.Id))
                 .ToListAsync(cancellationToken);
             
-            Assert.True(result.IsFailure);
             Assert.DoesNotContain(department_r1.Id, childrenListOfDepartment_l1);
             Assert.Contains(department_r1.Id, childrenListOfParentDepartment);
         });
@@ -368,17 +389,21 @@ public class UpdateParentTests : DirectoryBaseTests
     {
         var cancellationToken = new CancellationTokenSource().Token;
 
-        var mainParentDepartment = await CreateParentDepartment();
+        var root = await CreateParentDepartment();
         
-        var department_r1 = await CreateChildDepartment(mainParentDepartment, "aaa");
+        var department_r1 = await CreateChildDepartment(root, "aaa");
         var department_r11 = await CreateChildDepartment(department_r1, "bbb");
+        
+        var request = new UpdateParentRequest(department_r11.Id);
 
-        var result = await ExecuteHandler(async handler =>
-        {
-            var command = new UpdateParentCommand(department_r1.Id, new UpdateParentRequest(department_r11.Id));
+        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{department_r1.Id}/parent", request, cancellationToken);
 
-            return await handler.Handle(command, cancellationToken);
-        });
+        var result = await response.HandleResponseAsync(cancellationToken: cancellationToken);
+
+        // assert
+        Assert.True(result.IsFailure);
+        Assert.NotNull(result.Error);
+        Assert.Contains(result.Error, e => e.Type == ErrorType.FAILURE);
 
         await ExecuteInDb(async dbContext =>
         {
@@ -389,12 +414,11 @@ public class UpdateParentTests : DirectoryBaseTests
                 .ToListAsync(cancellationToken);
             
             var childrenListOfParentDepartment = await dbContext.Departments
-                .Where(d => d.Id == mainParentDepartment.Id)
+                .Where(d => d.Id == root.Id)
                 .Include(d => d.ChildrenDepartments)
                 .SelectMany(d => d.ChildrenDepartments.Select(c => c.Id))
                 .ToListAsync(cancellationToken);
             
-            Assert.True(result.IsFailure);
             Assert.Contains(department_r11.Id, childrenListOfDepartment_r1);
             Assert.Contains(department_r1.Id, childrenListOfParentDepartment);
         });
@@ -413,18 +437,20 @@ public class UpdateParentTests : DirectoryBaseTests
         var child1 = await CreateChildDepartment(departmentToMove, "child_1");
         var child2 = await CreateChildDepartment(departmentToMove, "child_2");
         
-        var task1 = ExecuteHandler(async handler =>
+        var task1 = Task.Run(async () =>
         {
-            var command = new UpdateParentCommand(departmentToMove.Id, new UpdateParentRequest(alternativeParentDepartment.Id));
-            return await handler.Handle(command, cancellationToken);
+            var request = new UpdateParentRequest(alternativeParentDepartment.Id);
+            var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{departmentToMove.Id}/parent", request, cancellationToken);
+            return await response.HandleResponseAsync(cancellationToken: cancellationToken);
         });
-        
-        var task2 = ExecuteHandler(async handler =>
+    
+        var task2 = Task.Run(async () =>
         {
-            var command = new UpdateParentCommand(departmentToMove.Id, new UpdateParentRequest(null));
-            return await handler.Handle(command, cancellationToken);
+            var request = new UpdateParentRequest(null);
+            var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{departmentToMove.Id}/parent", request, cancellationToken);
+            return await response.HandleResponseAsync(cancellationToken: cancellationToken);
         });
-        
+    
         var results = await Task.WhenAll(task1, task2);
         
         // assert

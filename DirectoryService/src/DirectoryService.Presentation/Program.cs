@@ -6,6 +6,7 @@ using DirectoryService.Infrastructure.Seeder;
 using DirectoryService.Presentation;
 using DirectoryService.Presentation.Extentions;
 using DirectoryService.Presentation.Middlewares;
+using DirectoryService.Shared.Serializations;
 using Serilog;
 
 var isTesting = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Testing";
@@ -35,6 +36,11 @@ services.AddSwaggerGen(options =>
 
 services.AddScoped<DirectoryServiceDbContext>(_ =>
     new DirectoryServiceDbContext(builder.Configuration.GetConnectionString(NameConstants.DATABASE)!));
+
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new ErrorsJsonConverter());
+});
 
 var app = builder.Build();
 

@@ -1,4 +1,5 @@
-﻿using DirectoryService.Application.Departments.UpdateLocations;
+﻿using System.Net.Http.Json;
+using DirectoryService.Application.Departments.UpdateLocations;
 using DirectoryService.Contracts.Departments;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Departments;
@@ -6,6 +7,7 @@ using DirectoryService.Domain.Departments.ValueObjects;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Domain.Locations.ValueObjects;
 using DirectoryService.Infrastructure;
+using DirectoryService.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -30,16 +32,17 @@ public class UpdateLocationsTests : DirectoryBaseTests
         var locationId3 = await CreateLocation("aaaa", "Moscow", "Russia", "Office_3");
 
         var locationsIds = new[] { locationId1, locationId2, locationId3 };
-        
-        // act
-        var result = await ExecuteHandler((sut) =>
-        {
-            var command = new UpdateLocationsCommand(departmentId, new UpdateLocationsRequest(locationsIds));
-            
-            return sut.Handle(command, cancellationToken);
-        });
 
+        var request = new UpdateLocationsRequest(locationsIds);
+        
+        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{departmentId}/locations", request, cancellationToken);
+
+        var result = await response.HandleResponseAsync<Guid>(cancellationToken: cancellationToken);
+        
         // assert
+        Assert.True(result.IsSuccess);
+        Assert.NotEqual(Guid.Empty, result.Value);
+        
         await ExecuteInDb(async dbContext =>
         {
             var departmentLocations = await dbContext.DepartmentLocations
@@ -47,7 +50,6 @@ public class UpdateLocationsTests : DirectoryBaseTests
                 .Select(ld => ld.LocationId)
                 .ToListAsync(cancellationToken);
             
-            Assert.True(result.IsSuccess);
             Assert.Equal(3, departmentLocations.Count);
             Assert.Contains(locationId1, departmentLocations);
             Assert.Contains(locationId2, departmentLocations);
@@ -67,15 +69,16 @@ public class UpdateLocationsTests : DirectoryBaseTests
 
         var locationsIds = new[] { locationId1 };
         
-        // act
-        var result = await ExecuteHandler((sut) =>
-        {
-            var command = new UpdateLocationsCommand(departmentId, new UpdateLocationsRequest(locationsIds));
-            
-            return sut.Handle(command, cancellationToken);
-        });
+        var request = new UpdateLocationsRequest(locationsIds);
+        
+        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{departmentId}/locations", request, cancellationToken);
 
+        var result = await response.HandleResponseAsync<Guid>(cancellationToken: cancellationToken);
+        
         // assert
+        Assert.True(result.IsSuccess);
+        Assert.NotEqual(Guid.Empty, result.Value);
+        
         await ExecuteInDb(async dbContext =>
         {
             var departmentLocations = await dbContext.DepartmentLocations
@@ -83,7 +86,6 @@ public class UpdateLocationsTests : DirectoryBaseTests
                 .Select(ld => ld.LocationId)
                 .ToListAsync(cancellationToken);
             
-            Assert.True(result.IsSuccess);
             Assert.Single(departmentLocations);
             Assert.Contains(locationId1, departmentLocations);
         });
@@ -100,21 +102,22 @@ public class UpdateLocationsTests : DirectoryBaseTests
 
         var locationsIds = new[] { locationId1 };
         
-        // act
-        var result = await ExecuteHandler((sut) =>
-        {
-            var command = new UpdateLocationsCommand(departmentId, new UpdateLocationsRequest(locationsIds));
-            
-            return sut.Handle(command, cancellationToken);
-        });
+        var request = new UpdateLocationsRequest(locationsIds);
+        
+        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{departmentId}/locations", request, cancellationToken);
 
+        var result = await response.HandleResponseAsync<Guid?>(cancellationToken: cancellationToken);
+        
         // assert
+        Assert.True(result.IsFailure);
+        Assert.NotNull(result.Error);
+        Assert.Contains(result.Error, e => e.Type == ErrorType.NOT_FOUND);
+        
         await ExecuteInDb(async dbContext =>
         {
             var department = await dbContext.Departments
-                .FirstOrDefaultAsync(d => d.Id == departmentId);
+                .FirstOrDefaultAsync(d => d.Id == departmentId, cancellationToken: cancellationToken);
             
-            Assert.True(result.IsFailure);
             Assert.Null(department);
         });
     }
@@ -131,15 +134,17 @@ public class UpdateLocationsTests : DirectoryBaseTests
 
         var locationsIds = new[] { locationId1 };
         
-        // act
-        var result = await ExecuteHandler((sut) =>
-        {
-            var command = new UpdateLocationsCommand(departmentId, new UpdateLocationsRequest(locationsIds));
-            
-            return sut.Handle(command, cancellationToken);
-        });
+        var request = new UpdateLocationsRequest(locationsIds);
+        
+        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{departmentId}/locations", request, cancellationToken);
 
+        var result = await response.HandleResponseAsync<Guid?>(cancellationToken: cancellationToken);
+        
         // assert
+        Assert.True(result.IsFailure);
+        Assert.NotNull(result.Error);
+        Assert.Contains(result.Error, e => e.Type == ErrorType.VALIDATION);
+
         await ExecuteInDb(async dbContext =>
         {
             var departmentLocations = await dbContext.DepartmentLocations
@@ -147,7 +152,6 @@ public class UpdateLocationsTests : DirectoryBaseTests
                 .Select(ld => ld.LocationId)
                 .ToListAsync(cancellationToken);
             
-            Assert.True(result.IsFailure);
             Assert.DoesNotContain(locationId1, departmentLocations);
         });
     }
@@ -164,16 +168,16 @@ public class UpdateLocationsTests : DirectoryBaseTests
 
         var locationsIds = new[] { locationId1, Guid.NewGuid() };
         
-        // act
-        var result = await ExecuteHandler((sut) =>
-        {
-            var command = new UpdateLocationsCommand(departmentId, new UpdateLocationsRequest(locationsIds));
-            
-            return sut.Handle(command, cancellationToken);
-        });
+        var request = new UpdateLocationsRequest(locationsIds);
+        
+        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{departmentId}/locations", request, cancellationToken);
 
+        var result = await response.HandleResponseAsync<Guid?>(cancellationToken: cancellationToken);
+        
         // assert
         Assert.True(result.IsFailure);
+        Assert.NotNull(result.Error);
+        Assert.Contains(result.Error, e => e.Type == ErrorType.VALIDATION);
     }
     
     [Fact]
@@ -189,16 +193,16 @@ public class UpdateLocationsTests : DirectoryBaseTests
 
         var locationsIds = new[] { locationId1, locationId2, locationId1 };
         
-        // act
-        var result = await ExecuteHandler((sut) =>
-        {
-            var command = new UpdateLocationsCommand(departmentId, new UpdateLocationsRequest(locationsIds));
-            
-            return sut.Handle(command, cancellationToken);
-        });
+        var request = new UpdateLocationsRequest(locationsIds);
+        
+        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{departmentId}/locations", request, cancellationToken);
 
+        var result = await response.HandleResponseAsync<Guid?>(cancellationToken: cancellationToken);
+        
         // assert
         Assert.True(result.IsFailure);
+        Assert.NotNull(result.Error);
+        Assert.Contains(result.Error, e => e.Type == ErrorType.VALIDATION);
     }
     
     [Fact]
@@ -211,22 +215,22 @@ public class UpdateLocationsTests : DirectoryBaseTests
         var departmentId = department.Id;        
         Guid[] locationsIds = [];
         
-        // act
-        var result = await ExecuteHandler((sut) =>
-        {
-            var command = new UpdateLocationsCommand(departmentId, new UpdateLocationsRequest(locationsIds));
-            
-            return sut.Handle(command, cancellationToken);
-        });
+        var request = new UpdateLocationsRequest(locationsIds);
+        
+        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{departmentId}/locations", request, cancellationToken);
 
+        var result = await response.HandleResponseAsync<Guid?>(cancellationToken: cancellationToken);
+        
         // assert
         Assert.True(result.IsFailure);
+        Assert.NotNull(result.Error);
+        Assert.Contains(result.Error, e => e.Type == ErrorType.NOT_FOUND);
     }
     
-    private async Task<T> ExecuteHandler<T>(Func<UpdateLocationsHandler, Task<T>> action)
-    {
-        await using var scopeHandler = Services.CreateAsyncScope();
-        var handler = scopeHandler.ServiceProvider.GetRequiredService<UpdateLocationsHandler>();
-        return await action(handler);
-    }
+    // private async Task<T> ExecuteHandler<T>(Func<UpdateLocationsHandler, Task<T>> action)
+    // {
+    //     await using var scopeHandler = Services.CreateAsyncScope();
+    //     var handler = scopeHandler.ServiceProvider.GetRequiredService<UpdateLocationsHandler>();
+    //     return await action(handler);
+    // }
 }

@@ -9,28 +9,66 @@ public static class HttpResponseMessageExtensions
         this HttpResponseMessage response,
         CancellationToken cancellationToken = default)
     {
-        var dataResponse = await response.Content.ReadFromJsonAsync<Envelope<TResponse>>(cancellationToken);
-
-        if (!response.IsSuccessStatusCode)
+        try
         {
-            return dataResponse?.ErrorList ?? GeneralErrors.Failure("Error while reading response");
-        }
+            var dataResponse = await response.Content.ReadFromJsonAsync<Envelope<TResponse>>(cancellationToken);
 
-        if (dataResponse is null)
+            if (!response.IsSuccessStatusCode)
+            {
+                return dataResponse?.ErrorList ?? GeneralErrors.Failure("Error while reading response");
+            }
+
+            if (dataResponse is null)
+            {
+                return GeneralErrors.Failure("Error while reading response").ToErrors();
+            }
+
+            if (dataResponse.ErrorList is not null)
+            {
+                return dataResponse.ErrorList;
+            }
+
+            if (dataResponse.Result is null)
+            {
+                return GeneralErrors.Failure("Error while reading response").ToErrors();
+            }
+
+            return dataResponse.Result!;
+        }
+        catch
         {
             return GeneralErrors.Failure("Error while reading response").ToErrors();
         }
-        
-        if (dataResponse.ErrorList is not null)
+    }
+    
+    public static async Task<UnitResult<Errors>> HandleResponseAsync(
+        this HttpResponseMessage response,
+        CancellationToken cancellationToken = default)
+    {
+        try
         {
-            return dataResponse.ErrorList;
+            var dataResponse = await response.Content.ReadFromJsonAsync<Envelope>(cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return dataResponse?.ErrorList ?? GeneralErrors.Failure("Error while reading response");
+            }
+
+            if (dataResponse is null)
+            {
+                return GeneralErrors.Failure("Error while reading response").ToErrors();
+            }
+
+            if (dataResponse.ErrorList is not null)
+            {
+                return dataResponse.ErrorList;
+            }
+
+            return UnitResult.Success<Errors>();
         }
-        
-        if (dataResponse.Result is null)
+        catch
         {
             return GeneralErrors.Failure("Error while reading response").ToErrors();
         }
-
-        return dataResponse.Result!;
     }
 }
