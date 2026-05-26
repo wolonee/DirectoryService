@@ -15,11 +15,11 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Departments\Command\" />
-      <Folder Include="Departments\Query\" />
-      <Folder Include="Locations\Command\" />
-      <Folder Include="Positions\Command\" />
-      <Folder Include="Positions\Query\" />
+      <Folder Include="Departments\Commands\" />
+      <Folder Include="Departments\Queries\" />
+      <Folder Include="Locations\Commands\" />
+      <Folder Include="Positions\Commands\" />
+      <Folder Include="Positions\Queries\" />
     </ItemGroup>
 
 </Project>

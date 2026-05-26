@@ -37,7 +37,7 @@ public class LocationController : ControllerBase
     }
     
     // [HttpGet]
-    // public async Task<GetLocationByIdResponse> Get(
+    // public async Task<GetLocationsResponse> Get(
     // )
     // {
     //     
