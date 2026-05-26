@@ -7,6 +7,12 @@ public static class GeneralErrors
         string label = name ?? "object";
         return Error.Failure("value.is.invalid", $"{label} is invalid");
     }
+    
+    public static Error Failure(string? name = null)
+    {
+        string label = name ?? "object";
+        return Error.Failure("failure", $"{label}");
+    }
 
     public static Error ValueIsRequired(string? name = null)
     {

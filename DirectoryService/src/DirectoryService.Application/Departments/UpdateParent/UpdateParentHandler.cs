@@ -33,7 +33,10 @@ public class UpdateParentHandler : ICommandHandler<UpdateParentCommand>
         // Validation
         var validationResult = await _validator.ValidateAsync(command, cancellationToken);
         if (!validationResult.IsValid)
+        {
+            _logger.LogError("Validation Update Parent Failed: {Error}", validationResult.ToValidationErrors());
             return validationResult.ToValidationErrors();
+        }
         
         var transactionScopeResult = await _transactionManager.BeginTransactionAsync(cancellationToken);
         if (transactionScopeResult.IsFailure)

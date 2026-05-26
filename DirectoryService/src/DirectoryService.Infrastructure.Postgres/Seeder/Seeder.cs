@@ -309,10 +309,10 @@ public class DepartmentTreeSeeder
             .ToList();
 
         var parentResult = Department.CreateParent(
-            id,
             nameResult.Value,
             identifierResult.Value,
-            departmentLocations
+            departmentLocations,
+            id
         );
 
         return parentResult;

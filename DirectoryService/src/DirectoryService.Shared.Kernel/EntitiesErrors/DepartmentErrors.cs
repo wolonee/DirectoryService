@@ -21,10 +21,10 @@ public static class DepartmentErrors
         Error.Conflict("department.name.conflict", $"Department with name: {name} already exists.");
     
     public static Error IsNotActive() =>
-        Error.Failure("department.is.not.active", $"Department is not active.");
+        Error.Validation("department.is.not.active", $"Department is not active.");
     
     public static Error ParentIdEqualDepartmentId() =>
-        Error.Failure("parent.id.equal.department.id", $"Parent id can't be equal to department id.");
+        Error.Validation("parent.id.equal.department.id", $"Parent id can't be equal to department id.");
     
     public static Error DepartmentChildrensContainsParent() =>
         Error.Failure("department.childrens.contains.parent", $"Department childrens contains parent department.");

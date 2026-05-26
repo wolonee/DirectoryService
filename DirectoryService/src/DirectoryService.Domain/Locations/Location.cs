@@ -44,25 +44,8 @@ public class Location
         return new Location(addressResult, name, timezone);
     }
 
-    public Result<bool, Error> Activate()
+    public void Activate(bool boolean)
     {
-        if (IsActive)
-        {
-            return LocationErrors.IsAlreadyActive(Id);
-        }
-        
-        IsActive = true;
-        return IsActive;
-    }
-
-    public Result<bool, Error> Deactivate()
-    {
-        if (!IsActive)
-        {
-            return LocationErrors.IsAlreadyInactive(Id);
-        }
-        
-        IsActive = false;
-        return IsActive;
-    }   
+        IsActive = boolean;
+    } 
 }

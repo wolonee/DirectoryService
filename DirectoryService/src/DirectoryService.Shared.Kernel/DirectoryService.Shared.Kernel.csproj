@@ -7,4 +7,8 @@
         <RootNamespace>DirectoryService.Shared</RootNamespace>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="CSharpFunctionalExtensions" Version="3.7.0" />
+    </ItemGroup>
+
 </Project>

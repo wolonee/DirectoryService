@@ -40,7 +40,10 @@ public class UpdateLocationsHandler : ICommandHandler<Guid, UpdateLocationsComma
         // FluentValidation
         var validationResult = await _validator.ValidateAsync(command, cancellationToken);
         if (!validationResult.IsValid)
+        {
+            _logger.LogError("Validation Update Locations in Department Failed: {Error}", validationResult.ToValidationErrors());
             return validationResult.ToValidationErrors();
+        }
 
         // Business validation
         var transactionScopeResult = await _transactionManager.BeginTransactionAsync(cancellationToken);

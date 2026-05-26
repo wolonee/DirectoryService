@@ -18,6 +18,7 @@ public class Department
     
     private Department(
         Guid? id,
+        Guid? parentId,
         DepartmentName departmentName, 
         DepartmentIdentifier departmentIdentifier, 
         DepartmentPath departmentPath, 
@@ -27,11 +28,13 @@ public class Department
         Id = id ?? Guid.NewGuid();
         DepartmentName = departmentName;
         DepartmentIdentifier = departmentIdentifier;
+        ParentId = parentId ?? null;
         IsActive = true;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
         DepartmentPath = departmentPath;
         Depth = depth;
+        ChildrenCount = ChildrenDepartments.Count;
         _departmentLocations = departmentLocations.ToList();
     }
     
@@ -62,16 +65,16 @@ public class Department
     public DateTime UpdatedAt { get; private set; }
 
     public static Result<Department, Error> CreateParent(
-        Guid? id,
         DepartmentName name, 
         DepartmentIdentifier identifier, 
-        IEnumerable<DepartmentLocation> departmentLocations)
+        IEnumerable<DepartmentLocation> departmentLocations, 
+        Guid? id)
     {
         var departmentLocationsList = departmentLocations.ToList();
         
         var path = DepartmentPath.CreateParent(identifier);
         
-        var createdDepartment = new Department(id, name, identifier, path, 0, departmentLocationsList);
+        var createdDepartment = new Department(id, null, name, identifier, path, 0, departmentLocationsList);
         
         return createdDepartment;
     }
@@ -87,7 +90,7 @@ public class Department
         
         var path = parent.DepartmentPath.CreateChild(identifier);
         
-        var createdDepartment = new Department(id, name, identifier, path, parent.Depth + 1, departmentLocationsList);
+        var createdDepartment = new Department(id, parent.Id, name, identifier, path, parent.Depth + 1, departmentLocationsList);
         
         parent._childrenDepartments.Add(createdDepartment);
         
@@ -106,6 +109,11 @@ public class Department
         UpdatedAt = DateTime.UtcNow;
 
         return UnitResult.Success<Error>();
+    }
+
+    public void Activate(bool boolean)
+    {
+        IsActive = boolean;
     }
 
     // public UnitResult<Error> UpdateParentForChildren(Department parent)
