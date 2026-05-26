@@ -44,18 +44,13 @@ public class LocationController : ControllerBase
     // }
     
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<GetLocationByIdResponse?>> GetById(
+    public async Task<EndpointResult<GetLocationByIdResponse>> GetById(
         [FromServices] IQueryHandler<GetLocationByIdResponse, GetLocationByIdQuery> handler,
         [FromRoute] Guid id,
         CancellationToken cancellationToken = default)
     {
         var query = new GetLocationByIdQuery(id);
         
-        var result = await handler.Handle(query, cancellationToken);
-        
-        if (result is null)
-            return NotFound();
-    
-        return Ok(result);
+        return await handler.Handle(query, cancellationToken);
     }
 }

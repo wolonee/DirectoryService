@@ -1,6 +1,8 @@
-﻿using DirectoryService.Application.Abstractions;
+﻿using CSharpFunctionalExtensions;
+using DirectoryService.Application.Abstractions;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Infrastructure;
+using DirectoryService.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace DirectoryService.Application.Locations.Query;
@@ -14,12 +16,12 @@ public class GetLocationByIdHandler : IQueryHandler<GetLocationByIdResponse, Get
         _readDbContext = readDbContext;
     }
 
-    public async Task<GetLocationByIdResponse?> Handle(GetLocationByIdQuery query, CancellationToken cancellationToken = default)
+    public async Task<Result<GetLocationByIdResponse, Errors>> Handle(GetLocationByIdQuery query, CancellationToken cancellationToken = default)
     {
         var location = await _readDbContext.LocationsRead.FirstOrDefaultAsync(l => l.Id == query.Id, cancellationToken);
         if (location is null)
         {
-            return null;
+            return GeneralErrors.NotFound().ToErrors();
         }
 
         return new GetLocationByIdResponse

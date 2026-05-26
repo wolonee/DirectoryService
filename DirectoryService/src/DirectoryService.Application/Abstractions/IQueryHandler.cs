@@ -1,4 +1,6 @@
-﻿using DirectoryService.Contracts.Locations;
+﻿using CSharpFunctionalExtensions;
+using DirectoryService.Contracts.Locations;
+using DirectoryService.Shared;
 
 namespace DirectoryService.Application.Abstractions;
 
@@ -7,5 +9,5 @@ public interface IQuery;
 public interface IQueryHandler<TResponse, in TQuery>
     where TQuery : IQuery
 {
-    Task<TResponse?> Handle(TQuery query, CancellationToken cancellationToken = default);
+    Task<Result<TResponse, Errors>> Handle(TQuery query, CancellationToken cancellationToken = default);
 }
