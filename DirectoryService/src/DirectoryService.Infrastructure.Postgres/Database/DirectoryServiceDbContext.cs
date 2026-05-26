@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DirectoryService.Infrastructure;
 
-public class DirectoryServiceDbContext : DbContext
+public class DirectoryServiceDbContext : DbContext, IReadDbContext
 {
     private readonly string _connectionString;
     
@@ -24,6 +24,8 @@ public class DirectoryServiceDbContext : DbContext
     public DbSet<Position> Positions { get; set; }
     
     public DbSet<Location> Locations { get; set; }
+    
+    public IQueryable<Location> LocationsRead => Locations.AsNoTracking().AsQueryable();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

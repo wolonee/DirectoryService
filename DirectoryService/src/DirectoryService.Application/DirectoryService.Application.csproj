@@ -9,8 +9,17 @@
     <ItemGroup>
       <PackageReference Include="FluentValidation" Version="12.1.1" />
       <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.1" />
       <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.1" />
       <PackageReference Include="Scrutor" Version="7.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Departments\Command\" />
+      <Folder Include="Departments\Query\" />
+      <Folder Include="Locations\Command\" />
+      <Folder Include="Positions\Command\" />
+      <Folder Include="Positions\Query\" />
     </ItemGroup>
 
 </Project>

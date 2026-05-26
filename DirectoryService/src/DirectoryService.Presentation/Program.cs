@@ -37,6 +37,9 @@ services.AddSwaggerGen(options =>
 services.AddScoped<DirectoryServiceDbContext>(_ =>
     new DirectoryServiceDbContext(builder.Configuration.GetConnectionString(NameConstants.DATABASE)!));
 
+services.AddScoped<IReadDbContext, DirectoryServiceDbContext>(_ =>
+    new DirectoryServiceDbContext(builder.Configuration.GetConnectionString(NameConstants.DATABASE)!));
+
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.Converters.Add(new ErrorsJsonConverter());

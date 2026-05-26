@@ -1,6 +1,7 @@
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Locations;
 using DirectoryService.Application.Locations.CreateLocation;
+using DirectoryService.Application.Locations.Query;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Presentation.EndpointResults;
@@ -35,10 +36,26 @@ public class LocationController : ControllerBase
         return await handler.Handle(command, cancellationToken);
     }
     
-    [HttpGet]
-    public async Task<Guid> Get(
-    )
+    // [HttpGet]
+    // public async Task<GetLocationByIdResponse> Get(
+    // )
+    // {
+    //     
+    // }
+    
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<GetLocationByIdResponse?>> GetById(
+        [FromServices] IQueryHandler<GetLocationByIdResponse, GetLocationByIdQuery> handler,
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken = default)
     {
+        var query = new GetLocationByIdQuery(id);
         
+        var result = await handler.Handle(query, cancellationToken);
+        
+        if (result is null)
+            return NotFound();
+    
+        return Ok(result);
     }
 }

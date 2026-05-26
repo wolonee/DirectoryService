@@ -1,9 +1,11 @@
-﻿namespace DirectoryService.Application.Abstractions;
+﻿using DirectoryService.Contracts.Locations;
+
+namespace DirectoryService.Application.Abstractions;
 
 public interface IQuery;
 
 public interface IQueryHandler<TResponse, in TQuery>
     where TQuery : IQuery
 {
-    Task<TResponse> Handle(TQuery query, CancellationToken cancellationToken = default);
+    Task<TResponse?> Handle(TQuery query, CancellationToken cancellationToken = default);
 }
