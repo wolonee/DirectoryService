@@ -34,4 +34,11 @@ public class LocationController : ControllerBase
         
         return await handler.Handle(command, cancellationToken);
     }
+    
+    [HttpGet]
+    public async Task<Guid> Get(
+    )
+    {
+        
+    }
 }
