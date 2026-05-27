@@ -44,6 +44,12 @@ public class GetLocationsHandler : IQueryHandler<GetLocationsResponse, GetLocati
         if (!string.IsNullOrWhiteSpace(query.Request.Search))
             locationsQuery = locationsQuery.Where(l => l.Name.Value.ToLower().Contains(query.Request.Search.ToLower()));
         
+        if (query.Request.IsActive == true)
+            locationsQuery = locationsQuery.Where(l => l.IsActive == true);
+        
+        if (query.Request.IsActive == false)
+            locationsQuery = locationsQuery.Where(l => l.IsActive == false);
+        
         var pagination = query.Request.Pagination ?? new PaginationRequest();
         
         locationsQuery = locationsQuery
