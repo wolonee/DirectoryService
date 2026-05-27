@@ -38,7 +38,7 @@ public class GetLocationsHandler : IQueryHandler<GetLocationsResponse, GetLocati
             validationResult.ToValidationErrors();
         }
         
-        // body
+        // filters
         var locationsQuery = _context.LocationsRead;
         
         if (!string.IsNullOrWhiteSpace(query.Request.Search))
@@ -47,10 +47,16 @@ public class GetLocationsHandler : IQueryHandler<GetLocationsResponse, GetLocati
         var pagination = query.Request.Pagination ?? new PaginationRequest();
         
         locationsQuery = locationsQuery
-            .OrderBy(l => l.CreatedAt)
+            .OrderBy(l => l.CreatedAt);
+        
+        var totalCount = await locationsQuery.LongCountAsync(cancellationToken);
+        
+        // pagination
+        locationsQuery = locationsQuery
             .Skip((pagination.Page - 1) * pagination.PageSize)
             .Take(pagination.PageSize);
 
+        // create response
         var result = await locationsQuery
             .Select(l => new GetLocationDto
             {
@@ -64,6 +70,6 @@ public class GetLocationsHandler : IQueryHandler<GetLocationsResponse, GetLocati
             .ToListAsync(cancellationToken: cancellationToken);
 
         // return
-        return new GetLocationsResponse(result);
+        return new GetLocationsResponse(result, totalCount);
     }
 }

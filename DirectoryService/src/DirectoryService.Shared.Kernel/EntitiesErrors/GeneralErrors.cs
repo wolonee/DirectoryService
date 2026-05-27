@@ -13,6 +13,13 @@ public static class GeneralErrors
         string label = name ?? "object";
         return Error.Failure("failure", $"{label}");
     }
+    
+    public static Error Duplicate(string? name = null)
+    {
+        string label = name ?? "object";
+        return Error.Failure("value.has.duplicate", $"{label} hsa duplicate");
+    }
+
 
     public static Error ValueIsRequired(string? name = null)
     {

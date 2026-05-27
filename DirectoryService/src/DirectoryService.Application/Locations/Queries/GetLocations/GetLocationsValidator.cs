@@ -1,4 +1,5 @@
 ﻿using DirectoryService.Application.Validation;
+using DirectoryService.Contracts.Locations;
 using DirectoryService.Shared;
 using FluentValidation;
 
@@ -15,5 +16,21 @@ public class GetLocationsValidator : AbstractValidator<GetLocationsQuery>
         RuleFor(q => q.Request.Search)
             .MaximumLength(1000)
             .WithError(GeneralErrors.MaximumLength(1000, nameof(GetLocationsQuery.Request.Search)));
+        
+        RuleFor(q => q.Request.Pagination!.Page)
+            .GreaterThan(0)
+            .When(q => q.Request.Pagination != null)
+            .WithError(GeneralErrors.MinimumLength(1, nameof(PaginationRequest)));
+
+        RuleFor(q => q.Request.Pagination!.PageSize)
+            .GreaterThan(0)
+            .When(q => q.Request.Pagination != null)
+            .WithError(GeneralErrors.MinimumLength(1, nameof(PaginationRequest)));
+
+        RuleFor(q => q.Request.DepartmentIds)
+            .Must(ids => ids == null)
+            .WithError(GeneralErrors.ValueIsInvalid(nameof(GetLocationsQuery.Request.DepartmentIds)))
+            .Must(ids => ids != null && ids.Distinct().Count() == ids.Length)
+            .WithError(GeneralErrors.Duplicate(nameof(GetLocationsQuery.Request.DepartmentIds)));
     }
 }
