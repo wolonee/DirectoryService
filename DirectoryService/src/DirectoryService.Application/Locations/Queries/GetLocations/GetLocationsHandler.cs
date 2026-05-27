@@ -43,6 +43,13 @@ public class GetLocationsHandler : IQueryHandler<GetLocationsResponse, GetLocati
         
         if (!string.IsNullOrWhiteSpace(query.Request.Search))
             locationsQuery = locationsQuery.Where(l => l.Name.Value.ToLower().Contains(query.Request.Search.ToLower()));
+        
+        var pagination = query.Request.Pagination ?? new PaginationRequest();
+        
+        locationsQuery = locationsQuery
+            .OrderBy(l => l.CreatedAt)
+            .Skip((pagination.Page - 1) * pagination.PageSize)
+            .Take(pagination.PageSize);
 
         var result = await locationsQuery
             .Select(l => new GetLocationDto
