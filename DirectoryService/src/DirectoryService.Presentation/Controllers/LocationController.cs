@@ -1,6 +1,7 @@
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Locations;
 using DirectoryService.Application.Locations.CreateLocation;
+using DirectoryService.Application.Locations.Queries.GetLocations;
 using DirectoryService.Application.Locations.Query;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Locations;
@@ -36,12 +37,15 @@ public class LocationController : ControllerBase
         return await handler.Handle(command, cancellationToken);
     }
     
-    // [HttpGet]
-    // public async Task<GetLocationsResponse> Get(
-    // )
-    // {
-    //     
-    // }
+    [HttpGet]
+    public async Task<EndpointResult<GetLocationsResponse>> Get(
+        [FromServices] IQueryHandler<GetLocationsResponse, GetLocationsQuery> handler,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetLocationsQuery();
+        
+        return await handler.Handle(query, cancellationToken);
+    }
     
     [HttpGet("{id:guid}")]
     public async Task<EndpointResult<GetLocationByIdResponse>> GetById(

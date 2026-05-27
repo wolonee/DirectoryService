@@ -1,6 +1,6 @@
 ﻿namespace DirectoryService.Contracts.Locations;
 
-public record GetLocationByIdResponse
+public record GetLocationDto
 {
     public Guid Id { get; init; }
     public string Name { get; init; } = string.Empty;
