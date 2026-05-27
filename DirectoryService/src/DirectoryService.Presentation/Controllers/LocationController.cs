@@ -39,7 +39,7 @@ public class LocationController : ControllerBase
     
     [HttpGet]
     public async Task<EndpointResult<GetLocationsResponse>> Get(
-        [FromRoute] GetLocationsRequest request,
+        [FromQuery] GetLocationsRequest request,
         [FromServices] IQueryHandler<GetLocationsResponse, GetLocationsQuery> handler,
         CancellationToken cancellationToken = default)
     {

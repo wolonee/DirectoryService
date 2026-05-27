@@ -30,6 +30,7 @@ public class GetLocationsHandler : IQueryHandler<GetLocationsResponse, GetLocati
         GetLocationsQuery query,
         CancellationToken cancellationToken = default)
     {
+        // validation
         var validationResult = await _validator.ValidateAsync(query, cancellationToken);
         if (!validationResult.IsValid)
         {
@@ -37,7 +38,11 @@ public class GetLocationsHandler : IQueryHandler<GetLocationsResponse, GetLocati
             validationResult.ToValidationErrors();
         }
         
+        // body
         var locationsQuery = _context.LocationsRead;
+        
+        if (!string.IsNullOrWhiteSpace(query.Request.Search))
+            locationsQuery = locationsQuery.Where(l => l.Name.Value.ToLower().Contains(query.Request.Search.ToLower()));
 
         var result = await locationsQuery
             .Select(l => new GetLocationDto
@@ -51,6 +56,7 @@ public class GetLocationsHandler : IQueryHandler<GetLocationsResponse, GetLocati
             })
             .ToListAsync(cancellationToken: cancellationToken);
 
+        // return
         return new GetLocationsResponse(result);
     }
 }
