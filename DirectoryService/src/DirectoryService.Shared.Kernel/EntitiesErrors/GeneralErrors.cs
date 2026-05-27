@@ -26,6 +26,18 @@ public static class GeneralErrors
         return Error.Validation("value.has.invalid.length", $"{label} must be between {minNameLength} and {maxNameLength} characters");
     }
     
+    public static Error MaximumLength(int maxLength, string? name = null)
+    {
+        string label = name ?? "object";
+        return Error.Validation("value.has.invalid.length", $"{label} must be less than {maxLength} characters");
+    }
+    
+    public static Error MinimumLength(int minLength, string? name = null)
+    {
+        string label = name ?? "object";
+        return Error.Validation("value.has.invalid.length", $"{label} must be more than {minLength} characters");
+    }
+    
     public static Error ValueContainsInvalidCharacters(string? name = null)
     {
         string label = name ?? "object";

@@ -5,5 +5,4 @@ public record GetLocationsRequest(
     string? Country,
     string? City,
     string? Street,
-    string? Timezone,
     bool? IsActive);
