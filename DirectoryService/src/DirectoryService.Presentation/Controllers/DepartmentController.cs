@@ -49,4 +49,10 @@ public class DepartmentsController : ControllerBase
 
         return await handler.Handle(command, cancellationToken);
     }
+    
+    // GET /api/departments/top-positions
+    [HttpGet("top-positions")]
+    public async Task<EndpointResult<GetTopDepartmentsByPositionsResponse> GetByTopPositions(
+        []
+        CancellationToken cancellationToken = default)
 }
