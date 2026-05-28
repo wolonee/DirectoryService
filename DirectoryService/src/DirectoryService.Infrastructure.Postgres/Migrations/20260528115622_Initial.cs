@@ -51,8 +51,8 @@ namespace DirectoryService.Infrastructure.Migrations
                     name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
                     timezone = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     is_active = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {

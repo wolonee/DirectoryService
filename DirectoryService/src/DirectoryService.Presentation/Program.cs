@@ -2,6 +2,7 @@ using System.Globalization;
 using DirectoryService.Application.Database;
 using DirectoryService.Domain;
 using DirectoryService.Infrastructure.Database;
+using DirectoryService.Infrastructure.Seeder;
 using DirectoryService.Presentation;
 using DirectoryService.Presentation.Extentions;
 using DirectoryService.Presentation.Middlewares;

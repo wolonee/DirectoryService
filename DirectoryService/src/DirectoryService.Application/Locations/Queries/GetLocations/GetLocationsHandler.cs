@@ -138,6 +138,18 @@ public class GetLocationsHandler : IQueryHandler<GetLocationsResponse, GetLocati
         
         var whereClause = conditions.Count > 0 ? $" WHERE {string.Join(" and ", conditions)}" : "";
         
+        string direction = request.SortDirection?.ToLower() == "asc" ? "ASC" : "DESC";
+
+        string orderByField = request.SortBy?.ToLower() switch
+        {
+            "name" => "name",
+            "country" => "country",
+            "created_at" => "created_at",
+            _ => "name"
+        };
+
+        var orderByClause = $"ORDER BY {orderByField} {direction}";
+            
         var joinClause = string.Join("\n", joins);
 
         long? totalCount = null;
@@ -151,13 +163,13 @@ public class GetLocationsHandler : IQueryHandler<GetLocationsResponse, GetLocati
                    l.street,
                    l.is_active,
                    l.timezone,
-                   l."CreatedAt",
+                   l.created_at,
                    COUNT(*) OVER() AS total_count
                    
             FROM locations l
             {joinClause}
             {whereClause}
-            ORDER BY l.name, l."CreatedAt" DESC
+            {orderByClause}
             LIMIT @{PAGE_SIZE_PARAMETER} OFFSET @{OFFSET_PARAMETER}
             """, 
             splitOn: "total_count",
