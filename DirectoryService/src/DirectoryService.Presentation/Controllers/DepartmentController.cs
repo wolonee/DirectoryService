@@ -4,6 +4,7 @@ using DirectoryService.Application.Departments.Commands.UpdateLocations;
 using DirectoryService.Application.Departments.Commands.UpdateParent;
 using DirectoryService.Contracts.Departments;
 using DirectoryService.Contracts.Departments.Requests;
+using DirectoryService.Contracts.Departments.Responses;
 using DirectoryService.Presentation.EndpointResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -52,7 +53,10 @@ public class DepartmentsController : ControllerBase
     
     // GET /api/departments/top-positions
     [HttpGet("top-positions")]
-    public async Task<EndpointResult<GetTopDepartmentsByPositionsResponse> GetByTopPositions(
-        []
+    public async Task<EndpointResult<GetTopDepartmentsByPositionsResponse>> GetByTopPositions(
+        [FromServices] IQueryHandler<GetTopDepartmentsByPositionsResponse> handler,
         CancellationToken cancellationToken = default)
+    {
+        return await handler.Handle(cancellationToken);
+    }
 }

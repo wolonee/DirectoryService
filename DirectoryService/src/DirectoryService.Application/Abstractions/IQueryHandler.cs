@@ -12,3 +12,8 @@ public interface IQueryHandler<TResponse, in TQuery>
 {
     Task<Result<TResponse, Errors>> Handle(TQuery query, CancellationToken cancellationToken = default);
 }
+
+public interface IQueryHandler<TResponse>
+{
+    Task<Result<TResponse, Errors>> Handle(CancellationToken cancellationToken = default);
+}
