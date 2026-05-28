@@ -1,4 +1,7 @@
-﻿namespace DirectoryService.Infrastructure.Seeder;
+﻿using DirectoryService.Infrastructure.Database;
+using DirectoryService.Shared.Errors;
+
+namespace DirectoryService.Infrastructure.Seeder;
 
 using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Departments;

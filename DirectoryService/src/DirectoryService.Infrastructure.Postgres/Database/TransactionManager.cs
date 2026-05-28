@@ -1,11 +1,12 @@
 ﻿using System.Data;
 using CSharpFunctionalExtensions;
-using DirectoryService.Shared;
+using DirectoryService.Application.Database;
+using DirectoryService.Shared.Errors;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 
-namespace DirectoryService.Infrastructure;
+namespace DirectoryService.Infrastructure.Database;
 
 public class TransactionManager : ITransactionManager
 {

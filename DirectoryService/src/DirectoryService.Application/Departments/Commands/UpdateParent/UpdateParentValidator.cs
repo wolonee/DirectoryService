@@ -1,8 +1,8 @@
 ﻿using DirectoryService.Application.Validation;
-using DirectoryService.Shared;
+using DirectoryService.Shared.EntitiesErrors;
 using FluentValidation;
 
-namespace DirectoryService.Application.Departments.UpdateParent;
+namespace DirectoryService.Application.Departments.Commands.UpdateParent;
 
 public class UpdateParentValidator : AbstractValidator<UpdateParentCommand>
 {

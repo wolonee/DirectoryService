@@ -1,17 +1,15 @@
-﻿using System.Text.Json;
-using CSharpFunctionalExtensions;
+﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Database;
 using DirectoryService.Application.Validation;
-using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Domain.Locations.ValueObjects;
-using DirectoryService.Shared;
+using DirectoryService.Shared.EntitiesErrors;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
-using Errors = DirectoryService.Shared.Errors;
+using Errors = DirectoryService.Shared.Errors.Errors;
 
-namespace DirectoryService.Application.Locations.CreateLocation;
+namespace DirectoryService.Application.Locations.Commands.CreateLocation;
 
 public class CreateLocationHandler : ICommandHandler<Guid, CreateLocationCommand>
 {

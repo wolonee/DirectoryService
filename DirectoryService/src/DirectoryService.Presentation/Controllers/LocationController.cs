@@ -1,12 +1,15 @@
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Locations;
-using DirectoryService.Application.Locations.CreateLocation;
+using DirectoryService.Application.Locations.Commands.CreateLocation;
+using DirectoryService.Application.Locations.Queries.GetLocationById;
 using DirectoryService.Application.Locations.Queries.GetLocations;
-using DirectoryService.Application.Locations.Query;
 using DirectoryService.Contracts.Locations;
+using DirectoryService.Contracts.Locations.Requests;
+using DirectoryService.Contracts.Locations.Responses;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Presentation.EndpointResults;
 using DirectoryService.Shared;
+using DirectoryService.Shared.Errors;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DirectoryService.Presentation.Controllers;

@@ -1,8 +1,8 @@
 ﻿using DirectoryService.Application.Validation;
-using DirectoryService.Shared;
+using DirectoryService.Shared.EntitiesErrors;
 using FluentValidation;
 
-namespace DirectoryService.Application.Departments.UpdateLocations;
+namespace DirectoryService.Application.Departments.Commands.UpdateLocations;
 
 public class UpdateLocationsValidator : AbstractValidator<UpdateLocationsCommand>
 {

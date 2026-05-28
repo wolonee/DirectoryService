@@ -1,4 +1,6 @@
-﻿namespace DirectoryService.Shared;
+﻿using DirectoryService.Shared.Errors;
+
+namespace DirectoryService.Shared.EntitiesErrors;
 
 public static class PositionErrors
 {

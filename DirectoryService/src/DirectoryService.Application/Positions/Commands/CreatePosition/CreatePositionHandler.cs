@@ -1,17 +1,16 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Database;
-using DirectoryService.Application.Departments;
-using DirectoryService.Application.Locations;
 using DirectoryService.Application.Validation;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Positions;
 using DirectoryService.Domain.Positions.ValueObjects;
-using DirectoryService.Shared;
+using DirectoryService.Shared.EntitiesErrors;
+using DirectoryService.Shared.Errors;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 
-namespace DirectoryService.Application.Positions.CreatePosition;
+namespace DirectoryService.Application.Positions.Commands.CreatePosition;
 
 public class CreatePositionHandler : ICommandHandler<Guid, CreatePositionCommand>
 {

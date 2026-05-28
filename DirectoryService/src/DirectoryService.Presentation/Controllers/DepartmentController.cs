@@ -1,8 +1,9 @@
 ﻿using DirectoryService.Application.Abstractions;
-using DirectoryService.Application.Departments.CreateDepartment;
-using DirectoryService.Application.Departments.UpdateLocations;
-using DirectoryService.Application.Departments.UpdateParent;
+using DirectoryService.Application.Departments.Commands.CreateDepartment;
+using DirectoryService.Application.Departments.Commands.UpdateLocations;
+using DirectoryService.Application.Departments.Commands.UpdateParent;
 using DirectoryService.Contracts.Departments;
+using DirectoryService.Contracts.Departments.Requests;
 using DirectoryService.Presentation.EndpointResults;
 using Microsoft.AspNetCore.Mvc;
 

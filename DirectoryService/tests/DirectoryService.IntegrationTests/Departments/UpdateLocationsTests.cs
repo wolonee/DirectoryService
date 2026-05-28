@@ -1,17 +1,11 @@
 ﻿using System.Net.Http.Json;
-using DirectoryService.Application.Departments.UpdateLocations;
-using DirectoryService.Contracts.Departments;
-using DirectoryService.Contracts.Locations;
-using DirectoryService.Domain.Departments;
-using DirectoryService.Domain.Departments.ValueObjects;
-using DirectoryService.Domain.Locations;
-using DirectoryService.Domain.Locations.ValueObjects;
-using DirectoryService.Infrastructure;
-using DirectoryService.Shared;
+using DirectoryService.Contracts.Departments.Requests;
+using DirectoryService.IntegrationTests.Infrastructure;
+using DirectoryService.Shared.Errors;
+using DirectoryService.Shared.HttpCommunication;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace DirectoryService.IntegrationTests;
+namespace DirectoryService.IntegrationTests.Departments;
 
 public class UpdateLocationsTests : DirectoryBaseTests
 {

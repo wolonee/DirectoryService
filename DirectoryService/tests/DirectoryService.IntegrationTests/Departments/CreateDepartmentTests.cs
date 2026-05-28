@@ -1,21 +1,12 @@
 ﻿using System.Net.Http.Json;
-using System.Text.Json;
-using CSharpFunctionalExtensions;
-using DirectoryService.Application.Departments.CreateDepartment;
-using DirectoryService.Contracts.Departments;
-using DirectoryService.Contracts.Departments.Response;
-using DirectoryService.Domain.Departments;
+using DirectoryService.Contracts.Departments.Requests;
 using DirectoryService.Domain.Departments.ValueObjects;
-using DirectoryService.Domain.Locations;
-using DirectoryService.Domain.Locations.ValueObjects;
-using DirectoryService.Infrastructure;
-using DirectoryService.Shared;
+using DirectoryService.IntegrationTests.Infrastructure;
+using DirectoryService.Shared.Errors;
+using DirectoryService.Shared.HttpCommunication;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Serilog;
-using Xunit.Abstractions;
 
-namespace DirectoryService.IntegrationTests;
+namespace DirectoryService.IntegrationTests.Departments;
 
 public class CreateDepartmentTests : DirectoryBaseTests
 {

@@ -1,15 +1,15 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Database;
-using DirectoryService.Application.Locations;
 using DirectoryService.Application.Validation;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Departments.ValueObjects;
-using DirectoryService.Shared;
+using DirectoryService.Shared.EntitiesErrors;
+using DirectoryService.Shared.Errors;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 
-namespace DirectoryService.Application.Departments.CreateDepartment;
+namespace DirectoryService.Application.Departments.Commands.CreateDepartment;
 
 public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCommand>
 {

@@ -1,8 +1,9 @@
 ﻿using System.Data;
 using CSharpFunctionalExtensions;
-using DirectoryService.Shared;
+using DirectoryService.Application.Database;
+using DirectoryService.Shared.Errors;
 
-namespace DirectoryService.Infrastructure;
+namespace DirectoryService.Infrastructure.Database;
 
 public class TransactionScope : ITransactionScope
 {

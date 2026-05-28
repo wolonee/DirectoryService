@@ -1,5 +1,6 @@
 using CSharpFunctionalExtensions;
 using DirectoryService.Shared;
+using DirectoryService.Shared.Errors;
 
 namespace DirectoryService.Application.Abstractions;
 

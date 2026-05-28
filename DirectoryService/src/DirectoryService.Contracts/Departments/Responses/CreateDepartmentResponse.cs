@@ -1,3 +1,3 @@
-﻿namespace DirectoryService.Contracts.Departments.Response;
+﻿namespace DirectoryService.Contracts.Departments.Responses;
 
 public record CreateDepartmentResponse(Guid Id);

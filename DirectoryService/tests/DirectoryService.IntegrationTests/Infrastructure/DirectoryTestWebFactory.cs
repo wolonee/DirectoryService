@@ -1,6 +1,5 @@
 ﻿using System.Data.Common;
-using System.Reflection;
-using DirectoryService.Infrastructure;
+using DirectoryService.Infrastructure.Database;
 using DirectoryService.Presentation;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -11,7 +10,7 @@ using Npgsql;
 using Respawn;
 using Testcontainers.PostgreSql;
 
-namespace DirectoryService.IntegrationTests;
+namespace DirectoryService.IntegrationTests.Infrastructure;
 
 public class DirectoryTestWebFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {

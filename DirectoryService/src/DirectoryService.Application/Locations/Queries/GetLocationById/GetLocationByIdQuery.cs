@@ -1,6 +1,5 @@
 ﻿using DirectoryService.Application.Abstractions;
-using DirectoryService.Contracts.Locations;
 
-namespace DirectoryService.Application.Locations.Query;
+namespace DirectoryService.Application.Locations.Queries.GetLocationById;
 
 public record GetLocationByIdQuery(Guid Id) : IQuery;

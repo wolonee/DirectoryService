@@ -1,4 +1,5 @@
 using DirectoryService.Shared;
+using DirectoryService.Shared.Errors;
 
 namespace DirectoryService.Presentation.EndpointResults;
 

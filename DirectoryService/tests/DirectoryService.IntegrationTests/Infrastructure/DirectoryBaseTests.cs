@@ -2,10 +2,10 @@
 using DirectoryService.Domain.Departments.ValueObjects;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Domain.Locations.ValueObjects;
-using DirectoryService.Infrastructure;
+using DirectoryService.Infrastructure.Database;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DirectoryService.IntegrationTests;
+namespace DirectoryService.IntegrationTests.Infrastructure;
 
 public class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory>, IAsyncLifetime
 {

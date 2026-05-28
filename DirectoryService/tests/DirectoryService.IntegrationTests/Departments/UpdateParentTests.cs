@@ -1,11 +1,13 @@
 ﻿using System.Net.Http.Json;
-using DirectoryService.Application.Departments.UpdateParent;
-using DirectoryService.Contracts.Departments;
-using DirectoryService.Shared;
+using DirectoryService.Application.Departments.Commands.UpdateParent;
+using DirectoryService.Contracts.Departments.Requests;
+using DirectoryService.IntegrationTests.Infrastructure;
+using DirectoryService.Shared.Errors;
+using DirectoryService.Shared.HttpCommunication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DirectoryService.IntegrationTests;
+namespace DirectoryService.IntegrationTests.Departments;
 
 public class UpdateParentTests : DirectoryBaseTests
 {

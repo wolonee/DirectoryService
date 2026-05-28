@@ -1,7 +1,9 @@
 using CSharpFunctionalExtensions;
 using DirectoryService.Contracts.Locations;
+using DirectoryService.Contracts.Locations.Requests;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Shared;
+using DirectoryService.Shared.Errors;
 
 namespace DirectoryService.Application.Database;
 

@@ -1,6 +1,8 @@
 ﻿using DirectoryService.Application.Validation;
 using DirectoryService.Contracts.Locations;
+using DirectoryService.Contracts.Locations.Common;
 using DirectoryService.Shared;
+using DirectoryService.Shared.EntitiesErrors;
 using FluentValidation;
 
 namespace DirectoryService.Application.Locations.Queries.GetLocations;
@@ -28,8 +30,6 @@ public class GetLocationsValidator : AbstractValidator<GetLocationsQuery>
             .WithError(GeneralErrors.MinimumLength(1, nameof(PaginationRequest)));
 
         RuleFor(q => q.Request.DepartmentIds)
-            .Must(ids => ids == null)
-            .WithError(GeneralErrors.ValueIsInvalid(nameof(GetLocationsQuery.Request.DepartmentIds)))
             .Must(ids => ids != null && ids.Distinct().Count() == ids.Length)
             .WithError(GeneralErrors.Duplicate(nameof(GetLocationsQuery.Request.DepartmentIds)));
     }

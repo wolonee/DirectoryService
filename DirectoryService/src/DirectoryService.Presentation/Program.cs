@@ -1,8 +1,7 @@
 using System.Globalization;
+using DirectoryService.Application.Database;
 using DirectoryService.Domain;
-using DirectoryService.Domain.Positions;
-using DirectoryService.Infrastructure;
-using DirectoryService.Infrastructure.Seeder;
+using DirectoryService.Infrastructure.Database;
 using DirectoryService.Presentation;
 using DirectoryService.Presentation.Extentions;
 using DirectoryService.Presentation.Middlewares;
@@ -80,4 +79,7 @@ app.MapControllers();
 app.Run();
 
 
-public partial class Program;
+namespace DirectoryService.Presentation
+{
+    public partial class Program;
+}
