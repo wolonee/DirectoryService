@@ -49,7 +49,7 @@ public class GetByTopPositionsHandler : IQueryHandler<GetTopDepartmentsByPositio
         //         
         //     FROM department as d
         //     JOIN position_counts as pc ON pc.department_id = d.id
-        //     ORDER BY count_positions DESC 
+        //     ORDER BY count_positions DESC, name ASC
         //     LIMIT 5 OFFSET 0
         //     """);
         //
