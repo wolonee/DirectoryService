@@ -1,13 +1,13 @@
 ﻿namespace DirectoryService.Contracts.Departments.Responses;
 
-public record GetDepartmentDto(
-    Guid Id,
-    string Name,
-    Guid? ParentId,
-    string Path,
-    int Depth,
-    int ChildrenCount,
-    bool IsActive,
-    DateTime CreatedAt,
-    DateTime UpdatedAt
-);
+public record GetTopDepartmentsDepartmentDto
+{
+    public Guid Id { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public string Path { get; init; } = string.Empty;
+    public int Depth { get; init; }
+    public bool IsActive { get; init; }
+    public DateTime CreatedAt { get; init; }
+    public DateTime UpdatedAt { get; init; }
+    public int CountPositions { get; init; }
+}

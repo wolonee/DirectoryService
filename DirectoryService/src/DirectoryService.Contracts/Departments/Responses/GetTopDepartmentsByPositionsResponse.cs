@@ -1,9 +1,7 @@
 ﻿namespace DirectoryService.Contracts.Departments.Responses;
 
 public record GetTopDepartmentsByPositionsResponse(
-    List<GetDepartmentDto> Departments
-    // list Positions
-    // int CountPositions
+    List<GetTopDepartmentsDepartmentDto> Departments
 );
 
 

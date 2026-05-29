@@ -24,6 +24,8 @@ public static class DependencyInjection
         
         services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
         
+        Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+        
         return services;
     }
 }

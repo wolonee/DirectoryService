@@ -64,6 +64,10 @@ if (app.Environment.IsDevelopment())
 //     var context = scope.ServiceProvider.GetRequiredService<DirectoryServiceDbContext>();
 //     
 //     var seeder = new DepartmentTreeSeeder(context);
+//     
+//     Console.WriteLine("Clear database...");
+//
+//     await seeder.ClearAsync();
 //
 //     Console.WriteLine("Starting seeding...");
 //     

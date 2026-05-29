@@ -22,7 +22,7 @@ public static class DependencyInjection
         
         services.Scan(scan => scan.FromAssemblies(assembly)
             .AddClasses(classes => classes
-                .AssignableToAny(typeof(IQueryHandler<,>)))
+                .AssignableToAny(typeof(IQueryHandler<,>), typeof(IQueryHandler<>)))
             .AsSelfWithInterfaces()
             .WithScopedLifetime());
         
