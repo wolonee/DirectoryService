@@ -2,7 +2,7 @@ using System.Collections;
 using System.Text.Json.Serialization;
 using DirectoryService.Shared.Serializations;
 
-namespace DirectoryService.Shared;
+namespace DirectoryService.Shared.Errors;
 
 [JsonConverter(typeof(ErrorsJsonConverter))]
 public class Errors : IEnumerable<Error>

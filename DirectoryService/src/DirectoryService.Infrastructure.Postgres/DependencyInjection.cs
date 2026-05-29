@@ -2,6 +2,7 @@ using DirectoryService.Application.Database;
 using DirectoryService.Application.Departments;
 using DirectoryService.Application.Locations;
 using DirectoryService.Application.Positions;
+using DirectoryService.Infrastructure.Database;
 using DirectoryService.Infrastructure.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +21,8 @@ public static class DependencyInjection
         services.AddScoped<ILocationsRepository, LocationsRepository>();
         
         services.AddScoped<IPositionsRepository, PositionsRepository>();
+        
+        services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
         
         return services;
     }

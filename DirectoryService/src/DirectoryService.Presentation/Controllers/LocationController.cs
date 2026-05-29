@@ -1,10 +1,15 @@
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Locations;
-using DirectoryService.Application.Locations.CreateLocation;
+using DirectoryService.Application.Locations.Commands.CreateLocation;
+using DirectoryService.Application.Locations.Queries.GetLocationById;
+using DirectoryService.Application.Locations.Queries.GetLocations;
 using DirectoryService.Contracts.Locations;
+using DirectoryService.Contracts.Locations.Requests;
+using DirectoryService.Contracts.Locations.Responses;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Presentation.EndpointResults;
 using DirectoryService.Shared;
+using DirectoryService.Shared.Errors;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DirectoryService.Presentation.Controllers;
@@ -33,5 +38,27 @@ public class LocationController : ControllerBase
         var command = new CreateLocationCommand(request);
         
         return await handler.Handle(command, cancellationToken);
+    }
+    
+    [HttpGet]
+    public async Task<EndpointResult<GetLocationsResponse>> Get(
+        [FromQuery] GetLocationsRequest request,
+        [FromServices] IQueryHandler<GetLocationsResponse, GetLocationsQuery> handler,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetLocationsQuery(request);
+        
+        return await handler.Handle(query, cancellationToken);
+    }
+    
+    [HttpGet("{id:guid}")]
+    public async Task<EndpointResult<GetLocationByIdResponse>> GetById(
+        [FromServices] IQueryHandler<GetLocationByIdResponse, GetLocationByIdQuery> handler,
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetLocationByIdQuery(id);
+        
+        return await handler.Handle(query, cancellationToken);
     }
 }

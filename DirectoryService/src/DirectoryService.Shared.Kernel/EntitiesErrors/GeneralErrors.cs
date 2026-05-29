@@ -1,4 +1,6 @@
-namespace DirectoryService.Shared;
+using DirectoryService.Shared.Errors;
+
+namespace DirectoryService.Shared.EntitiesErrors;
 
 public static class GeneralErrors
 {
@@ -13,6 +15,13 @@ public static class GeneralErrors
         string label = name ?? "object";
         return Error.Failure("failure", $"{label}");
     }
+    
+    public static Error Duplicate(string? name = null)
+    {
+        string label = name ?? "object";
+        return Error.Failure("value.has.duplicate", $"{label} hsa duplicate");
+    }
+
 
     public static Error ValueIsRequired(string? name = null)
     {
@@ -24,6 +33,18 @@ public static class GeneralErrors
     {
         string label = name ?? "object";
         return Error.Validation("value.has.invalid.length", $"{label} must be between {minNameLength} and {maxNameLength} characters");
+    }
+    
+    public static Error MaximumLength(int maxLength, string? name = null)
+    {
+        string label = name ?? "object";
+        return Error.Validation("value.has.invalid.length", $"{label} must be less than {maxLength} characters");
+    }
+    
+    public static Error MinimumLength(int minLength, string? name = null)
+    {
+        string label = name ?? "object";
+        return Error.Validation("value.has.invalid.length", $"{label} must be more than {minLength} characters");
     }
     
     public static Error ValueContainsInvalidCharacters(string? name = null)

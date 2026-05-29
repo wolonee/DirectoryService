@@ -1,11 +1,13 @@
 ﻿using System.Net.Http.Json;
 using CSharpFunctionalExtensions;
+using DirectoryService.Shared.EntitiesErrors;
+using DirectoryService.Shared.Errors;
 
-namespace DirectoryService.Shared;
+namespace DirectoryService.Shared.HttpCommunication;
 
 public static class HttpResponseMessageExtensions
 {
-    public static async Task<Result<TResponse, Errors>> HandleResponseAsync<TResponse>(
+    public static async Task<Result<TResponse, Errors.Errors>> HandleResponseAsync<TResponse>(
         this HttpResponseMessage response,
         CancellationToken cancellationToken = default)
     {
@@ -41,7 +43,7 @@ public static class HttpResponseMessageExtensions
         }
     }
     
-    public static async Task<UnitResult<Errors>> HandleResponseAsync(
+    public static async Task<UnitResult<Errors.Errors>> HandleResponseAsync(
         this HttpResponseMessage response,
         CancellationToken cancellationToken = default)
     {
@@ -64,7 +66,7 @@ public static class HttpResponseMessageExtensions
                 return dataResponse.ErrorList;
             }
 
-            return UnitResult.Success<Errors>();
+            return UnitResult.Success<Errors.Errors>();
         }
         catch
         {

@@ -1,4 +1,5 @@
 using DirectoryService.Shared;
+using DirectoryService.Shared.Errors;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 

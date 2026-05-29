@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace DirectoryService.Shared;
+namespace DirectoryService.Shared.Errors;
 
 public record Error
 {

@@ -1,6 +1,6 @@
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Locations;
-using DirectoryService.Application.Locations.CreateLocation;
+using DirectoryService.Application.Locations.Commands.CreateLocation;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,6 +17,12 @@ public static class DependencyInjection
         services.Scan(scan => scan.FromAssemblies(assembly)
             .AddClasses(classes => classes
                 .AssignableToAny(typeof(ICommandHandler<,>), typeof(ICommandHandler<>)))
+            .AsSelfWithInterfaces()
+            .WithScopedLifetime());
+        
+        services.Scan(scan => scan.FromAssemblies(assembly)
+            .AddClasses(classes => classes
+                .AssignableToAny(typeof(IQueryHandler<,>)))
             .AsSelfWithInterfaces()
             .WithScopedLifetime());
         

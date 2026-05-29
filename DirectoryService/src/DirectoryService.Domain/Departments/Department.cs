@@ -2,6 +2,7 @@ using System.Collections;
 using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Departments.ValueObjects;
 using DirectoryService.Shared;
+using DirectoryService.Shared.Errors;
 
 namespace DirectoryService.Domain.Departments;
 

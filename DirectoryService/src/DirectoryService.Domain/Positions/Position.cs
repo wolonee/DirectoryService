@@ -2,6 +2,7 @@
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Positions.ValueObjects;
 using DirectoryService.Shared;
+using DirectoryService.Shared.Errors;
 
 namespace DirectoryService.Domain.Positions;
 

@@ -77,5 +77,11 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
         
         builder.HasIndex(l => l.Timezone)
             .HasDatabaseName("ix_locations_timezone");
+        
+        builder.Property(l => l.CreatedAt)
+            .HasColumnName("created_at");
+        
+        builder.Property(l => l.UpdatedAt)
+            .HasColumnName("updated_at");
     }
 }
