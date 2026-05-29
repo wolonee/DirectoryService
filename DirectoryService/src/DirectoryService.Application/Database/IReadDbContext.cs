@@ -6,8 +6,6 @@ namespace DirectoryService.Application.Database;
 
 public interface IReadDbContext
 {
-    IQueryable<DepartmentLocation> DepartmentLocationsRead { get; }
-    
     IQueryable<DepartmentPosition> DepartmentPositionsRead { get; }
     
     IQueryable<Department> DepartmentsRead { get; }
