@@ -26,8 +26,14 @@ public class GetByTopPositionsHandler : IQueryHandler<GetTopDepartmentsByPositio
     {
         var connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
 
+        //language=sql
         var result = await connection.QueryAsync<GetTopDepartmentsDepartmentDto>(
             """
+            WITH position_counts AS ( SELECT department_id, COUNT(*) as count_positions
+                FROM department_positions
+                GROUP BY department_id
+            )
+            
             SELECT d.id,
                    d.name, 
                    d.path,
@@ -35,12 +41,10 @@ public class GetByTopPositionsHandler : IQueryHandler<GetTopDepartmentsByPositio
                    d.is_active,
                    d.created_at,
                    d.updated_at,
-                   
-                (SELECT COUNT(*)
-                 FROM department_positions dp_filter
-                 WHERE dp_filter.department_id = d.id) as count_positions
-
+                   pc.count_positions
+                
             FROM department as d
+            JOIN position_counts as pc ON pc.department_id = d.id
             ORDER BY count_positions DESC 
             LIMIT 5 OFFSET 0
             """);
