@@ -30,7 +30,7 @@ services.AddProgramDependencies(builder.Configuration);
 
 services.AddEndpointsApiExplorer();
 services.AddSwaggerGen(options =>
-{
+{   
     options.SchemaFilter<EnvelopeSchemaFilter>();
 });
 
