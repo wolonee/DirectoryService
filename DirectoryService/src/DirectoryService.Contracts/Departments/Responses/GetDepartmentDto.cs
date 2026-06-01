@@ -18,6 +18,5 @@ public record GetTopDepartmentsDepartmentPositionDto
     public Guid Id { get; init; }
     public string Speciality { get; init; } = string.Empty;
     public string Direction { get; init; } = string.Empty;
-    public string Name { get; init; } = string.Empty;
     public bool IsActive { get; init; }
 }
