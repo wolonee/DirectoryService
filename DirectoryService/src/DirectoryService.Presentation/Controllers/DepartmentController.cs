@@ -100,9 +100,9 @@ public class DepartmentsController : ControllerBase
     }
     
     [HttpGet("{id:guid}")]
-    public async Task<EndpointResult<Guid>> GetById(
+    public async Task<EndpointResult<GetByDepartmentIdDto>> GetById(
         [FromRoute] Guid id,
-        [FromServices] IQueryHandler<Guid, GetDepartmentByIdQuery> handler)
+        [FromServices] IQueryHandler<GetByDepartmentIdDto, GetDepartmentByIdQuery> handler)
     {
         var query = new GetDepartmentByIdQuery(id);
         
