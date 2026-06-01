@@ -2,6 +2,7 @@ using System.Collections;
 using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Departments.ValueObjects;
 using DirectoryService.Shared;
+using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
 
 namespace DirectoryService.Domain.Departments;
@@ -115,6 +116,18 @@ public class Department
     public void Activate(bool boolean)
     {
         IsActive = boolean;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public UnitResult<Error> Deactivate()
+    {
+        if (!IsActive)
+            return DepartmentErrors.IsAlreadyInactive();
+
+        IsActive = false;
+        UpdatedAt = DateTime.UtcNow;
+
+        return UnitResult.Success<Error>();
     }
 
     // public UnitResult<Error> UpdateParentForChildren(Department parent)

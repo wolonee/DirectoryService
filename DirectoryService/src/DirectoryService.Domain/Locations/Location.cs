@@ -1,6 +1,8 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Locations.ValueObjects;
 using DirectoryService.Shared;
+using DirectoryService.Shared.EntitiesErrors;
+using DirectoryService.Shared.Errors;
 
 namespace DirectoryService.Domain.Locations;
 
@@ -47,5 +49,17 @@ public class Location
     public void Activate(bool boolean)
     {
         IsActive = boolean;
-    } 
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public UnitResult<Error> Deactivate()
+    {
+        if (!IsActive)
+            return LocationErrors.IsAlreadyInactive();
+
+        IsActive = false;
+        UpdatedAt = DateTime.UtcNow;
+
+        return UnitResult.Success<Error>();
+    }
 }

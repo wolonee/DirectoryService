@@ -15,6 +15,9 @@ public static class LocationErrors
     
     public static Error IsAlreadyInactive(Guid id) =>
         Error.Conflict("location.is.already.inactive", $"Location {id} is already inactive.");
+
+    public static Error IsAlreadyInactive() =>
+        Error.Conflict("location.is.already.inactive", "Location is already inactive.");
     
     // DataBase Errors
     public static Error NameConflict(string name) =>

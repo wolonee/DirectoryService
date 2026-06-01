@@ -25,4 +25,30 @@ public interface IDepartmentsRepository
         Guid oldParentId,
         Guid? newParentId,
         CancellationToken cancellationToken = default);
+
+    Task<Result<bool, Error>> HasActiveChildDepartmentsAsync(
+        Guid departmentId,
+        CancellationToken cancellationToken = default);
+
+    Task<Result<bool, Error>> DepartmentPositionExistsAsync(
+        Guid departmentId,
+        Guid positionId,
+        CancellationToken cancellationToken = default);
+
+    Task<UnitResult<Error>> AddDepartmentPositionAsync(
+        DepartmentPosition departmentPosition,
+        CancellationToken cancellationToken = default);
+
+    Task<UnitResult<Error>> DeleteDepartmentPositionAsync(
+        Guid departmentId,
+        Guid positionId,
+        CancellationToken cancellationToken = default);
+
+    Task<UnitResult<Error>> DeleteDepartmentPositionsByDepartmentIdAsync(
+        Guid departmentId,
+        CancellationToken cancellationToken = default);
+
+    Task<UnitResult<Error>> DeleteDepartmentPositionsByPositionIdAsync(
+        Guid positionId,
+        CancellationToken cancellationToken = default);
 }

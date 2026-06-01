@@ -1,5 +1,8 @@
 ﻿using DirectoryService.Application.Abstractions;
+using DirectoryService.Application.Departments.Commands.AttachDepartmentPosition;
 using DirectoryService.Application.Departments.Commands.CreateDepartment;
+using DirectoryService.Application.Departments.Commands.DeleteDepartment;
+using DirectoryService.Application.Departments.Commands.DetachDepartmentPosition;
 using DirectoryService.Application.Departments.Commands.UpdateLocations;
 using DirectoryService.Application.Departments.Commands.UpdateParent;
 using DirectoryService.Contracts.Departments;
@@ -51,6 +54,41 @@ public class DepartmentsController : ControllerBase
         return await handler.Handle(command, cancellationToken);
     }
     
+    [HttpDelete("{departmentId:guid}")]
+    public async Task<EndpointResult> Delete(
+        [FromRoute] Guid departmentId,
+        [FromServices] ICommandHandler<DeleteDepartmentCommand> handler,
+        CancellationToken cancellationToken = default)
+    {
+        var command = new DeleteDepartmentCommand(departmentId);
+
+        return await handler.Handle(command, cancellationToken);
+    }
+
+    [HttpPost("{departmentId:guid}/positions/{positionId:guid}")]
+    public async Task<EndpointResult> AttachPosition(
+        [FromRoute] Guid departmentId,
+        [FromRoute] Guid positionId,
+        [FromServices] ICommandHandler<AttachDepartmentPositionCommand> handler,
+        CancellationToken cancellationToken = default)
+    {
+        var command = new AttachDepartmentPositionCommand(departmentId, positionId);
+
+        return await handler.Handle(command, cancellationToken);
+    }
+
+    [HttpDelete("{departmentId:guid}/positions/{positionId:guid}")]
+    public async Task<EndpointResult> DetachPosition(
+        [FromRoute] Guid departmentId,
+        [FromRoute] Guid positionId,
+        [FromServices] ICommandHandler<DetachDepartmentPositionCommand> handler,
+        CancellationToken cancellationToken = default)
+    {
+        var command = new DetachDepartmentPositionCommand(departmentId, positionId);
+
+        return await handler.Handle(command, cancellationToken);
+    }
+
     // GET /api/departments/top-positions
     [HttpGet("top-positions")]
     public async Task<EndpointResult<GetTopDepartmentsByPositionsResponse>> GetByTopPositions(

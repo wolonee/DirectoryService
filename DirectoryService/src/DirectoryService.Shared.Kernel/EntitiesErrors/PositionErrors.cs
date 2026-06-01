@@ -21,4 +21,16 @@ public static class PositionErrors
     
     public static Error NameConflict(string name) =>
         Error.Conflict("position.name.conflict", $"Position with name: {name} is already exists.");
+
+    public static Error IsNotActive() =>
+        Error.Validation("position.is.not.active", "Position is not active.");
+
+    public static Error IsAlreadyInactive() =>
+        Error.Conflict("position.is.already.inactive", "Position is already inactive.");
+
+    public static Error DepartmentPositionAlreadyExists() =>
+        Error.Conflict("department.position.already.exists", "Position is already linked to this department.");
+
+    public static Error DepartmentPositionNotFound() =>
+        Error.NotFound("department.position.not.found", "Position is not linked to this department.");
 }
