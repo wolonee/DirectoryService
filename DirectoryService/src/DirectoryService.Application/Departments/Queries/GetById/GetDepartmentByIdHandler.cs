@@ -43,7 +43,7 @@ public class GetDepartmentByIdHandler : IQueryHandler<GetByDepartmentIdDto, GetD
 
         if (result == null)
         {
-            _logger.LogError($"Department with id: {query.Id} not found");
+            _logger.LogError("Department with id: {DepartmentId} not found", query.Id);
             return GeneralErrors.NotFound(query.Id).ToErrors();
         }
 
