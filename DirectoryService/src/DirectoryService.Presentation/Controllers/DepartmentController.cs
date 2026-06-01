@@ -5,6 +5,7 @@ using DirectoryService.Application.Departments.Commands.DeleteDepartment;
 using DirectoryService.Application.Departments.Commands.DetachDepartmentPosition;
 using DirectoryService.Application.Departments.Commands.UpdateLocations;
 using DirectoryService.Application.Departments.Commands.UpdateParent;
+using DirectoryService.Application.Departments.Queries.GetById;
 using DirectoryService.Contracts.Departments;
 using DirectoryService.Contracts.Departments.Requests;
 using DirectoryService.Contracts.Departments.Responses;
@@ -100,7 +101,7 @@ public class DepartmentsController : ControllerBase
     
     [HttpGet("{id:guid}")]
     public async Task<EndpointResult<Guid>> GetById(
-        [FromQuery] Guid id,
+        [FromRoute] Guid id,
         [FromServices] IQueryHandler<Guid, GetDepartmentByIdQuery> handler)
     {
         var query = new GetDepartmentByIdQuery(id);
