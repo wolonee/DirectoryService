@@ -292,6 +292,147 @@ public class DepartmentsRepository : IDepartmentsRepository
         return UnitResult.Success<Error>();
     }
     
+    public async Task<Result<bool, Error>> HasActiveChildDepartmentsAsync(
+        Guid departmentId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var hasChildren = await _dbContext.Departments
+                .AnyAsync(d => d.ParentId == departmentId && d.IsActive, cancellationToken);
+
+            return hasChildren;
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation cancelled while checking child departments for {DepartmentId}", departmentId);
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while checking child departments for {DepartmentId}", departmentId);
+            return GeneralErrors.DatabaseError();
+        }
+    }
+
+    public async Task<Result<bool, Error>> DepartmentPositionExistsAsync(
+        Guid departmentId,
+        Guid positionId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var exists = await _dbContext.DepartmentPositions
+                .AnyAsync(
+                    x => x.DepartmentId == departmentId && x.PositionId == positionId,
+                    cancellationToken);
+
+            return exists;
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation cancelled while checking department position link");
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while checking department position link");
+            return GeneralErrors.DatabaseError();
+        }
+    }
+
+    public async Task<UnitResult<Error>> AddDepartmentPositionAsync(
+        DepartmentPosition departmentPosition,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            _dbContext.DepartmentPositions.Add(departmentPosition);
+            return UnitResult.Success<Error>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while adding department position link");
+            return GeneralErrors.DatabaseError();
+        }
+    }
+
+    public async Task<UnitResult<Error>> DeleteDepartmentPositionAsync(
+        Guid departmentId,
+        Guid positionId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var deleted = await _dbContext.DepartmentPositions
+                .Where(x => x.DepartmentId == departmentId && x.PositionId == positionId)
+                .ExecuteDeleteAsync(cancellationToken);
+
+            if (deleted == 0)
+                return DepartmentErrors.DepartmentPositionNotFound();
+
+            return UnitResult.Success<Error>();
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation cancelled while deleting department position link");
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while deleting department position link");
+            return GeneralErrors.DatabaseError();
+        }
+    }
+
+    public async Task<UnitResult<Error>> DeleteDepartmentPositionsByDepartmentIdAsync(
+        Guid departmentId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _dbContext.DepartmentPositions
+                .Where(x => x.DepartmentId == departmentId)
+                .ExecuteDeleteAsync(cancellationToken);
+
+            return UnitResult.Success<Error>();
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation cancelled while deleting department positions for department {DepartmentId}", departmentId);
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while deleting department positions for department {DepartmentId}", departmentId);
+            return GeneralErrors.DatabaseError();
+        }
+    }
+
+    public async Task<UnitResult<Error>> DeleteDepartmentPositionsByPositionIdAsync(
+        Guid positionId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _dbContext.DepartmentPositions
+                .Where(x => x.PositionId == positionId)
+                .ExecuteDeleteAsync(cancellationToken);
+
+            return UnitResult.Success<Error>();
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation cancelled while deleting department positions for position {PositionId}", positionId);
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while deleting department positions for position {PositionId}", positionId);
+            return GeneralErrors.DatabaseError();
+        }
+    }
+
     public async Task<List<DepartmenDto>> GetHierarchyLtree(string rootPath)
     {
         const string sql =

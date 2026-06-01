@@ -30,4 +30,16 @@ public static class DepartmentErrors
     
     public static Error DepartmentChildrensContainsParent() =>
         Error.Failure("department.childrens.contains.parent", $"Department childrens contains parent department.");
+
+    public static Error HasActiveChildren() =>
+        Error.Conflict("department.has.active.children", "Department has active child departments.");
+
+    public static Error IsAlreadyInactive() =>
+        Error.Conflict("department.is.already.inactive", "Department is already inactive.");
+
+    public static Error DepartmentPositionAlreadyExists() =>
+        Error.Conflict("department.position.already.exists", "Position is already linked to this department.");
+
+    public static Error DepartmentPositionNotFound() =>
+        Error.NotFound("department.position.not.found", "Position is not linked to this department.");
 }

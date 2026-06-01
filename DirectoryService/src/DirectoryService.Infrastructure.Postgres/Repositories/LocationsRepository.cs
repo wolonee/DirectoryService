@@ -188,6 +188,37 @@ public class LocationsRepository : ILocationsRepository
         }
     }
 
+    public async Task<Result<Location, Error>> GetByIdAsync(
+        Guid locationId,
+        CancellationToken cancellationToken = default)
+    {
+        return await GetFirstAsync(x => x.Id == locationId, cancellationToken);
+    }
+
+    public async Task<UnitResult<Error>> DeleteDepartmentLocationsByLocationId(
+        Guid locationId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _dbContext.DepartmentLocations
+                .Where(x => x.LocationId == locationId)
+                .ExecuteDeleteAsync(cancellationToken);
+
+            return UnitResult.Success<Error>();
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation cancelled while deleting department locations for location {LocationId}", locationId);
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while deleting department locations for location {LocationId}", locationId);
+            return GeneralErrors.DatabaseError();
+        }
+    }
+
     public async Task<Result<IReadOnlyList<Guid>, Error>> GetActiveLocationsIdsAsync(
         Guid[] locationIds,
         CancellationToken cancellationToken = default)

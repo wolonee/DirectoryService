@@ -2,6 +2,7 @@
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Positions.ValueObjects;
 using DirectoryService.Shared;
+using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
 
 namespace DirectoryService.Domain.Positions;
@@ -48,5 +49,24 @@ public class Position
     {
         _departmentPositions.Add(departmentPosition);
         UpdatedAt = DateTime.UtcNow;
+    }
+
+    public UnitResult<Error> Rename(PositionName name)
+    {
+        Name = name;
+        UpdatedAt = DateTime.UtcNow;
+
+        return UnitResult.Success<Error>();
+    }
+
+    public UnitResult<Error> Deactivate()
+    {
+        if (!IsActive)
+            return PositionErrors.IsAlreadyInactive();
+
+        IsActive = false;
+        UpdatedAt = DateTime.UtcNow;
+
+        return UnitResult.Success<Error>();
     }
 }

@@ -114,6 +114,46 @@ public class PositionsRepository : IPositionsRepository
         }
     }
     
+    public async Task<Result<Position, Error>> GetByIdAsync(
+        Guid positionId,
+        CancellationToken cancellationToken = default)
+    {
+        return await GetFirstAsync(x => x.Id == positionId, cancellationToken);
+    }
+
+    public async Task<Result<bool, Error>> ActiveFullNameExistsAsync(
+        string direction,
+        string speciality,
+        Guid? excludePositionId = null,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var fullName = PositionName.GetFullName(speciality, direction);
+
+            var query = _dbContext.Positions
+                .Where(x => x.IsActive)
+                .Where(x => x.Name.Direction == direction && x.Name.Speciality == speciality);
+
+            if (excludePositionId.HasValue)
+                query = query.Where(x => x.Id != excludePositionId.Value);
+
+            var exists = await query.AnyAsync(cancellationToken);
+
+            return exists;
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation cancelled while checking position name");
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while checking position name");
+            return GeneralErrors.DatabaseError();
+        }
+    }
+
     public async Task<Result<List<string>, Error>> GetActiveFullNames(
         string direction, 
         string speciality,

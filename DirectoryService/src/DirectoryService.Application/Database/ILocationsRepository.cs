@@ -19,4 +19,9 @@ public interface ILocationsRepository
     
     Task<Result<IReadOnlyList<Guid>, Error>> GetActiveLocationsIdsAsync(Guid[] locationIds, CancellationToken cancellationToken = default);
 
+    Task<Result<Location, Error>> GetByIdAsync(Guid locationId, CancellationToken cancellationToken = default);
+
+    Task<UnitResult<Error>> DeleteDepartmentLocationsByLocationId(
+        Guid locationId,
+        CancellationToken cancellationToken = default);
 }

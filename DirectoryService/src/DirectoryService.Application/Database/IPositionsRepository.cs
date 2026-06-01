@@ -11,4 +11,11 @@ public interface IPositionsRepository
     
     Task<Result<Guid, Error>> AddAsync(Position position, CancellationToken cancellationToken = default);
 
+    Task<Result<Position, Error>> GetByIdAsync(Guid positionId, CancellationToken cancellationToken = default);
+
+    Task<Result<bool, Error>> ActiveFullNameExistsAsync(
+        string direction,
+        string speciality,
+        Guid? excludePositionId = null,
+        CancellationToken cancellationToken = default);
 }
