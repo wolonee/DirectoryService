@@ -97,4 +97,14 @@ public class DepartmentsController : ControllerBase
     {
         return await handler.Handle(cancellationToken);
     }
+    
+    [HttpGet("{id:guid}")]
+    public async Task<EndpointResult<Guid>> GetById(
+        [FromQuery] Guid id,
+        [FromServices] IQueryHandler<Guid, GetDepartmentByIdQuery> handler)
+    {
+        var query = new GetDepartmentByIdQuery(id);
+        
+        return await handler.Handle(query);
+    }
 }
