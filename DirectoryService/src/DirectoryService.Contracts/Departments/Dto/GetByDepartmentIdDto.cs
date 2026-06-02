@@ -1,0 +1,20 @@
+﻿namespace DirectoryService.Contracts.Departments;
+
+public record GetByDepartmentIdDto
+{
+    public Guid Id { get; set; }
+
+    public Guid? Parent { get; set; }
+    
+    public string Identifier { get; set; } = string.Empty;
+
+    public string Path { get; set; } = null!;
+
+    public int Depth { get; set; }
+
+    public bool IsActive { get; set; }
+    
+    public DateTime CreatedAt { get; set; }
+
+    public DateTime UpdatedAt { get; set; }
+};
