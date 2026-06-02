@@ -39,7 +39,15 @@ public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsResponse, GetDe
             return validationResult.ToValidationErrors();
         }
 
-        var result = await _context.DepartmentsRead
+        var request = query.Request;
+        var departmentsQuery = _context.DepartmentsRead;
+
+        if (!string.IsNullOrWhiteSpace(request.Search))
+            departmentsQuery = departmentsQuery.Where(d => d.DepartmentName.Value.Contains(request.Search, StringComparison.CurrentCultureIgnoreCase));
+        
+        
+
+        var result = await departmentsQuery
             .Select(x => new GetDepartmentsDto
             {
                 Id = x.Id,
