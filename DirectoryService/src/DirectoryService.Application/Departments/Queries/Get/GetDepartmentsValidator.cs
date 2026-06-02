@@ -1,5 +1,6 @@
 ﻿using DirectoryService.Application.Validation;
 using DirectoryService.Contracts.Departments.Requests;
+using DirectoryService.Contracts.Locations.Common;
 using DirectoryService.Shared.EntitiesErrors;
 using FluentValidation;
 
@@ -25,17 +26,17 @@ public class GetDepartmentsValidator : AbstractValidator<GetDepartmentsQuery>
             .Must(x => x == null || x.ToLower() == "asc" || x.ToLower() == "desc")
             .WithError(GeneralErrors.ValueIsInvalid(nameof(GetDepartmentsQuery.Request.SortDir)));
         
-        RuleFor(x => x.Request.Pagination!.Page)
-            .GreaterThanOrEqualTo(0)
-            .When(q => q.Request.Pagination != null)
-            .WithError(GeneralErrors.MinimumLength(1, nameof(GetDepartmentsQuery.Request.Pagination.Page)));
-        
-        RuleFor(x => x.Request.Pagination!.PageSize)
-            .GreaterThanOrEqualTo(0)
-            .When(q => q.Request.Pagination != null)
-            .WithError(GeneralErrors.MinimumLength(1, nameof(GetDepartmentsQuery.Request.Pagination.Page)))
-            .LessThanOrEqualTo(100)
-            .WithError(GeneralErrors.MaximumLength(100, nameof(GetDepartmentsQuery.Request.Pagination.Page)));
+        When(x => x.Request.Pagination != null, () =>
+        {
+            RuleFor(x => x.Request.Pagination!.Page)
+                .GreaterThanOrEqualTo(1)
+                .WithError(GeneralErrors.MinimumLength(1, nameof(PaginationRequest)));
+            
+            RuleFor(x => x.Request.Pagination!.PageSize)
+                .GreaterThanOrEqualTo(1)
+                .LessThanOrEqualTo(100)
+                .WithError(GeneralErrors.ValueHasBoundedLength(1, 100, nameof(PaginationRequest)));
+        });
 
     }
 }

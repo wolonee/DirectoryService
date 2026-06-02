@@ -22,8 +22,6 @@ public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsResponse, GetDe
     private readonly ILogger<GetDepartmentsHandler> _logger;
     
     private const string SEARCH_PARAMETER = "search";
-    private const string IS_ACTIVE_PARAMETER = "is_active";
-    private const string DEPARTMENT_IDS_PARAMETER = "department_ids";
     private const string OFFSET_PARAMETER = "offset";
     private const string PAGE_SIZE_PARAMETER = "page_size";
 
@@ -68,15 +66,17 @@ public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsResponse, GetDe
         parameters.Add(PAGE_SIZE_PARAMETER, pageSize, DbType.Int32);
         parameters.Add(OFFSET_PARAMETER, offset, DbType.Int32);
         
-        string direction = request.SortDir == "asc" ? "ASC" : "DESC";
+        string direction = request.SortDir?.ToLower() == "asc" ? "ASC" : "DESC";
+
         string orderByField = request.SortBy?.ToLower() switch
         {
             "name" => "name",
+            "country" => "country",
             "created_at" => "created_at",
             _ => "name"
         };
-        
-        string orderByClause = $"ORDER BY {orderByField} {direction}";
+
+        var orderByClause = $"ORDER BY {orderByField} {direction}";
         
         string whereClause = conditions.Count > 0 ? $"WHERE {string.Join("and", conditions)}" : "";
         
@@ -93,7 +93,7 @@ public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsResponse, GetDe
              FROM department d
              {whereClause}
              {orderByClause}
-             LIMIT {PAGE_SIZE_PARAMETER} OFFSET {OFFSET_PARAMETER}
+             LIMIT @{PAGE_SIZE_PARAMETER} OFFSET @{OFFSET_PARAMETER}
              """,
             param: parameters,
             splitOn: "total_count",
@@ -106,6 +106,5 @@ public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsResponse, GetDe
             });
         
         return new GetDepartmentsResponse(result.ToList(), totalCount ?? 0);
-
     }
 }
