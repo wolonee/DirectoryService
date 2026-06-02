@@ -30,7 +30,8 @@ public class GetLocationsValidator : AbstractValidator<GetLocationsQuery>
             .WithError(GeneralErrors.MinimumLength(1, nameof(PaginationRequest)));
 
         RuleFor(q => q.Request.DepartmentIds)
-            .Must(ids => ids != null && ids.Distinct().Count() == ids.Length)
+            .Must(ids => ids!.Distinct().Count() == ids.Length)
+            .When(q => q.Request.DepartmentIds is { Length: > 0 })
             .WithError(GeneralErrors.Duplicate(nameof(GetLocationsQuery.Request.DepartmentIds)));
     }
 }

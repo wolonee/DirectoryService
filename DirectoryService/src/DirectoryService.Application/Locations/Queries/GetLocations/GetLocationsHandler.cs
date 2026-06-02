@@ -50,7 +50,7 @@ public class GetLocationsHandler : IQueryHandler<GetLocationsResponse, GetLocati
         if (!validationResult.IsValid)
         {
             _logger.LogError("Validation Get Locations Failed: {Error}", validationResult.ToValidationErrors());
-            validationResult.ToValidationErrors();
+            return validationResult.ToValidationErrors();
         }
 
         var request = query.Request;
