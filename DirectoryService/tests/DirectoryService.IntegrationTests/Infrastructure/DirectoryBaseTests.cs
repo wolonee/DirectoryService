@@ -1,8 +1,15 @@
-﻿using DirectoryService.Domain.Departments;
+﻿using System.Net.Http.Json;
+using DirectoryService.Contracts.Locations.Requests;
+using DirectoryService.Contracts.Positions.Requests;
+using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Departments.ValueObjects;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Domain.Locations.ValueObjects;
+using DirectoryService.Domain.Positions;
+using DirectoryService.Domain.Positions.ValueObjects;
 using DirectoryService.Infrastructure.Database;
+using DirectoryService.Shared.Errors;
+using DirectoryService.Shared.HttpCommunication;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectoryService.IntegrationTests.Infrastructure;
@@ -17,6 +24,12 @@ public class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory>, IAsync
     
     protected HttpClient HttpClient { get; set; }
     
+    protected static void AssertErrorType(Errors errors, ErrorType errorType)
+    {
+        Assert.NotNull(errors);
+        Assert.Contains(errors, e => e.Type == errorType);
+    }
+
     public DirectoryBaseTests(DirectoryTestWebFactory factory)
     {
         AppHttpClient = factory.CreateClient();
@@ -118,6 +131,74 @@ public class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory>, IAsync
             await dbContext.SaveChangesAsync(cancellationToken);
 
             return department;
+        });
+    }
+
+    protected static CreateLocationRequest BuildCreateLocationRequest(
+        string name = "TestOffice",
+        string street = "TestStreet",
+        string city = "Moscow",
+        string country = "Russia",
+        string timezone = "Europe/Moscow")
+    {
+        return new CreateLocationRequest(
+            new CreateLocationAddressRequest(country, city, street),
+            name,
+            timezone);
+    }
+
+    protected async Task<Guid> CreateLocationViaApi(
+        CreateLocationRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await AppHttpClient.PostAsJsonAsync("/api/location", request, cancellationToken);
+        var result = await response.HandleResponseAsync<Guid>(cancellationToken: cancellationToken);
+        Assert.True(result.IsSuccess);
+        return result.Value;
+    }
+
+    protected async Task AttachLocationToDepartment(Guid departmentId, Guid locationId, CancellationToken cancellationToken = default)
+    {
+        await ExecuteInDb(async dbContext =>
+        {
+            var link = DepartmentLocation.Create(departmentId, locationId).Value;
+            dbContext.DepartmentLocations.Add(link);
+            await dbContext.SaveChangesAsync(cancellationToken);
+        });
+    }
+
+    protected async Task<Guid> CreatePositionViaApi(
+        Guid departmentId,
+        string speciality,
+        string direction,
+        CancellationToken cancellationToken = default)
+    {
+        var request = new CreatePositionRequest(
+            new CreatePositionNameRequest(speciality, direction),
+            null,
+            [departmentId]);
+
+        var response = await AppHttpClient.PostAsJsonAsync("/api/positions", request, cancellationToken);
+        var result = await response.HandleResponseAsync<Guid>(cancellationToken: cancellationToken);
+        Assert.True(result.IsSuccess);
+        return result.Value;
+    }
+
+    protected async Task<Guid> CreatePositionInDb(
+        string speciality,
+        string direction,
+        CancellationToken cancellationToken = default)
+    {
+        return await ExecuteInDb(async dbContext =>
+        {
+            var position = Position.Create(
+                Guid.NewGuid(),
+                PositionName.Create(speciality, direction).Value,
+                null).Value;
+
+            dbContext.Positions.Add(position);
+            await dbContext.SaveChangesAsync(cancellationToken);
+            return position.Id;
         });
     }
 }

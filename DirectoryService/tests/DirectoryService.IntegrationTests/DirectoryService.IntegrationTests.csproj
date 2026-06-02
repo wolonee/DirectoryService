@@ -25,9 +25,4 @@
       <ProjectReference Include="..\..\src\DirectoryService.Presentation\DirectoryService.Presentation.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Locations\" />
-      <Folder Include="Positions\" />
-    </ItemGroup>
-
 </Project>
