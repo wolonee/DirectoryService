@@ -28,6 +28,7 @@ public class GetLocationsHandler : IQueryHandler<GetLocationsResponse, GetLocati
     private const string DEPARTMENT_IDS_PARAMETER = "department_ids";
     private const string OFFSET_PARAMETER = "offset";
     private const string PAGE_SIZE_PARAMETER = "page_size";
+    private const string MIN_DEPARTMENT_COUNT = "min_department_count";
     
     public GetLocationsHandler(
         IReadDbContext context,
@@ -102,7 +103,7 @@ public class GetLocationsHandler : IQueryHandler<GetLocationsResponse, GetLocati
         //     .ToListAsync(cancellationToken: cancellationToken);
         //
         // return
-
+        
         var connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
         
         var parameters = new DynamicParameters();
@@ -116,17 +117,23 @@ public class GetLocationsHandler : IQueryHandler<GetLocationsResponse, GetLocati
         
         parameters.Add(PAGE_SIZE_PARAMETER, pageSize, DbType.Int32);
         parameters.Add(OFFSET_PARAMETER, offset, DbType.Int32);
+        
+        if (request.MinDepartmentCount > 0)
+        {
+            conditions.Add($"count_departments > @{MIN_DEPARTMENT_COUNT}");
+            parameters.Add(MIN_DEPARTMENT_COUNT, request.MinDepartmentCount, DbType.Int32);
+        }
 
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
             conditions.Add($"l.name ILIKE '%' || @{SEARCH_PARAMETER} || '%'");
-            parameters.Add("search", request.Search, DbType.String);
+            parameters.Add(SEARCH_PARAMETER, request.Search, DbType.String);
         }
         
         if (request.IsActive.HasValue)
         {
             conditions.Add($"l.is_active = @{IS_ACTIVE_PARAMETER}");
-            parameters.Add("is_active", request.IsActive, DbType.Boolean);
+            parameters.Add(IS_ACTIVE_PARAMETER, request.IsActive, DbType.Boolean);
         }
 
         if (request.DepartmentIds != null && request.DepartmentIds.Length > 0)
@@ -156,6 +163,9 @@ public class GetLocationsHandler : IQueryHandler<GetLocationsResponse, GetLocati
 
         var locations = await connection.QueryAsync<GetLocationDto, long, GetLocationDto>(
             $"""
+            WITH count_departments_table AS (SELECT dl_filter.location_id, COUNT(*) as count_departments
+                                            FROM department_locations dl_filter
+                                            GROUP BY dl_filter.location_id)
             SELECT l.id,
                    l.name,
                    l.country,
@@ -164,9 +174,14 @@ public class GetLocationsHandler : IQueryHandler<GetLocationsResponse, GetLocati
                    l.is_active,
                    l.timezone,
                    l.created_at,
+            
+                   COALESCE(dt.count_departments, 0) as count_departments,
+            
                    COUNT(*) OVER() AS total_count
                    
+            
             FROM locations l
+            LEFT JOIN count_departments_table as dt ON dt.location_id = l.id
             {joinClause}
             {whereClause}
             {orderByClause}
