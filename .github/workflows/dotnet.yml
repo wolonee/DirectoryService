@@ -1,0 +1,80 @@
+name: Integration Tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+  POSTGRES_DB: directory_service_test
+
+jobs:
+  integration-tests:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ${{ env.POSTGRES_USER }}"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+        
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+      
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      
+      - name: Install EF Core tools
+        run: dotnet tool install --global dotnet-ef
+      
+      - name: Wait for PostgreSQL
+        run: |
+          for i in {1..30}; do
+            if pg_isready -h localhost -p 5432 -U ${{ env.POSTGRES_USER }}; then
+              echo "PostgreSQL is ready"
+              exit 0
+            fi
+            echo "Waiting for PostgreSQL... ($i/30)"
+            sleep 2
+          done
+          echo "PostgreSQL is not ready"
+          exit 1
+      
+      - name: Apply migrations
+        run: |
+          export PATH="$PATH:$HOME/.dotnet/tools"
+          dotnet ef database update \
+            --project ./DirectoryService/src/DirectoryService.Infrastructure \
+            --startup-project ./DirectoryService/src/DirectoryService.Presentation \
+            --connection "Host=localhost;Port=5432;Database=${{ env.POSTGRES_DB }};Username=${{ env.POSTGRES_USER }};Password=${{ env.POSTGRES_PASSWORD }}"
+        env:
+          ASPNETCORE_ENVIRONMENT: CI  # ← важно! использует appsettings.CI.json
+      
+      - name: Restore dependencies
+        run: dotnet restore ./DirectoryService/DirectoryService.sln
+
+      - name: Build
+        run: dotnet build ./DirectoryService/DirectoryService.sln --no-restore
+
+      - name: Run integration tests
+        run: dotnet test ./DirectoryService/DirectoryService.sln --no-build --filter "Category=Integration" --verbosity normal
+        env:
+          ASPNETCORE_ENVIRONMENT: Testing  # ← или CI, смотря как настроены тесты
+          GITHUB_ACTIONS: true
