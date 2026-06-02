@@ -5,6 +5,7 @@ using DirectoryService.Application.Departments.Commands.DeleteDepartment;
 using DirectoryService.Application.Departments.Commands.DetachDepartmentPosition;
 using DirectoryService.Application.Departments.Commands.UpdateLocations;
 using DirectoryService.Application.Departments.Commands.UpdateParent;
+using DirectoryService.Application.Departments.Queries.Get;
 using DirectoryService.Application.Departments.Queries.GetById;
 using DirectoryService.Contracts.Departments;
 using DirectoryService.Contracts.Departments.Requests;
@@ -107,5 +108,16 @@ public class DepartmentsController : ControllerBase
         var query = new GetDepartmentByIdQuery(id);
         
         return await handler.Handle(query);
+    }
+
+    [HttpGet]
+    public async Task<EndpointResult<GetDepartmentsResponse>> GetDepartments(
+        [FromQuery] GetDepartmentsRequest request,
+        [FromServices] IQueryHandler<GetDepartmentsResponse, GetDepartmentsQuery> handler,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetDepartmentsQuery(request);
+        
+        return await handler.Handle(query, cancellationToken);
     }
 }
