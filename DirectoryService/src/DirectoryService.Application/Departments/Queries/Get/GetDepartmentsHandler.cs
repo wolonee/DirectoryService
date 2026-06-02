@@ -65,6 +65,9 @@ public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsResponse, GetDe
         int pageSize = pagination.PageSize;
         int offset = (pagination.Page - 1) * pageSize;
         
+        parameters.Add(PAGE_SIZE_PARAMETER, pageSize, DbType.Int32);
+        parameters.Add(OFFSET_PARAMETER, offset, DbType.Int32);
+        
         string direction = request.SortDir == "asc" ? "ASC" : "DESC";
         string orderByField = request.SortBy?.ToLower() switch
         {
@@ -74,10 +77,12 @@ public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsResponse, GetDe
         };
         
         string orderByClause = $"ORDER BY {orderByField} {direction}";
-
+        
         string whereClause = conditions.Count > 0 ? $"WHERE {string.Join("and", conditions)}" : "";
         
-        var result = await connection.QueryAsync<GetDepartmentsDto>(
+        long? totalCount = null;
+        
+        var result = await connection.QueryAsync<GetDepartmentsDto, long, GetDepartmentsDto>(
             $"""
              SELECT d.id,
                     d.name,
@@ -88,11 +93,19 @@ public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsResponse, GetDe
              FROM department d
              {whereClause}
              {orderByClause}
-             LIMIT {pageSize} OFFSET {offset}
+             LIMIT {PAGE_SIZE_PARAMETER} OFFSET {OFFSET_PARAMETER}
              """,
-            parameters);
+            param: parameters,
+            splitOn: "total_count",
+            map: (dep, count) =>
+            {
+                if (totalCount == null)
+                    totalCount = count;
+
+                return dep;
+            });
         
-        return new GetDepartmentsResponse(result);
+        return new GetDepartmentsResponse(result.ToList(), totalCount ?? 0);
 
     }
 }
