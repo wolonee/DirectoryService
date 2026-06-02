@@ -1,8 +1,9 @@
-﻿namespace DirectoryService.Contracts.Departments.Requests;
+﻿using DirectoryService.Contracts.Locations.Common;
+
+namespace DirectoryService.Contracts.Departments.Requests;
 
 public record GetDepartmentsRequest( 
     string? Search,
     string? SortBy,
     string? SortDir,
-    int? Page,
-    int? PageSize);
+    PaginationRequest? Pagination);
