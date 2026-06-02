@@ -18,7 +18,7 @@ public class GetDepartmentsValidator : AbstractValidator<GetDepartmentsQuery>
             .WithError(GeneralErrors.MaximumLength(500, nameof(GetDepartmentsQuery.Request.Search)));
         
         RuleFor(x => x.Request.SortBy)
-            .Must(x => x == null || x.ToLower() == "name" || x.ToLower() == "createdat")
+            .Must(x => x == null || x.ToLower() == "name" || x.ToLower() == "created_at")
             .WithError(GeneralErrors.ValueIsInvalid(nameof(GetDepartmentsQuery.Request.SortBy)));
         
         RuleFor(x => x.Request.SortDir)

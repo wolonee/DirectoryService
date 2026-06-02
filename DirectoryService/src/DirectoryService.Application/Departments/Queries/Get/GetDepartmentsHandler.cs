@@ -1,9 +1,12 @@
-﻿using CSharpFunctionalExtensions;
+﻿using System.Data;
+using CSharpFunctionalExtensions;
+using Dapper;
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Database;
 using DirectoryService.Application.Validation;
 using DirectoryService.Contracts.Departments;
 using DirectoryService.Contracts.Departments.Responses;
+using DirectoryService.Contracts.Locations.Common;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Shared.Errors;
 using FluentValidation;
@@ -15,16 +18,22 @@ namespace DirectoryService.Application.Departments.Queries.Get;
 public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsResponse, GetDepartmentsQuery>
 {
     private readonly IValidator<GetDepartmentsQuery> _validator;
-    private readonly IReadDbContext _context;
+    private readonly IDbConnectionFactory _dbConnectionFactory;
     private readonly ILogger<GetDepartmentsHandler> _logger;
+    
+    private const string SEARCH_PARAMETER = "search";
+    private const string IS_ACTIVE_PARAMETER = "is_active";
+    private const string DEPARTMENT_IDS_PARAMETER = "department_ids";
+    private const string OFFSET_PARAMETER = "offset";
+    private const string PAGE_SIZE_PARAMETER = "page_size";
 
     public GetDepartmentsHandler(
         IValidator<GetDepartmentsQuery> validator,
-        IReadDbContext context,
+        IDbConnectionFactory dbConnectionFactory,
         ILogger<GetDepartmentsHandler> logger)
     {
         _validator = validator;
-        _context = context;
+        _dbConnectionFactory = dbConnectionFactory;
         _logger = logger;
     }
 
@@ -39,23 +48,49 @@ public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsResponse, GetDe
             return validationResult.ToValidationErrors();
         }
 
+        var connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
+        
+        var parameters = new DynamicParameters();
+        var conditions = new List<string>();
         var request = query.Request;
-        var departmentsQuery = _context.DepartmentsRead;
 
         if (!string.IsNullOrWhiteSpace(request.Search))
-            departmentsQuery = departmentsQuery.Where(d => d.DepartmentName.Value.Contains(request.Search, StringComparison.CurrentCultureIgnoreCase));
+        {
+            conditions.Add($"d.name ILIKE '%' || @{SEARCH_PARAMETER} || '%'");
+            parameters.Add(SEARCH_PARAMETER, request.Search, DbType.String);
+        }
         
+        var pagination = request.Pagination ?? new PaginationRequest();
         
+        int pageSize = pagination.PageSize;
+        int offset = (pagination.Page - 1) * pageSize;
+        
+        string direction = request.SortDir == "asc" ? "ASC" : "DESC";
+        string orderByField = request.SortBy?.ToLower() switch
+        {
+            "name" => "name",
+            "created_at" => "created_at",
+            _ => "name"
+        };
+        
+        string orderByClause = $"ORDER BY {orderByField} {direction}";
 
-        var result = await departmentsQuery
-            .Select(x => new GetDepartmentsDto
-            {
-                Id = x.Id,
-                Name = x.DepartmentName.Value,
-                Path = x.DepartmentPath.Value,
-                CreatedAt = x.CreatedAt,
-            })
-            .ToListAsync(cancellationToken: cancellationToken);
+        string whereClause = conditions.Count > 0 ? $"WHERE {string.Join("and", conditions)}" : "";
+        
+        var result = await connection.QueryAsync<GetDepartmentsDto>(
+            $"""
+             SELECT d.id,
+                    d.name,
+                    d.path,
+                    d.created_at,
+                    COUNT(*) OVER() AS total_count
+
+             FROM department d
+             {whereClause}
+             {orderByClause}
+             LIMIT {pageSize} OFFSET {offset}
+             """,
+            parameters);
         
         return new GetDepartmentsResponse(result);
 
