@@ -23,6 +23,8 @@ public class Location
         Name = name;
         Timezone = timezone;
         IsActive = true;
+        IsDeleted = false;
+        DeletedAt = null;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = CreatedAt;
     }
@@ -36,6 +38,10 @@ public class Location
     public LocationTimeZone Timezone { get; private set; }
 
     public bool IsActive { get; private set; }
+    
+    public bool IsDeleted { get; private set; }
+    
+    public DateTime? DeletedAt { get; private set; }
     
     public DateTime CreatedAt { get; private set; }
 

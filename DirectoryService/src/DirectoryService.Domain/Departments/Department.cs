@@ -32,6 +32,8 @@ public class Department
         DepartmentIdentifier = departmentIdentifier;
         ParentId = parentId ?? null;
         IsActive = true;
+        IsDeleted = false;
+        DeletedAt = null;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
         DepartmentPath = departmentPath;
@@ -61,6 +63,10 @@ public class Department
     public int ChildrenCount { get; private set; }
     
     public bool IsActive { get; private set; }
+    
+    public bool IsDeleted { get; private set; }
+    
+    public DateTime? DeletedAt { get; private set; }
     
     public DateTime CreatedAt { get; private set; }
 

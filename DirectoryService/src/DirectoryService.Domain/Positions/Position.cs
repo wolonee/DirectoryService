@@ -22,6 +22,8 @@ public class Position
         Name = name;
         Description = description ?? null;
         IsActive = true;
+        IsDeleted = false;
+        DeletedAt = null;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = CreatedAt;
     }
@@ -35,6 +37,10 @@ public class Position
     public bool IsActive { get; private set; }
     
     public IReadOnlyList<DepartmentPosition> DepartmentPositions => _departmentPositions;
+    
+    public bool IsDeleted { get; private set; }
+    
+    public DateTime? DeletedAt { get; private set; }
     
     public DateTime CreatedAt { get; private set; }
     
