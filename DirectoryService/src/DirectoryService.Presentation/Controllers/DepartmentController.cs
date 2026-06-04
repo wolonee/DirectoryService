@@ -57,7 +57,7 @@ public class DepartmentsController : ControllerBase
     }
     
     [HttpDelete("{departmentId:guid}")]
-    public async Task<EndpointResult> Delete(
+    public async Task<EndpointResult> SoftDelete(
         [FromRoute] Guid departmentId,
         [FromServices] ICommandHandler<DeleteDepartmentCommand> handler,
         CancellationToken cancellationToken = default)

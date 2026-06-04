@@ -64,7 +64,7 @@ public class LocationController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    public async Task<EndpointResult> Delete(
+    public async Task<EndpointResult> SoftDelete(
         [FromRoute] Guid id,
         [FromServices] ICommandHandler<DeleteLocationCommand> handler,
         CancellationToken cancellationToken = default)
