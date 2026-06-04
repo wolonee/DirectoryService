@@ -85,6 +85,42 @@ public class DepartmentTreeSeeder
             "Main Square 1", "Moscow", "Russia", "Headquarters", "Europe/Moscow",
             cancellationToken);
         map["HQ"] = hq.Id;
+        
+        // New York
+        var newYork = await GetOrCreateLocation(
+            "350 5th Ave", "New York", "USA", "New York Office", "America/New_York",
+            cancellationToken);
+        map["NewYork"] = newYork.Id;
+
+        // London
+        var london = await GetOrCreateLocation(
+            "10 Downing Street", "London", "UK", "London Office", "Europe/London",
+            cancellationToken);
+        map["London"] = london.Id;
+
+        // Berlin
+        var berlin = await GetOrCreateLocation(
+            "Unter den Linden 1", "Berlin", "Germany", "Berlin Branch", "Europe/Berlin",
+            cancellationToken);
+        map["Berlin"] = berlin.Id;
+
+        // Tokyo
+        var tokyo = await GetOrCreateLocation(
+            "1-1-2 Ote-machi", "Tokyo", "Japan", "Tokyo Office", "Asia/Tokyo",
+            cancellationToken);
+        map["Tokyo"] = tokyo.Id;
+
+        // Dubai
+        var dubai = await GetOrCreateLocation(
+            "Sheikh Zayed Road", "Dubai", "UAE", "Dubai Branch", "Asia/Dubai",
+            cancellationToken);
+        map["Dubai"] = dubai.Id;
+
+        // Silicon Valley
+        var siliconValley = await GetOrCreateLocation(
+            "1 Infinite Loop", "Cupertino", "USA", "Silicon Valley R&D", "America/Los_Angeles",
+            cancellationToken);
+        map["SiliconValley"] = siliconValley.Id;
 
         return map;
     }

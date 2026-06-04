@@ -15,6 +15,10 @@ public class GetLocationsValidator : AbstractValidator<GetLocationsQuery>
             .NotNull()
             .WithError(GeneralErrors.ValueIsRequired(nameof(GetLocationsQuery.Request)));
         
+        RuleFor(q => q.Request.MinDepartmentCount)
+            .GreaterThanOrEqualTo(0)
+            .WithError(GeneralErrors.MinimumLength(1, nameof(GetLocationsQuery.Request.MinDepartmentCount)));
+        
         RuleFor(q => q.Request.Search)
             .MaximumLength(1000)
             .WithError(GeneralErrors.MaximumLength(1000, nameof(GetLocationsQuery.Request.Search)));

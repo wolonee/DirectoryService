@@ -8,4 +8,6 @@ public record GetLocationDto
     public string City { get; init; } = string.Empty;
     public string Street { get; init; } = string.Empty;
     public string Timezone { get; init; } = string.Empty;
+    public DateTime CreatedAt { get; init; }
+    public int CountDepartments { get; init; }
 }
