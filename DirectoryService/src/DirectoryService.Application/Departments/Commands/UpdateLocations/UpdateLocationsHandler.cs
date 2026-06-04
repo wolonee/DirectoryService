@@ -65,6 +65,9 @@ public class UpdateLocationsHandler : ICommandHandler<Guid, UpdateLocationsComma
         if (!department.IsActive)
             return DepartmentErrors.IsNotActive().ToErrors();
         
+        if (department.IsDeleted)
+            return DepartmentErrors.IsDeleted().ToErrors();
+        
         var activeLocationsIdsResult = await _locationsRepository.GetActiveLocationsIdsAsync(command.request.LocationsIds, cancellationToken);
         if (activeLocationsIdsResult.IsFailure)
         {

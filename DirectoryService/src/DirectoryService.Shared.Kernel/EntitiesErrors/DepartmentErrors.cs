@@ -25,6 +25,9 @@ public static class DepartmentErrors
     public static Error IsNotActive() =>
         Error.Validation("department.is.not.active", $"Department is not active.");
     
+    public static Error IsDeleted() =>
+        Error.Validation("department.is.deleted", $"Department is deleted.");
+    
     public static Error ParentIdEqualDepartmentId() =>
         Error.Validation("parent.id.equal.department.id", $"Parent id can't be equal to department id.");
     
