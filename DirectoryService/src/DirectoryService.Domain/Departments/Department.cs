@@ -32,8 +32,6 @@ public class Department
         DepartmentIdentifier = departmentIdentifier;
         ParentId = parentId ?? null;
         IsActive = true;
-        IsDeleted = false;
-        DeletedAt = null;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
         DepartmentPath = departmentPath;
@@ -134,6 +132,12 @@ public class Department
         UpdatedAt = DateTime.UtcNow;
 
         return UnitResult.Success<Error>();
+    }
+
+    public void SoftDelete()
+    {
+        IsDeleted = true;
+        DeletedAt = DateTime.UtcNow;
     }
 
     // public UnitResult<Error> UpdateParentForChildren(Department parent)

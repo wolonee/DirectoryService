@@ -22,8 +22,6 @@ public class Position
         Name = name;
         Description = description ?? null;
         IsActive = true;
-        IsDeleted = false;
-        DeletedAt = null;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = CreatedAt;
     }
@@ -74,5 +72,11 @@ public class Position
         UpdatedAt = DateTime.UtcNow;
 
         return UnitResult.Success<Error>();
+    }
+    
+    public void SoftDelete()
+    {
+        IsDeleted = true;
+        DeletedAt = DateTime.UtcNow;
     }
 }

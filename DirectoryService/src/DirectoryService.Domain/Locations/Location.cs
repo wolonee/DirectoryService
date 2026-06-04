@@ -23,8 +23,6 @@ public class Location
         Name = name;
         Timezone = timezone;
         IsActive = true;
-        IsDeleted = false;
-        DeletedAt = null;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = CreatedAt;
     }
@@ -67,5 +65,11 @@ public class Location
         UpdatedAt = DateTime.UtcNow;
 
         return UnitResult.Success<Error>();
+    }
+    
+    public void SoftDelete()
+    {
+        IsDeleted = true;
+        DeletedAt = DateTime.UtcNow;
     }
 }

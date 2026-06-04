@@ -51,10 +51,7 @@ public class DeleteDepartmentHandler : ICommandHandler<DeleteDepartmentCommand>
 
         var department = departmentResult.Value;
 
-        var hasChildrenResult = await _departmentsRepository.HasActiveChildDepartmentsAsync(
-            command.DepartmentId,
-            cancellationToken);
-
+        var hasChildrenResult = await _departmentsRepository.HasActiveChildDepartmentsAsync(command.DepartmentId, cancellationToken);
         if (hasChildrenResult.IsFailure)
         {
             transactionScope.Rollback();
@@ -64,29 +61,21 @@ public class DeleteDepartmentHandler : ICommandHandler<DeleteDepartmentCommand>
         if (hasChildrenResult.Value)
             return DepartmentErrors.HasActiveChildren().ToErrors();
 
-        var deletePositionsResult = await _departmentsRepository.DeleteDepartmentPositionsByDepartmentIdAsync(
-            command.DepartmentId,
-            cancellationToken);
-
+        var deletePositionsResult = await _departmentsRepository.DeleteDepartmentPositionsByDepartmentIdAsync(command.DepartmentId, cancellationToken);
         if (deletePositionsResult.IsFailure)
         {
             transactionScope.Rollback();
             return deletePositionsResult.Error.ToErrors();
         }
 
-        var deleteLocationsResult = await _departmentsRepository.DeleteLocationsByDepartmentId(
-            command.DepartmentId,
-            cancellationToken);
-
+        var deleteLocationsResult = await _departmentsRepository.DeleteLocationsByDepartmentId(command.DepartmentId, cancellationToken);
         if (deleteLocationsResult.IsFailure)
         {
             transactionScope.Rollback();
             return deleteLocationsResult.Error.ToErrors();
         }
 
-        var deactivateResult = department.Deactivate();
-        if (deactivateResult.IsFailure)
-            return deactivateResult.Error.ToErrors();
+        department.SoftDelete();
 
         var saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
         if (saveResult.IsFailure)
@@ -102,7 +91,7 @@ public class DeleteDepartmentHandler : ICommandHandler<DeleteDepartmentCommand>
             return commitResult.Error.ToErrors();
         }
 
-        _logger.LogInformation("Deleted department {DepartmentId}", command.DepartmentId);
+        _logger.LogInformation("Soft Deleted department {DepartmentId}", command.DepartmentId);
 
         return UnitResult.Success<Errors>();
     }

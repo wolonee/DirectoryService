@@ -60,6 +60,18 @@ public class PositionConfiguration : IEntityTypeConfiguration<Position>
             .HasColumnName("is_active")
             .IsRequired();
         
+        builder.Property(l => l.CreatedAt)
+            .HasColumnName("created_at");
+        
+        builder.Property(l => l.UpdatedAt)
+            .HasColumnName("updated_at");
+
+        builder.Property(l => l.IsDeleted)
+            .HasColumnName("is_deleted");
+
+        builder.Property(l => l.DeletedAt)
+            .HasColumnName("deleted_at");
+        
         // indexes
         
         // builder.HasIndex("is_active", "((name ->> 'speciality'))")
