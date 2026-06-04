@@ -61,19 +61,19 @@ public class DeleteDepartmentHandler : ICommandHandler<DeleteDepartmentCommand>
         if (hasChildrenResult.Value)
             return DepartmentErrors.HasActiveChildren().ToErrors();
 
-        var deletePositionsResult = await _departmentsRepository.DeleteDepartmentPositionsByDepartmentIdAsync(command.DepartmentId, cancellationToken);
-        if (deletePositionsResult.IsFailure)
-        {
-            transactionScope.Rollback();
-            return deletePositionsResult.Error.ToErrors();
-        }
+        // var deletePositionsResult = await _departmentsRepository.DeleteDepartmentPositionsByDepartmentIdAsync(command.DepartmentId, cancellationToken);
+        // if (deletePositionsResult.IsFailure)
+        // {
+        //     transactionScope.Rollback();
+        //     return deletePositionsResult.Error.ToErrors();
+        // }
 
-        var deleteLocationsResult = await _departmentsRepository.DeleteLocationsByDepartmentId(command.DepartmentId, cancellationToken);
-        if (deleteLocationsResult.IsFailure)
-        {
-            transactionScope.Rollback();
-            return deleteLocationsResult.Error.ToErrors();
-        }
+        // var deleteLocationsResult = await _departmentsRepository.DeleteLocationsByDepartmentId(command.DepartmentId, cancellationToken);
+        // if (deleteLocationsResult.IsFailure)
+        // {
+        //     transactionScope.Rollback();
+        //     return deleteLocationsResult.Error.ToErrors();
+        // }
 
         department.SoftDelete();
 
