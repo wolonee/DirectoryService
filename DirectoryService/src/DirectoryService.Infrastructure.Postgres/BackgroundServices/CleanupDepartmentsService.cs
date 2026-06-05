@@ -9,55 +9,24 @@ using DirectoryService.Shared.Errors;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace DirectoryService.Infrastructure.BackgroundServices;
 
-public class HardDeleteDepartmentsService : BackgroundService
+public class CleanupDepartmentsService : BaseCleanupBackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly ILogger<HardDeleteDepartmentsService> _logger;
 
-    private const string TIME = "time";
-    
-    private readonly TimeSpan _cleanupInterval = TimeSpan.FromDays(1);
-
-    public HardDeleteDepartmentsService(
-        IServiceScopeFactory scopeFactory,
-        ILogger<HardDeleteDepartmentsService> logger)
+    public CleanupDepartmentsService(
+        IOptions<CleanupServiceOptions> options,
+        ILogger<CleanupDepartmentsService> logger,
+        IServiceScopeFactory scopeFactory)
+        : base(options, logger)
     {
         _scopeFactory = scopeFactory;
-        _logger = logger;
-    }
-    
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        using var timer = new PeriodicTimer(_cleanupInterval);
-
-        _logger.LogInformation("Service started. Will run every {Interval} hours", _cleanupInterval.TotalHours);
-        _logger.LogInformation("Service started. Will run every {Interval} hours", _cleanupInterval.TotalHours);
-        _logger.LogInformation("Service started. Will run every {Interval} hours", _cleanupInterval.TotalHours);
-        _logger.LogInformation("Service started. Will run every {Interval} hours", _cleanupInterval.TotalHours);
-
-        while (await timer.WaitForNextTickAsync(stoppingToken))
-        {
-            try
-            {
-                var cleanupResult = await CleanupAsync(stoppingToken);
-                if (cleanupResult.IsFailure)
-                {
-                    _logger.LogError($"Cleanup failed: {cleanupResult.Error}");
-                    throw new Exception("Cleanup failed");
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error during cleanup");
-                throw;
-            }
-        }
     }
 
-    private async Task<UnitResult<Errors>> CleanupAsync(CancellationToken cancellationToken)
+    protected override async Task<UnitResult<Errors>> CleanupAsync(CancellationToken cancellationToken)
     {
         using var scope = _scopeFactory.CreateScope();
         
@@ -74,8 +43,8 @@ public class HardDeleteDepartmentsService : BackgroundService
 
         using var transactionScope = transactionScopeResult.Value;
 
-        var cutoffDate = DateTime.UtcNow.AddDays(-30);
-        parameters.Add(TIME, cutoffDate, DbType.DateTime);
+        var cutoffDate = DateTime.UtcNow.AddDays(Options.RetentionDays);
+        parameters.Add(RETENTION_DAYS, cutoffDate, DbType.DateTime);
         
         var expiredDepartments = await connection.QueryAsync<CleanupDepartmentDto>(
             $"""
@@ -87,8 +56,9 @@ public class HardDeleteDepartmentsService : BackgroundService
                    parent.path AS parent_path
             FROM department d
             JOIN department parent ON parent.id = d.parent_id
-            WHERE d.is_deleted AND d.deleted_at < @{TIME}
-            ORDER BY d.depth DESC;
+            WHERE d.is_deleted AND d.deleted_at < @{RETENTION_DAYS}
+            ORDER BY d.depth DESC
+            LIMIT @{BATCH_SIZE};
             """,
             param: parameters);
 
@@ -102,7 +72,7 @@ public class HardDeleteDepartmentsService : BackgroundService
                 cancellationToken);
             if (updateParentResult.IsFailure)
             {
-                _logger.LogError($"Failed to update parent in cleanup departments: {updateParentResult.Error.ToErrors()}");
+                Logger.LogError($"Failed to update parent in cleanup departments: {updateParentResult.Error.ToErrors()}");
                 transactionScope.Rollback();
                 return updateParentResult.Error.ToErrors();
             }
@@ -110,7 +80,7 @@ public class HardDeleteDepartmentsService : BackgroundService
             var deleteDepartmentsResult = await departmentsRepository.DeleteDepartmentInCleanupDelete(department.Id, cancellationToken);
             if (deleteDepartmentsResult.IsFailure)
             {
-                _logger.LogError($"Failed to delete department in cleanup departments: {updateParentResult.Error.ToErrors()}");
+                Logger.LogError($"Failed to delete department in cleanup departments: {updateParentResult.Error.ToErrors()}");
                 transactionScope.Rollback();
                 return deleteDepartmentsResult.Error.ToErrors();
             }
@@ -119,7 +89,7 @@ public class HardDeleteDepartmentsService : BackgroundService
         var commitResult = transactionScope.Commit();
         if (commitResult.IsFailure)
         {
-            _logger.LogError("Error during cleanup Commit");
+            Logger.LogError("Error during cleanup Commit");
             transactionScope.Rollback();
             return commitResult.Error.ToErrors();
         }

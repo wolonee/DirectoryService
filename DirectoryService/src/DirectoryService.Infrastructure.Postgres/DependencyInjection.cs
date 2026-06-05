@@ -25,7 +25,7 @@ public static class DependencyInjection
         
         services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
 
-        services.AddHostedService<HardDeleteDepartmentsService>();
+        services.AddHostedService<CleanupDepartmentsService>();
         
         Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
         
