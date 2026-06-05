@@ -24,4 +24,8 @@ public interface ILocationsRepository
     Task<UnitResult<Error>> DeleteDepartmentLocationsByLocationId(
         Guid locationId,
         CancellationToken cancellationToken = default);
+    
+    Task<UnitResult<Error>> DeleteLocationInCleanupDelete(
+        Guid locationId,
+        CancellationToken cancellationToken = default);
 }

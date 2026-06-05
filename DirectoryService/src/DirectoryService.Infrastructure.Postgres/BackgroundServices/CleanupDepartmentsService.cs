@@ -43,8 +43,9 @@ public class CleanupDepartmentsService : BaseCleanupBackgroundService
 
         using var transactionScope = transactionScopeResult.Value;
 
-        var cutoffDate = DateTime.UtcNow.AddDays(Options.RetentionDays);
+        var cutoffDate = DateTime.UtcNow.AddDays(-Options.RetentionDays);
         parameters.Add(RETENTION_DAYS, cutoffDate, DbType.DateTime);
+        parameters.Add(BATCH_SIZE, Options.BatchSize, DbType.Int32);
         
         var expiredDepartments = await connection.QueryAsync<CleanupDepartmentDto>(
             $"""

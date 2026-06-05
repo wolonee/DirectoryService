@@ -230,4 +230,32 @@ public class LocationsRepository : ILocationsRepository
 
         return activeLocationsIds;
     }
+    
+    public async Task<UnitResult<Error>> DeleteLocationInCleanupDelete(
+        Guid locationId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _dbContext.DepartmentLocations
+                .Where(x => x.LocationId == locationId)
+                .ExecuteDeleteAsync(cancellationToken);
+
+            await _dbContext.Locations
+                .Where(l => l.Id == locationId)
+                .ExecuteDeleteAsync(cancellationToken);
+
+            return UnitResult.Success<Error>();
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation cancelled while deleting department locations for location {LocationId}", locationId);
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while deleting department locations for location {LocationId}", locationId);
+            return GeneralErrors.DatabaseError();
+        }
+    }
 }
