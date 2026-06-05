@@ -2,6 +2,7 @@ using DirectoryService.Application.Database;
 using DirectoryService.Application.Departments;
 using DirectoryService.Application.Locations;
 using DirectoryService.Application.Positions;
+using DirectoryService.Infrastructure.BackgroundServices;
 using DirectoryService.Infrastructure.Database;
 using DirectoryService.Infrastructure.Repositories;
 using Microsoft.Extensions.Configuration;
@@ -23,6 +24,8 @@ public static class DependencyInjection
         services.AddScoped<IPositionsRepository, PositionsRepository>();
         
         services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
+
+        services.AddHostedService<HardDeleteDepartmentsService>();
         
         Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
         

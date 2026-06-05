@@ -51,4 +51,15 @@ public interface IDepartmentsRepository
     Task<UnitResult<Error>> DeleteDepartmentPositionsByPositionIdAsync(
         Guid positionId,
         CancellationToken cancellationToken = default);
+
+    Task<UnitResult<Error>> UpdateParentInCleanupDelete(
+        string rootPath,
+        string newParentPath,
+        Guid departmentId,
+        Guid? newParentId,
+        CancellationToken cancellationToken = default);
+
+    Task<UnitResult<Error>> DeleteDepartmentInCleanupDelete(
+        Guid departmentId,
+        CancellationToken cancellationToken = default);
 }
