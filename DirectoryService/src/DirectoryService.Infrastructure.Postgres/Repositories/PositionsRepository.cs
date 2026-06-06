@@ -181,4 +181,32 @@ public class PositionsRepository : IPositionsRepository
             return GeneralErrors.DatabaseError();
         }
     }
+    
+    public async Task<UnitResult<Error>> DeletePositionInCleanupDelete(
+        Guid positionId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _dbContext.DepartmentPositions
+                .Where(x => x.PositionId == positionId)
+                .ExecuteDeleteAsync(cancellationToken);
+            
+            await _dbContext.Positions
+                .Where(p => p.Id == positionId)
+                .ExecuteDeleteAsync(cancellationToken);
+
+            return UnitResult.Success<Error>();
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation cancelled while deleting department positions for position {PositionId}", positionId);
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while deleting department positions for position {PositionId}", positionId);
+            return GeneralErrors.DatabaseError();
+        }
+    }
 }

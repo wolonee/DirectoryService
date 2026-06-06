@@ -57,6 +57,9 @@ public class AttachDepartmentPositionHandler : ICommandHandler<AttachDepartmentP
 
         if (!department.IsActive)
             return DepartmentErrors.IsNotActive().ToErrors();
+        
+        if (department.IsDeleted)
+            return DepartmentErrors.IsDeleted().ToErrors();
 
         var positionResult = await _positionsRepository.GetByIdAsync(command.PositionId, cancellationToken);
         if (positionResult.IsFailure)
@@ -67,10 +70,7 @@ public class AttachDepartmentPositionHandler : ICommandHandler<AttachDepartmentP
         if (!position.IsActive)
             return PositionErrors.IsNotActive().ToErrors();
 
-        var linkExistsResult = await _departmentsRepository.DepartmentPositionExistsAsync(
-            command.DepartmentId,
-            command.PositionId,
-            cancellationToken);
+        var linkExistsResult = await _departmentsRepository.DepartmentPositionExistsAsync(command.DepartmentId, command.PositionId, cancellationToken);
 
         if (linkExistsResult.IsFailure)
         {

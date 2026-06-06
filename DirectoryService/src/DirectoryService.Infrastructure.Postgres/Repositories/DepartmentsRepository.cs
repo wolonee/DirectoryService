@@ -470,4 +470,92 @@ public class DepartmentsRepository : IDepartmentsRepository
 
         return roots;
     }
+    
+    public async Task<UnitResult<Error>> UpdateParentInCleanupDelete(
+        string rootPath,
+        string newParentPath,
+        Guid departmentId,
+        Guid? newParentId,
+        CancellationToken cancellationToken = default)
+    {
+        const string ROOT_PATH = "rootPath";
+        const string NEW_PARENT_PATH = "newParentPath";
+        const string NEW_PARENT_ID = "newParentId";
+        const string DEPARTMENT_ID = "departmentId";
+        
+        var sql1 = $"""
+                    UPDATE department
+                    SET
+                        path = (@{NEW_PARENT_PATH}::ltree || subpath(path, nlevel(@{ROOT_PATH}::ltree))),
+                        depth = nlevel(@{NEW_PARENT_PATH}::ltree || subpath(path, nlevel(@{ROOT_PATH}::ltree)))
+                    WHERE path <@ @{ROOT_PATH}::ltree
+                       AND path != @{ROOT_PATH}::ltree;
+                    """;
+
+        var sql2 = $"""
+                    UPDATE department
+                    SET parent_id = @{NEW_PARENT_ID}
+                    WHERE parent_id = @{DEPARTMENT_ID};
+                    """;
+
+        try
+        {
+            await _dbContext.Database.ExecuteSqlRawAsync(
+                sql1,
+                [
+                    new NpgsqlParameter($"@{ROOT_PATH}", rootPath),
+                    new NpgsqlParameter($"@{NEW_PARENT_PATH}", newParentPath),
+                ],
+                cancellationToken);
+
+            await _dbContext.Database.ExecuteSqlRawAsync(
+                sql2,
+                [
+                    new NpgsqlParameter($"@{DEPARTMENT_ID}", departmentId),
+                    new NpgsqlParameter($"@{NEW_PARENT_ID}", newParentId.HasValue ? newParentId.Value : DBNull.Value),
+                ],
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while updating parent in cleanup delete");
+            return Error.Failure("update.parent.cleanup.delete", "update parent failed");
+        }
+    
+        return UnitResult.Success<Error>();
+    }
+    
+    public async Task<UnitResult<Error>> DeleteDepartmentInCleanupDelete(
+        Guid departmentId,
+        CancellationToken cancellationToken = default)
+    {
+        const string DEPARTMENT_ID = "departmentId";
+        
+        var sql = $"""
+                    DELETE FROM department_locations
+                    WHERE department_id = @{DEPARTMENT_ID};
+
+                    DELETE FROM department_positions
+                    WHERE department_id = @{DEPARTMENT_ID};
+
+                    DELETE FROM department
+                    WHERE id = @{DEPARTMENT_ID};
+                    """;
+        try
+        {
+            await _dbContext.Database.ExecuteSqlRawAsync(
+                sql,
+                [
+                    new NpgsqlParameter($"@{DEPARTMENT_ID}", departmentId),
+                ],
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while updating delete department in cleanup delete");
+            return Error.Failure("delete.department.cleanup.delete", "updating delete department in cleanup delete failed");
+        }
+    
+        return UnitResult.Success<Error>();
+    }
 }

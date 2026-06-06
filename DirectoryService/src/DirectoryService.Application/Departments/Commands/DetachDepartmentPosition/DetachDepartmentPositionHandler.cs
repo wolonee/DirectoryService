@@ -55,10 +55,7 @@ public class DetachDepartmentPositionHandler : ICommandHandler<DetachDepartmentP
         if (positionResult.IsFailure)
             return positionResult.Error.ToErrors();
 
-        var deleteResult = await _departmentsRepository.DeleteDepartmentPositionAsync(
-            command.DepartmentId,
-            command.PositionId,
-            cancellationToken);
+        var deleteResult = await _departmentsRepository.DeleteDepartmentPositionAsync(command.DepartmentId, command.PositionId, cancellationToken);
 
         if (deleteResult.IsFailure)
         {

@@ -62,6 +62,10 @@ public class Department
     
     public bool IsActive { get; private set; }
     
+    public bool IsDeleted { get; private set; }
+    
+    public DateTime? DeletedAt { get; private set; }
+    
     public DateTime CreatedAt { get; private set; }
 
     public DateTime UpdatedAt { get; private set; }
@@ -128,6 +132,12 @@ public class Department
         UpdatedAt = DateTime.UtcNow;
 
         return UnitResult.Success<Error>();
+    }
+
+    public void SoftDelete()
+    {
+        IsDeleted = true;
+        DeletedAt = DateTime.UtcNow;
     }
 
     // public UnitResult<Error> UpdateParentForChildren(Department parent)

@@ -54,19 +54,14 @@ public class DeletePositionHandler : ICommandHandler<DeletePositionCommand>
 
         var position = positionResult.Value;
 
-        var deleteLinksResult = await _departmentsRepository.DeleteDepartmentPositionsByPositionIdAsync(
-            command.PositionId,
-            cancellationToken);
+        // var deleteLinksResult = await _departmentsRepository.DeleteDepartmentPositionsByPositionIdAsync(command.PositionId, cancellationToken);
+        // if (deleteLinksResult.IsFailure)
+        // {
+        //     transactionScope.Rollback();
+        //     return deleteLinksResult.Error.ToErrors();
+        // }
 
-        if (deleteLinksResult.IsFailure)
-        {
-            transactionScope.Rollback();
-            return deleteLinksResult.Error.ToErrors();
-        }
-
-        var deactivateResult = position.Deactivate();
-        if (deactivateResult.IsFailure)
-            return deactivateResult.Error.ToErrors();
+        position.SoftDelete();
 
         var saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
         if (saveResult.IsFailure)
@@ -82,7 +77,7 @@ public class DeletePositionHandler : ICommandHandler<DeletePositionCommand>
             return commitResult.Error.ToErrors();
         }
 
-        _logger.LogInformation("Deleted position {PositionId}", command.PositionId);
+        _logger.LogInformation("Soft Deleted position {PositionId}", command.PositionId);
 
         return UnitResult.Success<Errors>();
     }

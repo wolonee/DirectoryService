@@ -1,6 +1,7 @@
 using System.Globalization;
 using DirectoryService.Application.Database;
 using DirectoryService.Domain;
+using DirectoryService.Infrastructure.BackgroundServices;
 using DirectoryService.Infrastructure.Database;
 using DirectoryService.Infrastructure.Seeder;
 using DirectoryService.Presentation;
@@ -33,6 +34,9 @@ services.AddSwaggerGen(options =>
 {   
     options.SchemaFilter<EnvelopeSchemaFilter>();
 });
+
+services.Configure<CleanupServiceOptions>(
+    builder.Configuration.GetSection(nameof(CleanupServiceOptions)));
 
 services.AddScoped<DirectoryServiceDbContext>(_ =>
     new DirectoryServiceDbContext(builder.Configuration.GetConnectionString(NameConstants.DATABASE)!));

@@ -50,19 +50,14 @@ public class DeleteLocationHandler : ICommandHandler<DeleteLocationCommand>
 
         var location = locationResult.Value;
 
-        var deleteLinksResult = await _locationsRepository.DeleteDepartmentLocationsByLocationId(
-            command.LocationId,
-            cancellationToken);
+        // var deleteLinksResult = await _locationsRepository.DeleteDepartmentLocationsByLocationId(command.LocationId, cancellationToken);
+        // if (deleteLinksResult.IsFailure)
+        // {
+        //     transactionScope.Rollback();
+        //     return deleteLinksResult.Error.ToErrors();
+        // }
 
-        if (deleteLinksResult.IsFailure)
-        {
-            transactionScope.Rollback();
-            return deleteLinksResult.Error.ToErrors();
-        }
-
-        var deactivateResult = location.Deactivate();
-        if (deactivateResult.IsFailure)
-            return deactivateResult.Error.ToErrors();
+        location.SoftDelete();
 
         var saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
         if (saveResult.IsFailure)
@@ -78,7 +73,7 @@ public class DeleteLocationHandler : ICommandHandler<DeleteLocationCommand>
             return commitResult.Error.ToErrors();
         }
 
-        _logger.LogInformation("Deleted location {LocationId}", command.LocationId);
+        _logger.LogInformation("Soft Deleted location {LocationId}", command.LocationId);
 
         return UnitResult.Success<Errors>();
     }

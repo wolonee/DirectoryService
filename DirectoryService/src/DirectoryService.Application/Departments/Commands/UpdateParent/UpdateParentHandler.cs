@@ -51,8 +51,8 @@ public class UpdateParentHandler : ICommandHandler<UpdateParentCommand>
         
         var department = departmentResult.Value;
         
-        if (department == null)
-            return GeneralErrors.NotFound(null, "department").ToErrors();
+        if (department.IsDeleted)
+            return DepartmentErrors.IsDeleted().ToErrors();
 
         if (command.Request.ParentId == command.DepartmentId)
             return DepartmentErrors.ParentIdEqualDepartmentId().ToErrors();
@@ -71,9 +71,6 @@ public class UpdateParentHandler : ICommandHandler<UpdateParentCommand>
                 return parentResult.Error.ToErrors();
         
             var parent = parentResult.Value;
-        
-            if (parent == null)
-                return GeneralErrors.NotFound(null, "department").ToErrors();
         
             if (department.ChildrenDepartments.Contains(parent))
                 return DepartmentErrors.DepartmentChildrensContainsParent().ToErrors();

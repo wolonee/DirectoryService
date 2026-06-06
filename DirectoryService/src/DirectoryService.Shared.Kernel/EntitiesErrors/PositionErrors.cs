@@ -24,6 +24,9 @@ public static class PositionErrors
 
     public static Error IsNotActive() =>
         Error.Validation("position.is.not.active", "Position is not active.");
+    
+    public static Error IsDeleted() =>
+        Error.Validation("position.is.deleted", $"Position is deleted.");
 
     public static Error IsAlreadyInactive() =>
         Error.Conflict("position.is.already.inactive", "Position is already inactive.");

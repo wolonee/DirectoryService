@@ -54,6 +54,9 @@ public class RenamePositionHandler : ICommandHandler<Guid, RenamePositionCommand
 
         if (!position.IsActive)
             return PositionErrors.IsNotActive().ToErrors();
+        
+        if (position.IsDeleted)
+            return PositionErrors.IsDeleted().ToErrors();
 
         var nameExistsResult = await _positionsRepository.ActiveFullNameExistsAsync(
             command.Request.PositionName.Direction,

@@ -83,5 +83,11 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
         
         builder.Property(l => l.UpdatedAt)
             .HasColumnName("updated_at");
+
+        builder.Property(l => l.IsDeleted)
+            .HasColumnName("is_deleted");
+
+        builder.Property(l => l.DeletedAt)
+            .HasColumnName("deleted_at");
     }
 }
