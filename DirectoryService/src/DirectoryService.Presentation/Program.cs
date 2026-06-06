@@ -36,7 +36,7 @@ services.AddSwaggerGen(options =>
 });
 
 services.Configure<CleanupServiceOptions>(
-    builder.Configuration.GetSection("BackgroundCleanupService"));
+    builder.Configuration.GetSection(nameof(CleanupServiceOptions)));
 
 services.AddScoped<DirectoryServiceDbContext>(_ =>
     new DirectoryServiceDbContext(builder.Configuration.GetConnectionString(NameConstants.DATABASE)!));

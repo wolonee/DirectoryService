@@ -1,4 +1,5 @@
-﻿using CSharpFunctionalExtensions;
+﻿using System.Data;
+using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Application.Database;
 using DirectoryService.Shared.Errors;
@@ -40,6 +41,11 @@ public class CleanupPositionsService : BaseCleanupBackgroundService
         using var transactionScope = transactionScopeResult.Value;
         
         var connect = await dbConnectionFactory.CreateConnectionAsync(cancellationToken);
+        var parameters = new DynamicParameters();
+        
+        var cutoffDate = DateTime.UtcNow.AddDays(-Options.RetentionDays);
+        parameters.Add(RETENTION_DAYS, cutoffDate, DbType.DateTime);
+        parameters.Add(BATCH_SIZE, Options.BatchSize, DbType.Int32);
 
         var result = await connect.QueryAsync<Guid>(
             $"""
@@ -48,7 +54,8 @@ public class CleanupPositionsService : BaseCleanupBackgroundService
              WHERE p.is_deleted
                  AND p.deleted_at < @{RETENTION_DAYS}
              LIMIT @{BATCH_SIZE}
-             """);
+             """,
+            param: parameters);
         
         foreach (var id in result)
         {
