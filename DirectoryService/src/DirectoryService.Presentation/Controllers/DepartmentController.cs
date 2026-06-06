@@ -140,4 +140,15 @@ public class DepartmentsController : ControllerBase
         
         return await handler.Handle(query, cancellationToken);
     }
+    
+    [HttpGet("{id:guid}/ancestors")]
+    public async Task<EndpointResult<GetDepartmentParentsByIdResponse>> GetChildrenByParent(
+        [FromRoute] Guid id,
+        [FromServices] IQueryHandler<GetDepartmentParentsByIdResponse, GetDepartmentParentsByIdQuery> handler,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetDepartmentChildrenByParentQuery(id);
+        
+        return await handler.Handle(query, cancellationToken);
+    }
 }

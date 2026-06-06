@@ -558,4 +558,27 @@ public class DepartmentsRepository : IDepartmentsRepository
     
         return UnitResult.Success<Error>();
     }
+    
+    public async Task<Result<bool, Error>> Exists(
+        Guid departmentId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var departmentExists = await _dbContext.Departments
+                .AnyAsync(d => d.Id == departmentId, cancellationToken);
+            
+            return departmentExists;
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation cancelled while checking child departments for {DepartmentId}", departmentId);
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while checking child departments for {DepartmentId}", departmentId);
+            return GeneralErrors.DatabaseError();
+        }
+    }
 }

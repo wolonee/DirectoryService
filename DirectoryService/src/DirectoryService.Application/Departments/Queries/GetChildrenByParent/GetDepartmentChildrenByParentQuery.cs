@@ -2,4 +2,4 @@
 
 namespace DirectoryService.Application.Departments.Queries.GetChildrenByParent;
 
-public class GetDepartmentChildrenByParentQuery(Guid ParentId) : IQuery;
+public record GetDepartmentChildrenByParentQuery(Guid ParentId) : IQuery;
