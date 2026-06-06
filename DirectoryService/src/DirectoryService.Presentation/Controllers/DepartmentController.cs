@@ -7,6 +7,7 @@ using DirectoryService.Application.Departments.Commands.UpdateLocations;
 using DirectoryService.Application.Departments.Commands.UpdateParent;
 using DirectoryService.Application.Departments.Queries.Get;
 using DirectoryService.Application.Departments.Queries.GetById;
+using DirectoryService.Application.Departments.Queries.GetChildrenByParent;
 using DirectoryService.Contracts.Departments;
 using DirectoryService.Contracts.Departments.Requests;
 using DirectoryService.Contracts.Departments.Responses;
@@ -135,6 +136,8 @@ public class DepartmentsController : ControllerBase
         [FromServices] IQueryHandler<GetDepartmentChildrenByParentResponse, GetDepartmentChildrenByParentQuery> handler,
         CancellationToken cancellationToken = default)
     {
+        var query = new GetDepartmentChildrenByParentQuery(id);
         
+        return await handler.Handle(query, cancellationToken);
     }
 }
