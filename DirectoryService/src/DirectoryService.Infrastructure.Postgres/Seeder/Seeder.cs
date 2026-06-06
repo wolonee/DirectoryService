@@ -155,6 +155,22 @@ public class DepartmentTreeSeeder
             locationIds: [locs["HQ"]]
         ).Value;
         all.Add(company);
+        
+        var externalPartnerships = CreateParentDepartment(
+            id: Guid.NewGuid(),
+            name: "External Partnerships",
+            identifier: "external-partnerships",
+            locationIds: [locs["London"], locs["NewYork"]]
+        ).Value;
+        all.Add(externalPartnerships);
+
+        var researchCenter = CreateParentDepartment(
+            id: Guid.NewGuid(),
+            name: "Research Center",
+            identifier: "research-center",
+            locationIds: [locs["SiliconValley"], locs["Tokyo"]]
+        ).Value;
+        all.Add(researchCenter);
 
         // ---- Уровень 1 ----
         var engineering = CreateChildDepartment(
@@ -294,6 +310,42 @@ public class DepartmentTreeSeeder
             locationIds: [locs["SPb"], locs["Kazan"]]
         ).Value;
         all.Add(retailSales);
+        
+        var strategicPartnerships = CreateChildDepartment(
+            id: Guid.NewGuid(),
+            name: "Strategic Partnerships",
+            identifier: "strategic-partnerships",
+            parent: externalPartnerships,
+            locationIds: [locs["London"]]
+        ).Value;
+        all.Add(strategicPartnerships);
+
+        var internationalRelations = CreateChildDepartment(
+            id: Guid.NewGuid(),
+            name: "International Relations",
+            identifier: "international-relations",
+            parent: externalPartnerships,
+            locationIds: [locs["NewYork"], locs["Dubai"]]
+        ).Value;
+        all.Add(internationalRelations);
+
+        var aiResearch = CreateChildDepartment(
+            id: Guid.NewGuid(),
+            name: "AI Research",
+            identifier: "ai-research",
+            parent: researchCenter,
+            locationIds: [locs["SiliconValley"]]
+        ).Value;
+        all.Add(aiResearch);
+
+        var productResearch = CreateChildDepartment(
+            id: Guid.NewGuid(),
+            name: "Product Research",
+            identifier: "product-research",
+            parent: researchCenter,
+            locationIds: [locs["Tokyo"], locs["Berlin"]]
+        ).Value;
+        all.Add(productResearch);
 
         await _context.Departments.AddRangeAsync(all, ct);
         await _context.SaveChangesAsync(ct);
