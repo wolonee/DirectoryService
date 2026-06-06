@@ -120,4 +120,12 @@ public class DepartmentsController : ControllerBase
         
         return await handler.Handle(query, cancellationToken);
     }
+    
+    [HttpGet("tree")]
+    public async Task<EndpointResult<GetDepartmentRootsResponse>> GetRoots(
+        [FromServices] IQueryHandler<GetDepartmentRootsResponse> handler,
+        CancellationToken cancellationToken = default)
+    {
+        return await handler.Handle(cancellationToken);
+    }
 }
