@@ -18,4 +18,8 @@ public interface IPositionsRepository
         string speciality,
         Guid? excludePositionId = null,
         CancellationToken cancellationToken = default);
+
+    Task<UnitResult<Error>> DeletePositionInCleanupDelete(
+        Guid positionId,
+        CancellationToken cancellationToken = default);
 }
