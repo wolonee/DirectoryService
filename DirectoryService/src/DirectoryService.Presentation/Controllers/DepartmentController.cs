@@ -8,6 +8,8 @@ using DirectoryService.Application.Departments.Commands.UpdateParent;
 using DirectoryService.Application.Departments.Queries.Get;
 using DirectoryService.Application.Departments.Queries.GetById;
 using DirectoryService.Application.Departments.Queries.GetChildrenByParent;
+using DirectoryService.Application.Departments.Queries.GetDepartmentParentsByName;
+using DirectoryService.Application.Departments.Queries.GetParentsById;
 using DirectoryService.Contracts.Departments;
 using DirectoryService.Contracts.Departments.Requests;
 using DirectoryService.Contracts.Departments.Responses;
@@ -142,12 +144,23 @@ public class DepartmentsController : ControllerBase
     }
     
     [HttpGet("{id:guid}/ancestors")]
-    public async Task<EndpointResult<GetDepartmentParentsByIdResponse>> GetChildrenByParent(
+    public async Task<EndpointResult<GetDepartmentParentsByIdResponse>> GetParentsByChildId(
         [FromRoute] Guid id,
         [FromServices] IQueryHandler<GetDepartmentParentsByIdResponse, GetDepartmentParentsByIdQuery> handler,
         CancellationToken cancellationToken = default)
     {
-        var query = new GetDepartmentChildrenByParentQuery(id);
+        var query = new GetDepartmentParentsByIdQuery(id);
+        
+        return await handler.Handle(query, cancellationToken);
+    }
+
+    [HttpGet("tree")]
+    public async Task<EndpointResult<GetDepartmentParentsByNameResponse>> GetParentsByName(
+        [FromQuery] GetDepartmentParentsByNameRequest request,
+        [FromServices] IQueryHandler<GetDepartmentParentsByNameResponse, GetDepartmentParentsByNameQuery> handler,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetDepartmentParentsByNameQuery(request);
         
         return await handler.Handle(query, cancellationToken);
     }
