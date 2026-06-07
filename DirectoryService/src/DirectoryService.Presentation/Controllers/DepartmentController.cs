@@ -7,6 +7,9 @@ using DirectoryService.Application.Departments.Commands.UpdateLocations;
 using DirectoryService.Application.Departments.Commands.UpdateParent;
 using DirectoryService.Application.Departments.Queries.Get;
 using DirectoryService.Application.Departments.Queries.GetById;
+using DirectoryService.Application.Departments.Queries.GetChildrenByParent;
+using DirectoryService.Application.Departments.Queries.GetDepartmentParentsByName;
+using DirectoryService.Application.Departments.Queries.GetParentsById;
 using DirectoryService.Contracts.Departments;
 using DirectoryService.Contracts.Departments.Requests;
 using DirectoryService.Contracts.Departments.Responses;
@@ -117,6 +120,47 @@ public class DepartmentsController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         var query = new GetDepartmentsQuery(request);
+        
+        return await handler.Handle(query, cancellationToken);
+    }
+    
+    [HttpGet("tree")]
+    public async Task<EndpointResult<GetDepartmentRootsResponse>> GetRoots(
+        [FromServices] IQueryHandler<GetDepartmentRootsResponse> handler,
+        CancellationToken cancellationToken = default)
+    {
+        return await handler.Handle(cancellationToken);
+    }
+
+    [HttpGet("{id:guid}/children")]
+    public async Task<EndpointResult<GetDepartmentChildrenByParentResponse>> GetChildrenByParent(
+        [FromRoute] Guid id,
+        [FromServices] IQueryHandler<GetDepartmentChildrenByParentResponse, GetDepartmentChildrenByParentQuery> handler,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetDepartmentChildrenByParentQuery(id);
+        
+        return await handler.Handle(query, cancellationToken);
+    }
+    
+    [HttpGet("{id:guid}/ancestors")]
+    public async Task<EndpointResult<GetDepartmentParentsByIdResponse>> GetParentsByChildId(
+        [FromRoute] Guid id,
+        [FromServices] IQueryHandler<GetDepartmentParentsByIdResponse, GetDepartmentParentsByIdQuery> handler,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetDepartmentParentsByIdQuery(id);
+        
+        return await handler.Handle(query, cancellationToken);
+    }
+
+    [HttpGet("tree/search")]
+    public async Task<EndpointResult<GetDepartmentParentsByNameResponse>> GetParentsByName(
+        [FromQuery] GetDepartmentParentsByNameRequest request,
+        [FromServices] IQueryHandler<GetDepartmentParentsByNameResponse, GetDepartmentParentsByNameQuery> handler,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetDepartmentParentsByNameQuery(request);
         
         return await handler.Handle(query, cancellationToken);
     }

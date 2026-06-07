@@ -62,4 +62,8 @@ public interface IDepartmentsRepository
     Task<UnitResult<Error>> DeleteDepartmentInCleanupDelete(
         Guid departmentId,
         CancellationToken cancellationToken = default);
+
+    Task<Result<bool, Error>> Exists(
+        Guid departmentId,
+        CancellationToken cancellationToken = default);
 }

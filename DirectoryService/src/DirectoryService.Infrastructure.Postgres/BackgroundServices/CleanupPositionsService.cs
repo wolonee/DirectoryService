@@ -17,7 +17,7 @@ public class CleanupPositionsService : BaseCleanupBackgroundService
     public CleanupPositionsService(
         IServiceScopeFactory serviceScopeFactory,
         IOptions<CleanupServiceOptions> options,
-        ILogger logger) 
+        ILogger<CleanupPositionsService> logger) 
         : base(options, logger)
     {
         _serviceScopeFactory = serviceScopeFactory;
