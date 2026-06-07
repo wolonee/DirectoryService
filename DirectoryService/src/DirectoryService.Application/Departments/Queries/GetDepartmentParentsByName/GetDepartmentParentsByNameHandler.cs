@@ -67,7 +67,7 @@ public class GetDepartmentParentsByNameHandler : IQueryHandler<GetDepartmentPare
                                           d.created_at,
                                           d.updated_at
                                     FROM department d 
-                                    WHERE d.name ILIKE '%' || @SEARCH_PARAMETER || '%'
+                                    WHERE d.name ILIKE '%' || @{SEARCH_PARAMETER} || '%'
                                     AND d.is_deleted = false
                                     LIMIT @limit OFFSET @offset
                                     ),

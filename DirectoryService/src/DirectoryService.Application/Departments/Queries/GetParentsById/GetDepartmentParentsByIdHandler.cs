@@ -24,7 +24,7 @@ public class GetDepartmentParentsByIdHandler : IQueryHandler<GetDepartmentParent
         _logger = logger;
     }
     
-    private const string DEPARTMENT_PATH = "deparment_path";
+    private const string DEPARTMENT_PATH = "department_path";
 
     public async Task<Result<GetDepartmentParentsByIdResponse, Errors>> Handle(
         GetDepartmentParentsByIdQuery query,
