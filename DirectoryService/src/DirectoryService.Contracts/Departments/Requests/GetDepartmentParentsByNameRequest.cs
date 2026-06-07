@@ -1,3 +1,7 @@
-﻿namespace DirectoryService.Contracts.Departments.Requests;
+﻿using DirectoryService.Contracts.Locations.Common;
 
-public record GetDepartmentParentsByNameRequest(string Name);
+namespace DirectoryService.Contracts.Departments.Requests;
+
+public record GetDepartmentParentsByNameRequest(
+    string Name,
+    PaginationRequest? Pagination);

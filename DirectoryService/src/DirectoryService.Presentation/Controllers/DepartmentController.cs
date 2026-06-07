@@ -154,7 +154,7 @@ public class DepartmentsController : ControllerBase
         return await handler.Handle(query, cancellationToken);
     }
 
-    [HttpGet("tree")]
+    [HttpGet("tree/search")]
     public async Task<EndpointResult<GetDepartmentParentsByNameResponse>> GetParentsByName(
         [FromQuery] GetDepartmentParentsByNameRequest request,
         [FromServices] IQueryHandler<GetDepartmentParentsByNameResponse, GetDepartmentParentsByNameQuery> handler,
