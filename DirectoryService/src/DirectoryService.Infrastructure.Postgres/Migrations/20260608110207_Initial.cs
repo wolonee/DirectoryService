@@ -26,6 +26,8 @@ namespace DirectoryService.Infrastructure.Migrations
                     depth = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     children_count = table.Column<int>(type: "integer", nullable: false),
                     is_active = table.Column<bool>(type: "boolean", nullable: false),
+                    is_deleted = table.Column<bool>(type: "boolean", nullable: false),
+                    deleted_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -51,6 +53,8 @@ namespace DirectoryService.Infrastructure.Migrations
                     name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
                     timezone = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     is_active = table.Column<bool>(type: "boolean", nullable: false),
+                    is_deleted = table.Column<bool>(type: "boolean", nullable: false),
+                    deleted_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -66,8 +70,10 @@ namespace DirectoryService.Infrastructure.Migrations
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
                     is_active = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    is_deleted = table.Column<bool>(type: "boolean", nullable: false),
+                    deleted_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     name = table.Column<string>(type: "jsonb", nullable: false)
                 },
                 constraints: table =>
@@ -127,9 +133,11 @@ namespace DirectoryService.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "ix_departments_name",
+                name: "ix_departments_name_trgm",
                 table: "department",
-                column: "name");
+                column: "name")
+                .Annotation("Npgsql:IndexMethod", "GIN")
+                .Annotation("Npgsql:IndexOperators", new[] { "gin_trgm_ops" });
 
             migrationBuilder.CreateIndex(
                 name: "ix_departments_path",
@@ -140,7 +148,7 @@ namespace DirectoryService.Infrastructure.Migrations
             migrationBuilder.CreateIndex(
                 name: "ix_parent_id",
                 table: "department",
-                column: "parent_id");
+                columns: new[] { "parent_id", "is_deleted" });
 
             migrationBuilder.CreateIndex(
                 name: "ux_departments_identifier",

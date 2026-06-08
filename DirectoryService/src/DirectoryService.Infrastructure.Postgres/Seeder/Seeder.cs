@@ -1,4 +1,4 @@
-﻿using CSharpFunctionalExtensions;
+using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Departments.ValueObjects;
 using DirectoryService.Domain.Locations;
@@ -12,10 +12,86 @@ using Microsoft.EntityFrameworkCore;
 namespace DirectoryService.Infrastructure.Seeder;
 
 /// <summary>
-/// Класс для сидирования тестовых данных дерева департаментов и позиций
+/// Seeds a large, reproducible directory tree for development and load testing.
 /// </summary>
 public class DepartmentTreeSeeder
 {
+    private const int DepartmentCount = 10_000;
+    private const int RootDepartmentCount = 10;
+    private const int ChildrenPerDepartment = 5;
+    private const int LocationCount = 300;
+    private const int PositionCount = 500;
+    private const int MinLocationsPerDepartment = 1;
+    private const int LocationVariants = 3;
+    private const int MinPositionsPerDepartment = 2;
+    private const int PositionVariants = 3;
+
+    private static readonly string[] Countries =
+    [
+        "Russia",
+        "USA",
+        "Germany",
+        "United Kingdom",
+        "Japan",
+        "UAE",
+        "India",
+        "Singapore",
+        "Brazil",
+        "Canada"
+    ];
+
+    private static readonly string[] TimeZones =
+    [
+        "Europe/Moscow",
+        "America/New_York",
+        "Europe/Berlin",
+        "Europe/London",
+        "Asia/Tokyo",
+        "Asia/Dubai",
+        "Asia/Kolkata",
+        "Asia/Singapore",
+        "America/Sao_Paulo",
+        "America/Toronto"
+    ];
+
+    private static readonly string[] PositionSpecialities =
+    [
+        "Software Engineer",
+        "QA Engineer",
+        "Product Manager",
+        "Project Manager",
+        "Business Analyst",
+        "Data Engineer",
+        "Data Scientist",
+        "DevOps Engineer",
+        "Security Engineer",
+        "System Administrator",
+        "UX Designer",
+        "Technical Writer",
+        "Recruiter",
+        "HR Specialist",
+        "Sales Manager",
+        "Account Manager",
+        "Marketing Specialist",
+        "Financial Analyst",
+        "Legal Counsel",
+        "Support Engineer"
+    ];
+
+    private static readonly string[] PositionDirections =
+    [
+        "Backend",
+        "Frontend",
+        "Platform",
+        "Infrastructure",
+        "Analytics",
+        "Operations",
+        "Enterprise",
+        "Regional",
+        "Research",
+        "Delivery"
+    ];
+
     private readonly DirectoryServiceDbContext _context;
 
     public DepartmentTreeSeeder(DirectoryServiceDbContext context)
@@ -24,587 +100,32 @@ public class DepartmentTreeSeeder
     }
 
     /// <summary>
-    /// Сидирует дерево департаментов и позиции
+    /// Seeds locations, departments, positions, and their links when corresponding tables are empty.
     /// </summary>
     public async Task<int> SeedAsync(CancellationToken cancellationToken = default)
     {
-        var totalAdded = 0;
+        var locations = await GetOrCreateLocationsAsync(cancellationToken);
 
-        // 1. Локации
-        var locationsMap = await GetOrCreateLocationsAsync(cancellationToken);
-
-        // 2. Департаменты
         List<Department> departments;
         if (!await _context.Departments.AnyAsync(cancellationToken))
         {
-            departments = await CreateDepartmentsAsync(locationsMap, cancellationToken);
-            totalAdded += departments.Count;
+            departments = await CreateDepartmentsAsync(locations, cancellationToken);
         }
         else
         {
-            departments = await _context.Departments
-                .Include(d => d.DepartmentLocations)
-                .ToListAsync(cancellationToken);
+            departments = await _context.Departments.ToListAsync(cancellationToken);
         }
 
-        // 3. Позиции и связи с департаментами
         if (!await _context.Positions.AnyAsync(cancellationToken))
         {
-            var positionsAdded = await CreatePositionsWithDepartmentsAsync(departments, cancellationToken);
-            totalAdded += positionsAdded;
+            await CreatePositionsWithDepartmentsAsync(departments, cancellationToken);
         }
 
-        return totalAdded;
-    }
-
-    // ==================== ЛОКАЦИИ ====================
-    private async Task<Dictionary<string, Guid>> GetOrCreateLocationsAsync(CancellationToken cancellationToken)
-    {
-        var map = new Dictionary<string, Guid>();
-
-        // Moscow
-        var moscow = await GetOrCreateLocation(
-            "Tverskaya str. 1", "Moscow", "Russia", "Moscow HQ", "Europe/Moscow",
-            cancellationToken);
-        map["Moscow"] = moscow.Id;
-
-        // Saint Petersburg
-        var spb = await GetOrCreateLocation(
-            "Nevsky prospect 10", "Saint Petersburg", "Russia", "Saint Petersburg Office", "Europe/Moscow",
-            cancellationToken);
-        map["SPb"] = spb.Id;
-
-        // Kazan
-        var kazan = await GetOrCreateLocation(
-            "Baumana str. 5", "Kazan", "Russia", "Kazan Branch", "Europe/Moscow",
-            cancellationToken);
-        map["Kazan"] = kazan.Id;
-
-        // HQ (Headquarters)
-        var hq = await GetOrCreateLocation(
-            "Main Square 1", "Moscow", "Russia", "Headquarters", "Europe/Moscow",
-            cancellationToken);
-        map["HQ"] = hq.Id;
-        
-        // New York
-        var newYork = await GetOrCreateLocation(
-            "350 5th Ave", "New York", "USA", "New York Office", "America/New_York",
-            cancellationToken);
-        map["NewYork"] = newYork.Id;
-
-        // London
-        var london = await GetOrCreateLocation(
-            "10 Downing Street", "London", "UK", "London Office", "Europe/London",
-            cancellationToken);
-        map["London"] = london.Id;
-
-        // Berlin
-        var berlin = await GetOrCreateLocation(
-            "Unter den Linden 1", "Berlin", "Germany", "Berlin Branch", "Europe/Berlin",
-            cancellationToken);
-        map["Berlin"] = berlin.Id;
-
-        // Tokyo
-        var tokyo = await GetOrCreateLocation(
-            "1-1-2 Ote-machi", "Tokyo", "Japan", "Tokyo Office", "Asia/Tokyo",
-            cancellationToken);
-        map["Tokyo"] = tokyo.Id;
-
-        // Dubai
-        var dubai = await GetOrCreateLocation(
-            "Sheikh Zayed Road", "Dubai", "UAE", "Dubai Branch", "Asia/Dubai",
-            cancellationToken);
-        map["Dubai"] = dubai.Id;
-
-        // Silicon Valley
-        var siliconValley = await GetOrCreateLocation(
-            "1 Infinite Loop", "Cupertino", "USA", "Silicon Valley R&D", "America/Los_Angeles",
-            cancellationToken);
-        map["SiliconValley"] = siliconValley.Id;
-
-        return map;
-    }
-
-    private async Task<Location> GetOrCreateLocation(
-        string street, string city, string country, string name, string timeZone,
-        CancellationToken cancellationToken)
-    {
-        var existing = await _context.Locations.FirstOrDefaultAsync(l => l.Name.Value == name, cancellationToken);
-        if (existing != null) return existing;
-
-        var address = LocationAddress.Create(street, city, country).Value;
-        var locationName = LocationName.Create(name).Value;
-        var tz = LocationTimeZone.Create(timeZone).Value;
-        var location = Location.Create(address, locationName, tz).Value;
-
-        await _context.Locations.AddAsync(location, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
-        return location;
-    }
-
-    // ==================== ДЕПАРТАМЕНТЫ ====================
-    private async Task<List<Department>> CreateDepartmentsAsync(Dictionary<string, Guid> locs, CancellationToken ct)
-    {
-        var all = new List<Department>();
-
-        // ---- Корень ----
-        var company = CreateParentDepartment(
-            id: Guid.NewGuid(),
-            name: "Company",
-            identifier: "company",
-            locationIds: [locs["HQ"]]
-        ).Value;
-        all.Add(company);
-        
-        var externalPartnerships = CreateParentDepartment(
-            id: Guid.NewGuid(),
-            name: "External Partnerships",
-            identifier: "external-partnerships",
-            locationIds: [locs["London"], locs["NewYork"]]
-        ).Value;
-        all.Add(externalPartnerships);
-
-        var researchCenter = CreateParentDepartment(
-            id: Guid.NewGuid(),
-            name: "Research Center",
-            identifier: "research-center",
-            locationIds: [locs["SiliconValley"], locs["Tokyo"]]
-        ).Value;
-        all.Add(researchCenter);
-
-        // ---- Уровень 1 ----
-        var engineering = CreateChildDepartment(
-            id: Guid.NewGuid(),
-            name: "Engineering",
-            identifier: "engineering",
-            parent: company,
-            locationIds: [locs["Moscow"], locs["SPb"]]
-        ).Value;
-        all.Add(engineering);
-
-        var hr = CreateChildDepartment(
-            id: Guid.NewGuid(),
-            name: "Human Resources",
-            identifier: "hr",
-            parent: company,
-            locationIds: [locs["Moscow"]]
-        ).Value;
-        all.Add(hr);
-
-        var sales = CreateChildDepartment(
-            id: Guid.NewGuid(),
-            name: "Sales",
-            identifier: "sales",
-            parent: company,
-            locationIds: [locs["SPb"], locs["Kazan"]]
-        ).Value;
-        all.Add(sales);
-
-        var marketing = CreateChildDepartment(
-            id: Guid.NewGuid(),
-            name: "Marketing",
-            identifier: "marketing",
-            parent: company,
-            locationIds: [locs["Moscow"], locs["Kazan"]]
-        ).Value;
-        all.Add(marketing);
-
-        var finance = CreateChildDepartment(
-            id: Guid.NewGuid(),
-            name: "Finance",
-            identifier: "finance",
-            parent: company,
-            locationIds: [locs["Moscow"]]
-        ).Value;
-        all.Add(finance);
-
-        // ---- Уровень 2 (под Engineering) ----
-        var backend = CreateChildDepartment(
-            id: Guid.NewGuid(),
-            name: "Backend Development",
-            identifier: "backend-dev",
-            parent: engineering,
-            locationIds: [locs["Moscow"]]
-        ).Value;
-        all.Add(backend);
-
-        var frontend = CreateChildDepartment(
-            id: Guid.NewGuid(),
-            name: "Frontend Development",
-            identifier: "frontend-dev",
-            parent: engineering,
-            locationIds: [locs["SPb"]]
-        ).Value;
-        all.Add(frontend);
-
-        var qa = CreateChildDepartment(
-            id: Guid.NewGuid(),
-            name: "Quality Assurance",
-            identifier: "qa",
-            parent: engineering,
-            locationIds: [locs["Moscow"], locs["Kazan"]]
-        ).Value;
-        all.Add(qa);
-
-        var devops = CreateChildDepartment(
-            id: Guid.NewGuid(),
-            name: "DevOps",
-            identifier: "devops",
-            parent: engineering,
-            locationIds: [locs["Moscow"], locs["SPb"]]
-        ).Value;
-        all.Add(devops);
-
-        var dataScience = CreateChildDepartment(
-            id: Guid.NewGuid(),
-            name: "Data Science",
-            identifier: "data-science",
-            parent: engineering,
-            locationIds: [locs["Moscow"]]
-        ).Value;
-        all.Add(dataScience);
-
-        // ---- Уровень 3 (под Backend) ----
-        var apiTeam = CreateChildDepartment(
-            id: Guid.NewGuid(),
-            name: "API Team",
-            identifier: "api-team",
-            parent: backend,
-            locationIds: [locs["Moscow"]]
-        ).Value;
-        all.Add(apiTeam);
-
-        var databaseTeam = CreateChildDepartment(
-            id: Guid.NewGuid(),
-            name: "Database Team",
-            identifier: "database-team",
-            parent: backend,
-            locationIds: [locs["Moscow"]]
-        ).Value;
-        all.Add(databaseTeam);
-
-        var integrationTeam = CreateChildDepartment(
-            id: Guid.NewGuid(),
-            name: "Integration Team",
-            identifier: "integration-team",
-            parent: backend,
-            locationIds: [locs["SPb"]]
-        ).Value;
-        all.Add(integrationTeam);
-
-        // ---- Уровень 2 под Sales ----
-        var ecommerceSales = CreateChildDepartment(
-            id: Guid.NewGuid(),
-            name: "E-commerce Sales",
-            identifier: "ecommerce-sales",
-            parent: sales,
-            locationIds: [locs["Moscow"]]
-        ).Value;
-        all.Add(ecommerceSales);
-
-        var retailSales = CreateChildDepartment(
-            id: Guid.NewGuid(),
-            name: "Retail Sales",
-            identifier: "retail-sales",
-            parent: sales,
-            locationIds: [locs["SPb"], locs["Kazan"]]
-        ).Value;
-        all.Add(retailSales);
-        
-        var strategicPartnerships = CreateChildDepartment(
-            id: Guid.NewGuid(),
-            name: "Strategic Partnerships",
-            identifier: "strategic-partnerships",
-            parent: externalPartnerships,
-            locationIds: [locs["London"]]
-        ).Value;
-        all.Add(strategicPartnerships);
-
-        var internationalRelations = CreateChildDepartment(
-            id: Guid.NewGuid(),
-            name: "International Relations",
-            identifier: "international-relations",
-            parent: externalPartnerships,
-            locationIds: [locs["NewYork"], locs["Dubai"]]
-        ).Value;
-        all.Add(internationalRelations);
-
-        var aiResearch = CreateChildDepartment(
-            id: Guid.NewGuid(),
-            name: "AI Research",
-            identifier: "ai-research",
-            parent: researchCenter,
-            locationIds: [locs["SiliconValley"]]
-        ).Value;
-        all.Add(aiResearch);
-
-        var productResearch = CreateChildDepartment(
-            id: Guid.NewGuid(),
-            name: "Product Research",
-            identifier: "product-research",
-            parent: researchCenter,
-            locationIds: [locs["Tokyo"], locs["Berlin"]]
-        ).Value;
-        all.Add(productResearch);
-
-        await _context.Departments.AddRangeAsync(all, ct);
-        await _context.SaveChangesAsync(ct);
-        return all;
-    }
-
-    private Result<Department, Error> CreateParentDepartment(
-        Guid id, string name, string identifier, IEnumerable<Guid> locationIds)
-    {
-        var nameRes = DepartmentName.Create(name);
-        if (nameRes.IsFailure) return nameRes.Error;
-        var idRes = DepartmentIdentifier.Create(identifier);
-        if (idRes.IsFailure) return idRes.Error;
-
-        var deptLocs = locationIds
-            .Select(locId => DepartmentLocation.Create(id, locId).Value)
-            .ToList();
-
-        return Department.CreateParent(nameRes.Value, idRes.Value, deptLocs, id);
-    }
-
-    private Result<Department, Error> CreateChildDepartment(
-        Guid id, string name, string identifier, Department parent, IEnumerable<Guid> locationIds)
-    {
-        var nameRes = DepartmentName.Create(name);
-        if (nameRes.IsFailure) return nameRes.Error;
-        var idRes = DepartmentIdentifier.Create(identifier);
-        if (idRes.IsFailure) return idRes.Error;
-
-        var deptLocs = locationIds
-            .Select(locId => DepartmentLocation.Create(id, locId).Value)
-            .ToList();
-
-        return Department.CreateChild(id, nameRes.Value, idRes.Value, parent, deptLocs);
-    }
-
-    // ==================== ПОЗИЦИИ ====================
-    private async Task<int> CreatePositionsWithDepartmentsAsync(List<Department> departments, CancellationToken ct)
-    {
-        var positions = new List<Position>();
-        var departmentPositions = new List<DepartmentPosition>();
-
-        var deptByIdentifier = departments.ToDictionary(d => d.DepartmentIdentifier.Value);
-
-        var positionDefs = new[]
-        {
-            // ---- Engineering & Backend ----
-            new {
-                Speciality = "Software Engineer",
-                Direction = "Backend",
-                Description = "Разработка серверной логики, API и микросервисов",
-                DepartmentIds = new[] { "backend-dev", "api-team", "database-team" }
-            },
-            new {
-                Speciality = "Senior Software Engineer",
-                Direction = "Backend",
-                Description = "Архитектура и разработка сложных бэкенд-систем",
-                DepartmentIds = new[] { "backend-dev", "api-team" }
-            },
-            new {
-                Speciality = "Software Engineer",
-                Direction = "Frontend",
-                Description = "Разработка пользовательских интерфейсов на React/Vue",
-                DepartmentIds = new[] { "frontend-dev" }
-            },
-            new {
-                Speciality = "QA Engineer",
-                Direction = "Automation",
-                Description = "Написание автотестов, поддержка CI/CD для тестирования",
-                DepartmentIds = new[] { "qa", "backend-dev", "frontend-dev" }
-            },
-            new {
-                Speciality = "QA Manual",
-                Direction = "Testing",
-                Description = "Ручное тестирование, составление тест-кейсов",
-                DepartmentIds = new[] { "qa", "frontend-dev" }
-            },
-            new {
-                Speciality = "DevOps Engineer",
-                Direction = "Infrastructure",
-                Description = "CI/CD, Docker, Kubernetes, облачные провайдеры",
-                DepartmentIds = new[] { "devops", "backend-dev" }
-            },
-            new {
-                Speciality = "Data Scientist",
-                Direction = "Analytics",
-                Description = "Построение ML-моделей, очистка данных, эксперименты",
-                DepartmentIds = new[] { "data-science" }
-            },
-            new {
-                Speciality = "Data Engineer",
-                Direction = "ETL",
-                Description = "Построение пайплайнов данных, работа с Big Data",
-                DepartmentIds = new[] { "data-science", "backend-dev" }
-            },
-            new {
-                Speciality = "Security Engineer",
-                Direction = "Cybersecurity",
-                Description = "Аудит безопасности, пентесты, защита приложений",
-                DepartmentIds = new[] { "devops", "backend-dev" }
-            },
-            new {
-                Speciality = "System Administrator",
-                Direction = "Infrastructure",
-                Description = "Администрирование серверов, сетей, баз данных",
-                DepartmentIds = new[] { "devops" }
-            },
-
-            // ---- Management & Leadership ----
-            new {
-                Speciality = "Project Manager",
-                Direction = "Delivery",
-                Description = "Управление проектами, коммуникация с заказчиком, планирование",
-                DepartmentIds = new[] { "backend-dev", "frontend-dev", "qa", "data-science" }
-            },
-            new {
-                Speciality = "Product Owner",
-                Direction = "Product",
-                Description = "Управление бэклогом, требования к продукту",
-                DepartmentIds = new[] { "backend-dev", "frontend-dev" }
-            },
-            new {
-                Speciality = "Tech Lead",
-                Direction = "Backend",
-                Description = "Техлид команды, код-ревью, архитектура",
-                DepartmentIds = new[] { "backend-dev" }
-            },
-            new {
-                Speciality = "Scrum Master",
-                Direction = "Agile",
-                Description = "Фасилитация, agile-коучинг, устранение блокеров",
-                DepartmentIds = new[] { "backend-dev", "frontend-dev", "qa" }
-            },
-
-            // ---- HR ----
-            new {
-                Speciality = "HR Generalist",
-                Direction = "HR",
-                Description = "Кадровое делопроизводство, адаптация, оценка",
-                DepartmentIds = new[] { "hr" }
-            },
-            new {
-                Speciality = "Recruiter",
-                Direction = "Talent Acquisition",
-                Description = "Поиск и наём сотрудников, работа с каналами",
-                DepartmentIds = new[] { "hr" }
-            },
-            new {
-                Speciality = "Learning & Development Specialist",
-                Direction = "Training",
-                Description = "Организация обучения, развитие персонала",
-                DepartmentIds = new[] { "hr" }
-            },
-
-            // ---- Sales & Marketing ----
-            new {
-                Speciality = "Sales Manager",
-                Direction = "B2B",
-                Description = "Продажи юридическим лицам, переговоры",
-                DepartmentIds = new[] { "sales", "ecommerce-sales", "retail-sales" }
-            },
-            new {
-                Speciality = "Account Manager",
-                Direction = "Customer Success",
-                Description = "Ведение клиентов, увеличение LTV",
-                DepartmentIds = new[] { "sales", "ecommerce-sales" }
-            },
-            new {
-                Speciality = "Sales Representative",
-                Direction = "B2C",
-                Description = "Активные продажи физическим лицам",
-                DepartmentIds = new[] { "retail-sales" }
-            },
-            new {
-                Speciality = "Marketing Specialist",
-                Direction = "Digital",
-                Description = "SEO, контекстная реклама, SMM",
-                DepartmentIds = new[] { "marketing" }
-            },
-            new {
-                Speciality = "Content Manager",
-                Direction = "Content",
-                Description = "Создание контента, копирайтинг, блоги",
-                DepartmentIds = new[] { "marketing" }
-            },
-            new {
-                Speciality = "PR Manager",
-                Direction = "Communications",
-                Description = "Связи с общественностью, пресс-релизы",
-                DepartmentIds = new[] { "marketing" }
-            },
-
-            // ---- Finance ----
-            new {
-                Speciality = "Financial Analyst",
-                Direction = "Budgeting",
-                Description = "Анализ бюджета, план-факт, отчёты",
-                DepartmentIds = new[] { "finance" }
-            },
-            new {
-                Speciality = "Accountant",
-                Direction = "Accounting",
-                Description = "Бухгалтерский учёт, налоги, зарплата",
-                DepartmentIds = new[] { "finance" }
-            },
-            new {
-                Speciality = "Business Analyst",
-                Direction = "Requirements",
-                Description = "Сбор требований, анализ бизнес-процессов",
-                DepartmentIds = new[] { "backend-dev", "frontend-dev", "qa" }
-            }
-        };
-
-        foreach (var def in positionDefs)
-        {
-            var nameResult = PositionName.Create(def.Speciality, def.Direction);
-            if (nameResult.IsFailure) throw new Exception($"PositionName error: {nameResult.Error}");
-
-            var descResult = PositionDescription.Create(def.Description);
-            if (descResult.IsFailure) throw new Exception($"PositionDescription error: {descResult.Error}");
-
-            var positionId = Guid.NewGuid();
-            var positionResult = Position.Create(positionId, nameResult.Value, descResult.Value);
-            if (positionResult.IsFailure) throw new Exception($"Position creation error: {positionResult.Error}");
-
-            var position = positionResult.Value;
-
-            foreach (var deptId in def.DepartmentIds)
-            {
-                if (!deptByIdentifier.TryGetValue(deptId, out var department))
-                    continue;
-
-                var deptPosResult = DepartmentPosition.Create(department.Id, positionId);
-                if (deptPosResult.IsFailure) throw new Exception($"DepartmentPosition creation error: {deptPosResult.Error}");
-
-                var deptPos = deptPosResult.Value;
-
-                position.AddDepartmentPosition(deptPos);
-                department.AddDepartmentPosition(deptPos);
-                departmentPositions.Add(deptPos);
-            }
-
-            positions.Add(position);
-        }
-
-        await _context.Positions.AddRangeAsync(positions, ct);
-        await _context.SaveChangesAsync(ct);
-
-        if (departmentPositions.Any())
-        {
-            await _context.DepartmentPositions.AddRangeAsync(departmentPositions, ct);
-            await _context.SaveChangesAsync(ct);
-        }
-
-        return positions.Count;
+        return departments.Count;
     }
 
     /// <summary>
-    /// Полная очистка сидированных данных
+    /// Removes all directory data in dependency order.
     /// </summary>
     public async Task ClearAsync(CancellationToken cancellationToken = default)
     {
@@ -612,6 +133,222 @@ public class DepartmentTreeSeeder
         _context.DepartmentLocations.RemoveRange(_context.DepartmentLocations);
         _context.Positions.RemoveRange(_context.Positions);
         _context.Departments.RemoveRange(_context.Departments);
+        _context.Locations.RemoveRange(_context.Locations);
         await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task<List<Location>> GetOrCreateLocationsAsync(CancellationToken cancellationToken)
+    {
+        var existingLocations = await _context.Locations
+            .Where(location => location.Name.Value.StartsWith("Seed Location"))
+            .ToDictionaryAsync(location => location.Name.Value, cancellationToken);
+
+        var locations = new List<Location>(LocationCount);
+        var newLocations = new List<Location>(Math.Max(0, LocationCount - existingLocations.Count));
+
+        for (var index = 0; index < LocationCount; index++)
+        {
+            var name = $"Seed Location {index + 1:D3}";
+            if (existingLocations.TryGetValue(name, out var existingLocation))
+            {
+                locations.Add(existingLocation);
+                continue;
+            }
+
+            var countryIndex = index % Countries.Length;
+            var address = LocationAddress.Create(
+                $"Business Street {index + 1}",
+                $"City {countryIndex + 1:D2}-{(index / Countries.Length) + 1:D2}",
+                Countries[countryIndex]).Value;
+            var locationName = LocationName.Create(name).Value;
+            var timeZone = LocationTimeZone.Create(TimeZones[countryIndex]).Value;
+            var location = Location.Create(address, locationName, timeZone).Value;
+
+            locations.Add(location);
+            newLocations.Add(location);
+        }
+
+        if (newLocations.Count > 0)
+        {
+            await _context.Locations.AddRangeAsync(newLocations, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        return locations;
+    }
+
+    private async Task<List<Department>> CreateDepartmentsAsync(
+        IReadOnlyList<Location> locations,
+        CancellationToken cancellationToken)
+    {
+        var departments = new List<Department>(DepartmentCount);
+
+        for (var index = 0; index < DepartmentCount; index++)
+        {
+            var id = Guid.NewGuid();
+            var locationIds = GetDepartmentLocationIds(index, locations);
+            Result<Department, Error> result;
+
+            if (index < RootDepartmentCount)
+            {
+                result = CreateParentDepartment(id, index, locationIds);
+            }
+            else
+            {
+                var parentIndex = (index - RootDepartmentCount) / ChildrenPerDepartment;
+                result = CreateChildDepartment(id, index, departments[parentIndex], locationIds);
+            }
+
+            if (result.IsFailure)
+            {
+                throw new InvalidOperationException($"Department creation failed: {result.Error}");
+            }
+
+            departments.Add(result.Value);
+        }
+
+        await _context.Departments.AddRangeAsync(departments, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return departments;
+    }
+
+    private IReadOnlyList<Guid> GetDepartmentLocationIds(
+        int departmentIndex,
+        IReadOnlyList<Location> locations)
+    {
+        var linkCount = MinLocationsPerDepartment + (departmentIndex % LocationVariants);
+        var locationIds = new List<Guid>(linkCount);
+
+        for (var linkIndex = 0; linkIndex < linkCount; linkIndex++)
+        {
+            var locationIndex = ((departmentIndex * 17) + (linkIndex * 71)) % locations.Count;
+            locationIds.Add(locations[locationIndex].Id);
+        }
+
+        return locationIds;
+    }
+
+    private Result<Department, Error> CreateParentDepartment(
+        Guid id,
+        int index,
+        IEnumerable<Guid> locationIds)
+    {
+        var nameResult = DepartmentName.Create($"Root Department {index + 1:D2}");
+        if (nameResult.IsFailure)
+        {
+            return nameResult.Error;
+        }
+
+        var identifierResult = DepartmentIdentifier.Create($"department_{index + 1:D5}");
+        if (identifierResult.IsFailure)
+        {
+            return identifierResult.Error;
+        }
+
+        var departmentLocations = locationIds
+            .Select(locationId => DepartmentLocation.Create(id, locationId).Value)
+            .ToList();
+
+        return Department.CreateParent(nameResult.Value, identifierResult.Value, departmentLocations, id);
+    }
+
+    private Result<Department, Error> CreateChildDepartment(
+        Guid id,
+        int index,
+        Department parent,
+        IEnumerable<Guid> locationIds)
+    {
+        var nameResult = DepartmentName.Create($"Department {index + 1:D5}");
+        if (nameResult.IsFailure)
+        {
+            return nameResult.Error;
+        }
+
+        var identifierResult = DepartmentIdentifier.Create($"department_{index + 1:D5}");
+        if (identifierResult.IsFailure)
+        {
+            return identifierResult.Error;
+        }
+
+        var departmentLocations = locationIds
+            .Select(locationId => DepartmentLocation.Create(id, locationId).Value)
+            .ToList();
+
+        return Department.CreateChild(
+            id,
+            nameResult.Value,
+            identifierResult.Value,
+            parent,
+            departmentLocations);
+    }
+
+    private async Task CreatePositionsWithDepartmentsAsync(
+        IReadOnlyList<Department> departments,
+        CancellationToken cancellationToken)
+    {
+        _context.ChangeTracker.Clear();
+
+        var positions = CreatePositions();
+        var departmentPositions = new List<DepartmentPosition>(departments.Count * 3);
+
+        for (var departmentIndex = 0; departmentIndex < departments.Count; departmentIndex++)
+        {
+            var department = departments[departmentIndex];
+            var linkCount = MinPositionsPerDepartment + (departmentIndex % PositionVariants);
+
+            for (var linkIndex = 0; linkIndex < linkCount; linkIndex++)
+            {
+                var positionIndex = ((departmentIndex * 13) + (linkIndex * 137)) % positions.Count;
+                var position = positions[positionIndex];
+                var linkResult = DepartmentPosition.Create(department.Id, position.Id);
+
+                if (linkResult.IsFailure)
+                {
+                    throw new InvalidOperationException($"Department position creation failed: {linkResult.Error}");
+                }
+
+                var link = linkResult.Value;
+                departmentPositions.Add(link);
+            }
+        }
+
+        await _context.Positions.AddRangeAsync(positions, cancellationToken);
+        await _context.DepartmentPositions.AddRangeAsync(departmentPositions, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    private List<Position> CreatePositions()
+    {
+        var positions = new List<Position>(PositionCount);
+
+        for (var index = 0; index < PositionCount; index++)
+        {
+            var speciality = $"{PositionSpecialities[index % PositionSpecialities.Length]} {index + 1:D3}";
+            var direction = PositionDirections[(index / PositionSpecialities.Length) % PositionDirections.Length];
+            var nameResult = PositionName.Create(speciality, direction);
+            var descriptionResult = PositionDescription.Create(
+                $"Seeded position {index + 1:D3} for development and load testing.");
+
+            if (nameResult.IsFailure)
+            {
+                throw new InvalidOperationException($"Position name creation failed: {nameResult.Error}");
+            }
+
+            if (descriptionResult.IsFailure)
+            {
+                throw new InvalidOperationException($"Position description creation failed: {descriptionResult.Error}");
+            }
+
+            var positionResult = Position.Create(Guid.NewGuid(), nameResult.Value, descriptionResult.Value);
+            if (positionResult.IsFailure)
+            {
+                throw new InvalidOperationException($"Position creation failed: {positionResult.Error}");
+            }
+
+            positions.Add(positionResult.Value);
+        }
+
+        return positions;
     }
 }
