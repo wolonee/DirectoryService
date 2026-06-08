@@ -55,6 +55,7 @@ public class GetDepartmentParentsByIdHandler : IQueryHandler<GetDepartmentParent
             FROM department d 
             WHERE d.path @> @{DEPARTMENT_PATH}::ltree
                 AND d.path != @{DEPARTMENT_PATH}::ltree
+            ORDER BY d.depth
             """,
             param: parameters);
         

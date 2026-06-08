@@ -54,7 +54,9 @@ public class GetDepartmentParentsByNameHandler : IQueryHandler<GetDepartmentPare
         
         var connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
         
-        var result = await connection.QueryAsync<GetDepartmentParentsByNameForSqlDto>(
+        long? totalCount = null;
+        
+        var result = await connection.QueryAsync<GetDepartmentParentsByNameForSqlDto, long, GetDepartmentParentsByNameForSqlDto>(
             $"""
             WITH found_departments AS (
                                     SELECT d.id,
@@ -65,7 +67,8 @@ public class GetDepartmentParentsByNameHandler : IQueryHandler<GetDepartmentPare
                                           d.depth,
                                           d.is_active,
                                           d.created_at,
-                                          d.updated_at
+                                          d.updated_at,
+                                          COUNT(*) OVER() as count_found_departments
                                     FROM department d 
                                     WHERE d.name ILIKE '%' || @{SEARCH_PARAMETER} || '%'
                                     AND d.is_deleted = false
@@ -94,20 +97,31 @@ public class GetDepartmentParentsByNameHandler : IQueryHandler<GetDepartmentPare
                                             AND d.is_deleted = false
                                         ) AS a
                                     )
-            SELECT fd.*,
-                   anc.ancestor_id,
-                   anc.ancestor_parent_id,
-                   anc.ancestor_name,
-                   anc.ancestor_identifier,
-                   anc.ancestor_path,
-                   anc.ancestor_depth,
-                   anc.ancestor_is_active,
-                   anc.ancestor_created_at,
-                   anc.ancestor_updated_at
+            SELECT        
+                anc.ancestor_id,
+                anc.ancestor_parent_id,
+                anc.ancestor_name,
+                anc.ancestor_identifier,
+                anc.ancestor_path,
+                anc.ancestor_depth,
+                anc.ancestor_is_active,
+                anc.ancestor_created_at,
+                anc.ancestor_updated_at,
+                fd.*
             FROM found_departments fd
             JOIN ancestors anc ON anc.found_department_id = fd.id
             """,
-            param: parameters);
+            param: parameters,
+            splitOn: "count_found_departments",
+            map: (dep, count) =>
+            {
+                if (totalCount is null)
+                {
+                    totalCount = count;
+                }
+
+                return dep;
+            });
 
         var lookup = result
             .GroupBy(r => r.Id)
@@ -138,6 +152,6 @@ public class GetDepartmentParentsByNameHandler : IQueryHandler<GetDepartmentPare
             })
             .ToList();
 
-        return new GetDepartmentParentsByNameResponse(lookup);
+        return new GetDepartmentParentsByNameResponse(lookup, totalCount ?? 0);
     }
 }
