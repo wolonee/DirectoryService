@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DirectoryService.Infrastructure.Migrations
 {
     [DbContext(typeof(DirectoryServiceDbContext))]
-    [Migration("20260528115622_Initial")]
+    [Migration("20260608110207_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -41,6 +41,10 @@ namespace DirectoryService.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
                     b.Property<string>("DepartmentName")
                         .IsRequired()
                         .HasMaxLength(150)
@@ -57,6 +61,10 @@ namespace DirectoryService.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_active");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
                     b.Property<Guid?>("ParentId")
                         .HasColumnType("uuid")
                         .HasColumnName("parent_id");
@@ -68,9 +76,12 @@ namespace DirectoryService.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("DepartmentName")
-                        .HasDatabaseName("ix_departments_name");
+                        .HasDatabaseName("ix_departments_name_trgm");
 
-                    b.HasIndex("ParentId")
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("DepartmentName"), "GIN");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("DepartmentName"), new[] { "gin_trgm_ops" });
+
+                    b.HasIndex("ParentId", "IsDeleted")
                         .HasDatabaseName("ix_parent_id");
 
                     b.ToTable("department", (string)null);
@@ -150,9 +161,17 @@ namespace DirectoryService.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean")
                         .HasColumnName("is_active");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
 
                     b.Property<string>("Timezone")
                         .IsRequired()
@@ -180,14 +199,24 @@ namespace DirectoryService.Infrastructure.Migrations
                         .HasColumnName("id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean")
                         .HasColumnName("is_active");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.HasKey("Id");
 

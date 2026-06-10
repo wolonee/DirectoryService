@@ -96,7 +96,12 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
         builder.HasIndex(d => d.DepartmentName)
             .HasDatabaseName("ix_departments_name");
 
-        builder.HasIndex(d => d.ParentId)
+        builder.HasIndex(d => d.DepartmentName)
+            .HasDatabaseName("ix_departments_name_trgm")
+            .HasMethod("GIN")
+            .HasOperators("gin_trgm_ops");
+
+        builder.HasIndex(d => new { d.ParentId, d.IsDeleted })
             .HasDatabaseName("ix_parent_id");
         
         // builder.HasIndex(d => d.DepartmentIdentifier)

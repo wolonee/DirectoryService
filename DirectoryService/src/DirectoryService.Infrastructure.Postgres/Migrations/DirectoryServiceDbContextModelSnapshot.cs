@@ -73,9 +73,12 @@ namespace DirectoryService.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("DepartmentName")
-                        .HasDatabaseName("ix_departments_name");
+                        .HasDatabaseName("ix_departments_name_trgm");
 
-                    b.HasIndex("ParentId")
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("DepartmentName"), "GIN");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("DepartmentName"), new[] { "gin_trgm_ops" });
+
+                    b.HasIndex("ParentId", "IsDeleted")
                         .HasDatabaseName("ix_parent_id");
 
                     b.ToTable("department", (string)null);

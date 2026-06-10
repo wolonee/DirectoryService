@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DirectoryService.Infrastructure.Migrations
 {
     [DbContext(typeof(DirectoryServiceDbContext))]
-    [Migration("20260604134757_add_delete_fields")]
-    partial class add_delete_fields
+    [Migration("20260608110252_add_indexes")]
+    partial class add_indexes
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -76,9 +76,12 @@ namespace DirectoryService.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("DepartmentName")
-                        .HasDatabaseName("ix_departments_name");
+                        .HasDatabaseName("ix_departments_name_trgm");
 
-                    b.HasIndex("ParentId")
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("DepartmentName"), "GIN");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("DepartmentName"), new[] { "gin_trgm_ops" });
+
+                    b.HasIndex("ParentId", "IsDeleted")
                         .HasDatabaseName("ix_parent_id");
 
                     b.ToTable("department", (string)null);
