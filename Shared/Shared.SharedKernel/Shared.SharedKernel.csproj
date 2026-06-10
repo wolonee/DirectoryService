@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  
+    <ItemGroup>
+      <PackageReference Include="CSharpFunctionalExtensions" Version="3.7.0" />
+    </ItemGroup>
+
+  <PropertyGroup>
+    <PackageId>DirectoryService.SharedKernel</PackageId>
+    <Version>0.0.1</Version>
+    <Authors>DirectoryService</Authors>
+    <Company>DirectoryService</Company>
+    <PackageDescription>SharedKernel</PackageDescription>
+    <RepositoryUrl>https://github.com/wolonee/DirectoryService</RepositoryUrl>
+  </PropertyGroup>
+
+</Project>

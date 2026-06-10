@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+      <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+      <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.10"/>
+      <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Shared.SharedKernel\Shared.SharedKernel.csproj" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <PackageId>DirectoryService.Framework</PackageId>
+      <Version>0.0.1</Version>
+      <Authors>DirectoryService</Authors>
+      <Company>DirectoryService</Company>
+      <PackageDescription>Framework</PackageDescription>
+      <RepositoryUrl>https://github.com/wolonee/DirectoryService</RepositoryUrl>
+    </PropertyGroup>
+
+</Project>
