@@ -14,17 +14,7 @@ public static class DependencyInjection
         
         var assembly = typeof(CreateLocationHandler).Assembly;
         
-        services.Scan(scan => scan.FromAssemblies(assembly)
-            .AddClasses(classes => classes
-                .AssignableToAny(typeof(ICommandHandler<,>), typeof(ICommandHandler<>)))
-            .AsSelfWithInterfaces()
-            .WithScopedLifetime());
-        
-        services.Scan(scan => scan.FromAssemblies(assembly)
-            .AddClasses(classes => classes
-                .AssignableToAny(typeof(IQueryHandler<,>), typeof(IQueryHandler<>)))
-            .AsSelfWithInterfaces()
-            .WithScopedLifetime());
+        services.AddHandlers(assembly);
         
         return services;
     }

@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <PackageReference Include="Dapper.Extensions.PostgreSQL" Version="5.4.2" />
+      <PackageReference Include="directoryservice.core" Version="0.0.1" />
       <PackageReference Include="FluentValidation" Version="12.1.1" />
       <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
