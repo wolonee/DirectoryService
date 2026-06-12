@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <PackageReference Include="CSharpFunctionalExtensions" Version="3.7.0" />
+    <PackageReference Include="directoryservice.sharedkernel" Version="0.0.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DirectoryService.Shared.Kernel\DirectoryService.Shared.Kernel.csproj" />

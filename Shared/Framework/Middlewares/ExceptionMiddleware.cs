@@ -2,7 +2,10 @@ using System.Text.Json;
 using DirectoryService.Shared;
 using DirectoryService.Shared.Errors;
 using DirectoryService.Shared.Exceptions;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.Extensions.Logging;
 
 namespace DirectoryService.Presentation.Middlewares;
 

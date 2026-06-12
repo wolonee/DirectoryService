@@ -1,5 +1,4 @@
 ﻿using CSharpFunctionalExtensions;
-using DirectoryService.Contracts.Locations;
 using DirectoryService.Shared;
 using DirectoryService.Shared.Errors;
 

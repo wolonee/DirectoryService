@@ -1,6 +1,7 @@
 using System.Net;
 using DirectoryService.Shared;
 using DirectoryService.Shared.Errors;
+using Microsoft.AspNetCore.Http;
 
 namespace DirectoryService.Presentation.EndpointResults;
 
