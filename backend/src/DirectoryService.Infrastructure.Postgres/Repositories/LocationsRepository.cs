@@ -1,0 +1,261 @@
+using System.Linq.Expressions;
+using CSharpFunctionalExtensions;
+using DirectoryService.Application.Database;
+using DirectoryService.Application.Locations;
+using DirectoryService.Contracts.Locations;
+using DirectoryService.Contracts.Locations.Requests;
+using DirectoryService.Domain.Locations;
+using DirectoryService.Infrastructure.Database;
+using DirectoryService.Shared;
+using DirectoryService.Shared.EntitiesErrors;
+using DirectoryService.Shared.Errors;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Npgsql;
+
+namespace DirectoryService.Infrastructure.Repositories;
+
+public class LocationsRepository : ILocationsRepository
+{
+    private readonly DirectoryServiceDbContext _dbContext;
+    private readonly ILogger<LocationsRepository> _logger;
+
+    public LocationsRepository(DirectoryServiceDbContext dbContext, ILogger<LocationsRepository> logger)
+    {
+        _dbContext = dbContext;
+        _logger = logger;
+    }
+    
+    public async Task<Result<List<Location>, Error>> GetAsync(
+        Expression<Func<Location, bool>>? predicate = null,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var query = _dbContext.Locations.AsQueryable();
+        
+            if (predicate is not null)
+            {
+                query = query.Where(predicate);
+            }
+        
+            var locations = await query.ToListAsync(cancellationToken);
+            return locations;
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation was cancelled while getting locations");
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while getting locations");
+            return GeneralErrors.DatabaseError();
+        }
+    }
+    
+    public async Task<Result<Location, Error>> GetFirstAsync(
+        Expression<Func<Location, bool>>? predicate = null,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var query = _dbContext.Locations.AsQueryable();
+        
+            if (predicate is not null)
+            {
+                query = query.Where(predicate);
+            }
+        
+            var location = await query.FirstOrDefaultAsync(cancellationToken);
+        
+            if (location is null)
+            {
+                return GeneralErrors.NotFound();
+            }
+        
+            return location;
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation was cancelled while getting locations");
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while getting locations");
+            return GeneralErrors.DatabaseError();
+        }
+    }
+    
+    public async Task<Result<Guid, Error>> AddAsync(Location location, CancellationToken cancellationToken = default)
+    {
+        _dbContext.Locations.Add(location);
+        try
+        {
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
+            return location.Id;
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx)
+        {
+            if (pgEx is { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: not null } &&
+                pgEx.ConstraintName.Contains("name", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return LocationErrors.NameConflict(location.Name.Value);
+            }
+
+            _logger.LogError(ex, "Database update error while creating location with name {Name}", location.Name.Value);
+            return GeneralErrors.DatabaseError();
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation was cancelled while creating location with name {Name}", location.Name.Value);
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while creating location with name {Name}", location.Name.Value);
+            return GeneralErrors.DatabaseError();
+        }
+    }
+
+    public async Task<Result<bool, Error>> NameExistsAsync(string name, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await _dbContext.Locations.AnyAsync(x => x.Name.Value == name);
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation was cancelled while checking NameExists with name {Name}", name);
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while creating NameExists with name {Name}", name);
+            return GeneralErrors.DatabaseError();
+        }
+    }
+
+    public async Task<Result<bool, Error>> AddressExistsAsync(CreateLocationAddressRequest address, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await _dbContext.Locations.AnyAsync(
+                x => x.Address.Country == address.Country && 
+                     x.Address.Street == address.Street && 
+                     x.Address.City == address.City, 
+                cancellationToken);
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation was cancelled while checking AddressExists with address {Address}", address.ToString());
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while creating AddressExists with address {Address}", address.ToString());
+            return GeneralErrors.DatabaseError();
+        }
+    }
+
+    public async Task<Result<bool, Error>> LocationsExistsAsync(Guid[] locationIds, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var existingLocationIds = await _dbContext.Locations
+                .Where(x => locationIds.Contains(x.Id))
+                .Select(x => x.Id)
+                .ToListAsync(cancellationToken);
+
+            if (existingLocationIds.Count != locationIds.Length)
+            {
+                return false;
+            }
+        
+            return true;
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation cancelled while checking locations existence");
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while checking locations existence");
+            return GeneralErrors.DatabaseError();
+        }
+    }
+
+    public async Task<Result<Location, Error>> GetByIdAsync(
+        Guid locationId,
+        CancellationToken cancellationToken = default)
+    {
+        return await GetFirstAsync(x => x.Id == locationId, cancellationToken);
+    }
+
+    public async Task<UnitResult<Error>> DeleteDepartmentLocationsByLocationId(
+        Guid locationId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _dbContext.DepartmentLocations
+                .Where(x => x.LocationId == locationId)
+                .ExecuteDeleteAsync(cancellationToken);
+
+            return UnitResult.Success<Error>();
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation cancelled while deleting department locations for location {LocationId}", locationId);
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while deleting department locations for location {LocationId}", locationId);
+            return GeneralErrors.DatabaseError();
+        }
+    }
+
+    public async Task<Result<IReadOnlyList<Guid>, Error>> GetActiveLocationsIdsAsync(
+        Guid[] locationIds,
+        CancellationToken cancellationToken = default)
+    {
+        var activeLocationsIds = await _dbContext.Locations
+            .Where(x => locationIds.Contains(x.Id) && x.IsActive)
+            .Select(x => x.Id)
+            .ToListAsync(cancellationToken);
+
+        return activeLocationsIds;
+    }
+    
+    public async Task<UnitResult<Error>> DeleteLocationInCleanupDelete(
+        Guid locationId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _dbContext.DepartmentLocations
+                .Where(x => x.LocationId == locationId)
+                .ExecuteDeleteAsync(cancellationToken);
+
+            await _dbContext.Locations
+                .Where(l => l.Id == locationId)
+                .ExecuteDeleteAsync(cancellationToken);
+
+            return UnitResult.Success<Error>();
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation cancelled while deleting department locations for location {LocationId}", locationId);
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while deleting department locations for location {LocationId}", locationId);
+            return GeneralErrors.DatabaseError();
+        }
+    }
+}

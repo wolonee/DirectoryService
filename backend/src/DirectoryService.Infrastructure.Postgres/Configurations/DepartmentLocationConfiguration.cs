@@ -1,0 +1,54 @@
+﻿using DirectoryService.Domain;
+using DirectoryService.Domain.Departments;
+using DirectoryService.Domain.Locations;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace DirectoryService.Infrastructure.Configurations;
+
+public class DepartmentLocationConfiguration : IEntityTypeConfiguration<DepartmentLocation>
+{
+    public void Configure(EntityTypeBuilder<DepartmentLocation> builder)
+    {
+        builder.ToTable("department_locations");
+        
+        builder.HasKey(dl => dl.Id);
+        builder.Property(dl => dl.Id)
+            .IsRequired()
+            .HasColumnName("id");
+        
+        builder.Property(dl => dl.LocationId)
+            .HasColumnName("location_id")
+            .IsRequired();
+        
+        builder.Property(dl => dl.DepartmentId)
+            .HasColumnName("department_id")
+            .IsRequired();
+        
+        builder
+            .HasOne(d => d.Department)
+            .WithMany(dl => dl.DepartmentLocations)
+            .HasForeignKey(dl => dl.DepartmentId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder
+            .HasOne<Location>()
+            .WithMany()
+            .HasForeignKey(dl => dl.LocationId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+        
+        // indexes
+        
+        builder.HasIndex(dl => new { dl.DepartmentId, dl.LocationId })
+            .IsUnique()
+            .HasDatabaseName("ux_department_locations");
+        
+        builder.HasIndex(dl => dl.DepartmentId)
+            .HasDatabaseName("ix_department_locations_department_id");
+
+        builder.HasIndex(dl => dl.LocationId)
+            .HasDatabaseName("ix_department_locations_location_id");
+    }
+}

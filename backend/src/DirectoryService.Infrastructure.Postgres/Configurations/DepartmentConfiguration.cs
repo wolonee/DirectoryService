@@ -1,0 +1,118 @@
+﻿using DirectoryService.Domain;
+using DirectoryService.Domain.Departments;
+using DirectoryService.Domain.Departments.ValueObjects;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace DirectoryService.Infrastructure.Configurations;
+
+public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
+{
+    public void Configure(EntityTypeBuilder<Department> builder)
+    {
+        builder.ToTable("department");
+
+        builder.HasKey(d => d.Id);
+        builder.Property(d => d.Id)
+            .HasColumnName("id");
+
+        builder.Property(d => d.DepartmentName)
+            .IsRequired()
+            .HasColumnName("name")
+            .HasMaxLength(LengthConstants.LENGTH150)
+            .HasConversion(v => v.Value, n => DepartmentName.Create(n).Value);
+        
+        builder.OwnsOne(d => d.DepartmentIdentifier, identifier =>
+        {
+            identifier.Property(i => i.Value)
+                .IsRequired()
+                .HasColumnName("identifier")
+                .HasMaxLength(LengthConstants.LENGTH150);
+            
+            identifier.HasIndex(d => d.Value)
+                .IsUnique()
+                .HasDatabaseName("ux_departments_identifier");
+        });
+        
+        builder.OwnsOne(d => d.DepartmentPath, path =>
+        {
+            path.Property(d => d.Value)
+                .IsRequired()
+                .HasColumnName("path")
+                .HasColumnType("ltree")
+                .HasMaxLength(LengthConstants.LENGTH150);
+            
+            path.HasIndex(d => d.Value)
+                .HasMethod("gist")
+                .HasDatabaseName("ix_departments_path");
+        });
+        
+        builder.Property(d => d.Depth)
+            .IsRequired()
+            .HasColumnName("depth")
+            .HasDefaultValue(0);
+        
+        builder.Property(d => d.IsActive)
+            .HasColumnName("is_active")
+            .IsRequired();
+
+        builder.Property(d => d.ParentId)
+            .HasColumnName("parent_id");
+        
+        builder.Property(d => d.ChildrenCount)
+            .HasColumnName("children_count")
+            .IsRequired();
+
+        builder.Property(d => d.CreatedAt)
+            .HasColumnName("created_at")
+            .IsRequired();
+        
+        builder.Property(d => d.UpdatedAt)
+            .HasColumnName("updated_at")
+            .IsRequired();
+
+        builder.Property(d => d.IsDeleted)
+            .HasColumnName("is_deleted");
+
+        builder.Property(d => d.DeletedAt)
+            .HasColumnName("deleted_at");
+        
+        builder
+            .HasMany(d => d.DepartmentPositions)
+            .WithOne(dp => dp.Department)
+            .HasForeignKey(p => p.DepartmentId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+        
+        builder
+            .HasMany(d => d.ChildrenDepartments)
+            .WithOne()
+            .HasForeignKey(x => x.ParentId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.Restrict);
+        
+        // indexes
+
+        builder.HasIndex(d => d.DepartmentName)
+            .HasDatabaseName("ix_departments_name");
+
+        builder.HasIndex(d => d.DepartmentName)
+            .HasDatabaseName("ix_departments_name_trgm")
+            .HasMethod("GIN")
+            .HasOperators("gin_trgm_ops");
+
+        builder.HasIndex(d => new { d.ParentId, d.IsDeleted })
+            .HasDatabaseName("ix_parent_id");
+        
+        // builder.HasIndex(d => d.DepartmentIdentifier)
+        //     .IsUnique()
+        //     .HasDatabaseName("ux_departments_identifier");
+
+        // builder.HasIndex(d => new { d.Id, d.IsActive });
+        // builder.HasIndex(d => d.CreatedAt)
+        //     .HasDatabaseName("ix_created_at");
+        //
+        // builder.HasIndex(d => d.UpdatedAt)
+        //     .HasDatabaseName("ix_updated_at");
+    }
+}

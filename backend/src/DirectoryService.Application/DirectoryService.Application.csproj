@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+      <ProjectReference Include="..\DirectoryService.Contracts\DirectoryService.Contracts.csproj" />
+      <ProjectReference Include="..\DirectoryService.Domain\DirectoryService.Domain.csproj" />
+      <ProjectReference Include="..\DirectoryService.Shared.Kernel\DirectoryService.Shared.Kernel.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Dapper.Extensions.PostgreSQL" Version="5.4.2" />
+      <PackageReference Include="directoryservice.core" Version="0.0.1" />
+      <PackageReference Include="FluentValidation" Version="12.1.1" />
+      <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.1" />
+      <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.1" />
+      <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.1" />
+      <PackageReference Include="Scrutor" Version="7.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Departments\Commands\" />
+      <Folder Include="Locations\Commands\" />
+      <Folder Include="Positions\Commands\" />
+      <Folder Include="Positions\Queries\" />
+    </ItemGroup>
+
+</Project>

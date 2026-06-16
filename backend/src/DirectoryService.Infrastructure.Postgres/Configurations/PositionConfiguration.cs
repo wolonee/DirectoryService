@@ -1,0 +1,80 @@
+﻿using System.Text.Json;
+using DirectoryService.Domain;
+using DirectoryService.Domain.Departments;
+using DirectoryService.Domain.Positions;
+using DirectoryService.Domain.Positions.ValueObjects;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace DirectoryService.Infrastructure.Configurations;
+
+public class PositionConfiguration : IEntityTypeConfiguration<Position>
+{
+    public void Configure(EntityTypeBuilder<Position> builder)
+    {
+        builder.ToTable("position");
+        
+        builder.HasKey(p => p.Id);
+        builder.Property(p => p.Id)
+            .HasColumnName("id");
+
+        // builder.Property(p => p.Name)
+        //     .HasConversion(
+        //         v => JsonSerializer.Serialize(v, JsonSerializerOptions.Default),
+        //         json => JsonSerializer.Deserialize<PositionName>(json, JsonSerializerOptions.Default)!)
+        //     .HasColumnType("jsonb");
+
+        builder.OwnsOne(p => p.Name, name =>
+        {
+            name.ToJson("name");
+
+            name.Property(s => s.Speciality)
+                .HasMaxLength(LengthConstants.LENGTH200)
+                .HasColumnName("speciality")
+                .IsRequired();
+
+            name.Property(d => d.Direction)
+                .HasMaxLength(LengthConstants.LENGTH200)
+                .HasColumnName("direction")
+                .IsRequired();
+            
+            name.HasIndex(p => p.Speciality)
+                .HasDatabaseName("ix_position_name_speciality");
+        
+            name.HasIndex(p => p.Direction)
+                .HasDatabaseName("ix_position_name_direction");
+        
+            name.HasIndex(p => new { p.Speciality, p.Direction })
+                .HasDatabaseName("ix_position_name_full");
+        });
+
+        builder.OwnsOne(d => d.Description, ob =>
+        {
+            ob.Property(d => d.Value)
+                .HasColumnName("description")
+                .HasMaxLength(LengthConstants.LENGTH1000)
+                .IsRequired(false);
+        });
+        
+        builder.Property(a => a.IsActive)
+            .HasColumnName("is_active")
+            .IsRequired();
+        
+        builder.Property(l => l.CreatedAt)
+            .HasColumnName("created_at");
+        
+        builder.Property(l => l.UpdatedAt)
+            .HasColumnName("updated_at");
+
+        builder.Property(l => l.IsDeleted)
+            .HasColumnName("is_deleted");
+
+        builder.Property(l => l.DeletedAt)
+            .HasColumnName("deleted_at");
+        
+        // indexes
+        
+        // builder.HasIndex("is_active", "((name ->> 'speciality'))")
+        //     .HasDatabaseName("ix_position_active_speciality");
+    }
+}
