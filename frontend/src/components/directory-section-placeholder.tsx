@@ -1,7 +1,7 @@
 import { ArrowLeft, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 
-import { routes } from "@/config/routes";
+import { routes } from "@/shared/routes";
 
 type DirectorySectionPlaceholderProps = {
   title: string;
