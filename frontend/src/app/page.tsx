@@ -3,7 +3,6 @@ import {
   BriefcaseBusiness,
   Building2,
   MapPin,
-  Network,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -15,7 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { routes } from "@/config/routes";
+import { routes } from "@/shared/routes";
 
 export const metadata: Metadata = {
   title: {
@@ -52,20 +51,6 @@ const directorySections = [
 export default function Home() {
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-border/70">
-        <div className="mx-auto flex w-full max-w-6xl items-center gap-3 px-6 py-5">
-          <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Network className="size-5" />
-          </div>
-          <div>
-            <p className="font-semibold">Directory Service</p>
-            <p className="text-sm text-muted-foreground">
-              Организационная структура
-            </p>
-          </div>
-        </div>
-      </header>
-
       <section className="mx-auto w-full max-w-6xl px-6 py-12 sm:py-16">
         <div className="max-w-2xl">
           <p className="text-sm font-medium text-muted-foreground">
