@@ -118,7 +118,7 @@ export default function Todo() {
                   </span>
                   <Checkbox
                     checked={todo.completed}
-                    onClick={() => handleToggleTodo(todo.id)}
+                    onCheckedChange={() => handleToggleTodo(todo.id)}
                     aria-label={`Mark task ${todo.id} as completed`}
                   />
                   <Button
