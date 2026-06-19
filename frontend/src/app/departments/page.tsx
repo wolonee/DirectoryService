@@ -1,7 +1,7 @@
 import { Building2 } from "lucide-react";
 import type { Metadata } from "next";
 
-import { DirectorySectionPlaceholder } from "@/components/directory-section-placeholder";
+import { DirectorySectionPlaceholder } from "@/shared/directory-section-placeholder";
 
 export const metadata: Metadata = {
   title: "Departments",

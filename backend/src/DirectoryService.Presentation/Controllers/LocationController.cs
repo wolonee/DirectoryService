@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace DirectoryService.Presentation.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/locations")]
 public class LocationController : ControllerBase
 {
     private readonly ILogger<Location> _logger;

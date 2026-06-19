@@ -52,6 +52,13 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 var app = builder.Build();
 
 app.UseExceptionMiddleware();
+app.UseCors(builder =>
+{
+    builder.WithOrigins("http://localhost:3000")
+        .AllowCredentials()
+        .AllowAnyMethod()
+        .AllowAnyHeader();
+});
 
 if (app.Environment.IsDevelopment())
 {

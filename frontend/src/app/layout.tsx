@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Header from "@/components/header/header";
-import AppSidebar from "@/components/sidebar/app-sidebar";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import Header from "@/features/header/header";
+import AppSidebar from "@/features/sidebar/app-sidebar";
+import { SidebarInset, SidebarProvider } from "@/shared/components/ui/sidebar";
+import { TooltipProvider } from "@/shared/components/ui/tooltip";
 
 export const metadata: Metadata = {
   title: {
