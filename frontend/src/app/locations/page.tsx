@@ -3,12 +3,9 @@
 import {
   Building2,
   Clock3,
-  Filter,
   MapPin,
   MoreHorizontal,
   Plus,
-  RefreshCw,
-  Search,
 } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
@@ -20,36 +17,55 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { Input } from "@/shared/components/ui/input";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { locationsApi } from "@/entities/locations/api";
-import type { GetLocationDto } from "@/entities/locations/types";
 import { Spinner } from "@/shared/components/ui/spinner";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/shared/components/ui/pagination";
+import { getVisiblePages } from "@/shared/lib/get-visible-pages";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getLocationsQueryOptions } from "./queries";
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 2;
+
 
 export default function LocationsPage() {
-  const [locations, setLocations] = useState<GetLocationDto[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
+  const queryClient = useQueryClient();
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
+  const [page, setPage] = useState(1);
 
+  const { data, isLoading, error } = useQuery(
+    getLocationsQueryOptions(page, PAGE_SIZE)
+  );
 
+  const { 
+    mutate: createData, 
+    isPending,
+    error: createError 
+  } = useMutation({
+    mutationFn: () => 
+      locationsApi.createLocation({
+         address: {
+           city: "Москва 5", 
+           country: "Россия", 
+           street: "ул. Ленина, 1" }, 
+        name: "Офис в Москве 7", 
+        timezone: "Europe/Moscow" 
+        }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["locations"] }),
+ });
 
-  useEffect(() => {
-    locationsApi
-      .getLocations({ page: 1, pageSize: PAGE_SIZE })
-      .then((data) => {
-        setLocations(data.locations);
-        setTotalCount(data.totalCount);
-      })
-      .catch((error) => {
-        setError(error.message || "Не удалось загрузить локации");
-      })
-      .finally(() => setIsLoading(false));
-  }, [retryCount]);
+  const locations = data?.items ?? [];
+  const totalCount = data?.totalCount ?? 0;
+  const totalPages = data?.totalPages ?? 0;
+
 
   if (isLoading) {
     return (
@@ -60,25 +76,7 @@ export default function LocationsPage() {
   }
 
   if (error) {
-    return (
-      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
-        <div className="flex flex-col items-center gap-3 text-center">
-          <p className="text-sm text-destructive">{error}</p>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              setError(null);
-              setIsLoading(true);
-              setRetryCount(retryCount + 1);
-            }}
-          >
-            <RefreshCw />
-            Повторить
-          </Button>
-        </div>
-      </div>
-    );
+    return <div>Error: {error.message}</div>
   }
 
   if (locations.length === 0) {
@@ -125,10 +123,17 @@ export default function LocationsPage() {
             </p>
           </div>
 
-          <Button size="lg" type="button" className="w-full sm:w-auto">
+          <Button
+            onClick={() => createData()}
+            disabled={isPending}
+            size="lg"
+            type="button"
+            className="w-full sm:w-auto"
+          >
             <Plus data-icon="inline-start" />
             Добавить локацию
           </Button>
+          {createError &&  <div>Error: {createError.message}</div>}
         </section>
 
         <section
@@ -180,21 +185,6 @@ export default function LocationsPage() {
               </p>
             </div>
 
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <div className="relative sm:w-72">
-                <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Поиск по названию или городу"
-                  aria-label="Поиск локаций"
-                  className="h-9 pl-9"
-                />
-              </div>
-              <Button variant="outline" size="lg" type="button">
-                <Filter data-icon="inline-start" />
-                Фильтры
-              </Button>
-            </div>
           </div>
 
           <div className="mt-5 grid gap-4 xl:grid-cols-2">
@@ -273,6 +263,65 @@ export default function LocationsPage() {
               </Card>
             ))}
           </div>
+
+          {totalPages > 1 && (
+            <Pagination className="mt-8">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href={`?page=${page - 1}`}
+                    text="Назад"
+                    aria-disabled={page === 1}
+                    className={
+                      page === 1 ? "pointer-events-none opacity-50" : undefined
+                    }
+                    onClick={(event) => {
+                      event.preventDefault();
+                      setPage((currentPage) => Math.max(1, currentPage - 1));
+                    }}
+                  />
+                </PaginationItem>
+
+                {getVisiblePages(page, totalPages).map((item) => (
+                  <PaginationItem key={item}>
+                    {typeof item === "number" ? (
+                      <PaginationLink
+                        href={`?page=${item}`}
+                        isActive={item === page}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          setPage(item);
+                        }}
+                      >
+                        {item}
+                      </PaginationLink>
+                    ) : (
+                      <PaginationEllipsis />
+                    )}
+                  </PaginationItem>
+                ))}
+
+                <PaginationItem>
+                  <PaginationNext
+                    href={`?page=${page + 1}`}
+                    text="Вперёд"
+                    aria-disabled={page === totalPages}
+                    className={
+                      page === totalPages
+                        ? "pointer-events-none opacity-50"
+                        : undefined
+                    }
+                    onClick={(event) => {
+                      event.preventDefault();
+                      setPage((currentPage) =>
+                        Math.min(totalPages, currentPage + 1)
+                      );
+                    }}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          )}
         </section>
       </div>
     </main>

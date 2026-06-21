@@ -196,6 +196,14 @@ public class GetLocationsHandler : IQueryHandler<GetLocationsResponse, GetLocati
             },
             param: parameters);
         
-        return new GetLocationsResponse(locations.ToList(), totalCount ?? 0);
+        var count = totalCount ?? 0;
+        var totalPages = (int)Math.Ceiling((double)count / pageSize);
+
+        return new GetLocationsResponse(
+            locations.ToList(),
+            count,
+            pagination.Page,
+            pageSize,
+            totalPages);
     }
 }
