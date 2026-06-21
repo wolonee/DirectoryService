@@ -42,7 +42,7 @@ export default function DepartmentsPage() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
 
-  const { data, error, isLoading, isFetching } = useQuery(
+  const { data, error, isLoading, isFetching, refetch } = useQuery(
     getDepartmentsQueryOptions(page, PAGE_SIZE)
   );
 
@@ -75,6 +75,12 @@ export default function DepartmentsPage() {
           <CardHeader>
             <CardTitle>Не удалось загрузить подразделения</CardTitle>
             <CardDescription>{error.message}</CardDescription>
+            <Button type="button"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="mt-4">
+              Повторить
+            </Button>
           </CardHeader>
         </Card>
       </div>

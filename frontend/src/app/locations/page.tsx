@@ -41,7 +41,7 @@ export default function LocationsPage() {
 
   const [page, setPage] = useState(1);
 
-  const { data, isLoading, error } = useQuery(
+  const { data, isLoading, error, isFetching, refetch } = useQuery(
     getLocationsQueryOptions(page, PAGE_SIZE)
   );
 
@@ -76,7 +76,22 @@ export default function LocationsPage() {
   }
 
   if (error) {
-    return <div>Error: {error.message}</div>
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-6">
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle>Не удалось загрузить подразделения</CardTitle>
+            <CardDescription>{error.message}</CardDescription>
+            <Button type="button"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="mt-4">
+              Повторить
+            </Button>
+          </CardHeader>
+        </Card>
+      </div>
+    );
   }
 
   if (locations.length === 0) {

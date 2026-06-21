@@ -7,7 +7,6 @@ import type {
   GetDepartmentsRequest,
   GetDepartmentsResponse,
 } from "./types";
-import { request } from "https";
 
 export const departmentsApi = {
   getDepartments: async (
