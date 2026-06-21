@@ -12,10 +12,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace DirectoryService.Presentation.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/positions")]
 public class PositionsController : ControllerBase
 {
-
     [HttpPost]
     public async Task<EndpointResult<Guid>> Create(
         [FromServices] ICommandHandler<Guid, CreatePositionCommand> handler,

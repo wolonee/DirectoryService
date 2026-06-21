@@ -1,4 +1,4 @@
-import Todo from "./todo";
+import Todo from "../../features/todo/todo";
 
 export default function Playground() {
   return (
