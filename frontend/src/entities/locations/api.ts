@@ -1,24 +1,46 @@
 import { apiClient } from "@/shared/api/axios-instance";
 import type {
   CreateLocationRequest,
+  GetLocationDto,
   GetLocationsRequest,
   GetLocationsResponse,
 } from "./types";
-import { Envelope } from "@/shared/api/envelope";
+import type { Envelope } from "@/shared/api/types/envelope";
+import type { PaginationResponse } from "@/shared/api/types/pagination";
 
 export const locationsApi = {
   getLocations: async (
-    request: GetLocationsRequest
-  ): Promise<GetLocationsResponse> => {
-    const response = await apiClient.get<Envelope<GetLocationsResponse>>("/locations", {
-      params: {
-        Search: request.search,
-        "Pagination.Page": request.page,
-        "Pagination.PageSize": request.pageSize,
-      },
-    });
+    request: GetLocationsRequest): Promise<PaginationResponse<GetLocationDto>> => {
+    const response = await apiClient.get<Envelope<GetLocationsResponse>>(
+      "/locations",
+      {
+        params: {
+          Search: request.search,
+          "Pagination.Page": request.pagination?.page,
+          "Pagination.PageSize": request.pagination?.pageSize,
+        },
+      }
+    );
 
-    return response.data.result ?? { locations: [], totalCount: 0 };
+    const result = response.data.result;
+
+    if (!result) {
+      return {
+        items: [],
+        totalCount: 0,
+        page: request.pagination?.page ?? 1,
+        pageSize: request.pagination?.pageSize ?? 20,
+        totalPages: 0,
+      };
+    }
+
+    return {
+      items: result.locations,
+      totalCount: result.totalCount,
+      page: result.page,
+      pageSize: result.pageSize,
+      totalPages: result.totalPages,
+    };
   },
 
   createLocation: async (request: CreateLocationRequest) => {

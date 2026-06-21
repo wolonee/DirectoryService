@@ -105,6 +105,14 @@ public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsResponse, GetDe
                 return dep;
             });
         
-        return new GetDepartmentsResponse(result.ToList(), totalCount ?? 0);
+        var count = totalCount ?? 0;
+        var totalPages = (int)Math.Ceiling((double)count / pageSize);
+
+        return new GetDepartmentsResponse(
+            result.ToList(),
+            count,
+            pagination.Page,
+            pageSize,
+            totalPages);
     }
 }
