@@ -5,7 +5,6 @@ import {
   Clock3,
   MapPin,
   MoreHorizontal,
-  Plus,
 } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
@@ -17,55 +16,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { useState } from "react";
-import { locationsApi } from "@/entities/locations/api";
-import { Spinner } from "@/shared/components/ui/spinner";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/shared/components/ui/pagination";
-import { getVisiblePages } from "@/shared/lib/get-visible-pages";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getLocationsQueryOptions } from "./queries";
 
-const PAGE_SIZE = 2;
+import { useState } from "react";
+import { Spinner } from "@/shared/components/ui/spinner";
+import { useLocationsList } from "../../features/locations/model/use-locations-list";
+import { AddLocationDialog } from "@/features/locations/create-location-dialog";
+import { LocationPagination } from "@/features/locations/location-pagination";
+
 
 
 export default function LocationsPage() {
-  const queryClient = useQueryClient();
-
+  const [open, setOpen] = useState(false);
   const [page, setPage] = useState(1);
 
-  const { data, isLoading, error, isFetching, refetch } = useQuery(
-    getLocationsQueryOptions(page, PAGE_SIZE)
-  );
-
-  const { 
-    mutate: createData, 
-    isPending,
-    error: createError 
-  } = useMutation({
-    mutationFn: () => 
-      locationsApi.createLocation({
-         address: {
-           city: "Москва 5", 
-           country: "Россия", 
-           street: "ул. Ленина, 1" }, 
-        name: "Офис в Москве 7", 
-        timezone: "Europe/Moscow" 
-        }),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ["locations"] }),
- });
-
-  const locations = data?.items ?? [];
-  const totalCount = data?.totalCount ?? 0;
-  const totalPages = data?.totalPages ?? 0;
-
+  const { locations, totalCount, totalPages, isLoading, error, isFetching, refetch } = useLocationsList({ page,  });
 
   if (isLoading) {
     return (
@@ -94,7 +58,7 @@ export default function LocationsPage() {
     );
   }
 
-  if (locations.length === 0) {
+  if (locations?.length === 0) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-6">
         <div className="flex flex-col items-center gap-3 text-center">
@@ -105,10 +69,7 @@ export default function LocationsPage() {
               Добавьте первую локацию, чтобы она появилась в справочнике.
             </p>
           </div>
-          <Button type="button">
-            <Plus />
-            Добавить локацию
-          </Button>
+          <AddLocationDialog open={open} setOpen={setOpen} />
         </div>
       </div>
     );
@@ -116,7 +77,7 @@ export default function LocationsPage() {
 
   const departmentsCount = 0
   const timezonesCount = new Set(
-    locations.map((location) => location.timezone)
+    locations?.map((location) => location.timezone)
   ).size;
 
   return (
@@ -138,17 +99,9 @@ export default function LocationsPage() {
             </p>
           </div>
 
-          <Button
-            onClick={() => createData()}
-            disabled={isPending}
-            size="lg"
-            type="button"
-            className="w-full sm:w-auto"
-          >
-            <Plus data-icon="inline-start" />
-            Добавить локацию
-          </Button>
-          {createError &&  <div>Error: {createError.message}</div>}
+          <div>
+            <AddLocationDialog open={open} setOpen={setOpen} />
+          </div>
         </section>
 
         <section
@@ -168,7 +121,7 @@ export default function LocationsPage() {
               На странице
             </p>
             <p className="mt-2 text-2xl font-semibold tabular-nums">
-              {locations.length}
+              {locations?.length}
             </p>
           </div>
           <div className="bg-card p-4 sm:p-5">
@@ -203,7 +156,7 @@ export default function LocationsPage() {
           </div>
 
           <div className="mt-5 grid gap-4 xl:grid-cols-2">
-            {locations.map((location) => (
+            {locations?.map((location) => (
               <Card
                 key={location.id}
                 className="transition-colors hover:bg-muted/30"
@@ -278,64 +231,13 @@ export default function LocationsPage() {
               </Card>
             ))}
           </div>
-
-          {totalPages > 1 && (
-            <Pagination className="mt-8">
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    href={`?page=${page - 1}`}
-                    text="Назад"
-                    aria-disabled={page === 1}
-                    className={
-                      page === 1 ? "pointer-events-none opacity-50" : undefined
-                    }
-                    onClick={(event) => {
-                      event.preventDefault();
-                      setPage((currentPage) => Math.max(1, currentPage - 1));
-                    }}
-                  />
-                </PaginationItem>
-
-                {getVisiblePages(page, totalPages).map((item) => (
-                  <PaginationItem key={item}>
-                    {typeof item === "number" ? (
-                      <PaginationLink
-                        href={`?page=${item}`}
-                        isActive={item === page}
-                        onClick={(event) => {
-                          event.preventDefault();
-                          setPage(item);
-                        }}
-                      >
-                        {item}
-                      </PaginationLink>
-                    ) : (
-                      <PaginationEllipsis />
-                    )}
-                  </PaginationItem>
-                ))}
-
-                <PaginationItem>
-                  <PaginationNext
-                    href={`?page=${page + 1}`}
-                    text="Вперёд"
-                    aria-disabled={page === totalPages}
-                    className={
-                      page === totalPages
-                        ? "pointer-events-none opacity-50"
-                        : undefined
-                    }
-                    onClick={(event) => {
-                      event.preventDefault();
-                      setPage((currentPage) =>
-                        Math.min(totalPages, currentPage + 1)
-                      );
-                    }}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
+          
+          {totalPages && (
+            <LocationPagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+            />
           )}
         </section>
       </div>
