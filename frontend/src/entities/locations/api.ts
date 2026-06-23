@@ -59,7 +59,7 @@ export const locationQueryOptions = {
   getLocationsOptions: ({ page, pageSize, sortBy, sortDirection }: { page: number; pageSize: number; sortBy: string; sortDirection: string }) => {
     return {
         queryFn: () => locationsApi.getLocations({pagination: {page, pageSize}, sortBy, sortDirection}),
-        queryKey: [locationQueryOptions.baseKey, { page }],
+        queryKey: [locationQueryOptions.baseKey, { page, sortBy, sortDirection }],
     }
   }
 }
