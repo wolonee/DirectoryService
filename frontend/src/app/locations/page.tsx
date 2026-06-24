@@ -29,7 +29,7 @@ export default function LocationsPage() {
   const [open, setOpen] = useState(false);
   const [page, setPage] = useState(1);
 
-  const { locations, totalCount, totalPages, isLoading, error, isFetching, refetch } = useLocationsList({ page,  });
+  const { locations, totalCount, totalPages, isLoading, error, isFetching, refetch } = useLocationsList({ page });
 
   if (isLoading) {
     return (
@@ -69,7 +69,11 @@ export default function LocationsPage() {
               Добавьте первую локацию, чтобы она появилась в справочнике.
             </p>
           </div>
-          <AddLocationDialog open={open} setOpen={setOpen} />
+          <AddLocationDialog
+            open={open}
+            setOpen={setOpen}
+            onCreated={() => setPage(1)}
+          />
         </div>
       </div>
     );
@@ -100,7 +104,11 @@ export default function LocationsPage() {
           </div>
 
           <div>
-            <AddLocationDialog open={open} setOpen={setOpen} />
+            <AddLocationDialog
+              open={open}
+              setOpen={setOpen}
+              onCreated={() => setPage(1)}
+            />
           </div>
         </section>
 

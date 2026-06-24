@@ -9,10 +9,12 @@ import { useCreateLocation } from "./model/use-create-location";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { isEnvelopeError } from "@/shared/api/types/errors";
 
 type Props = {
   open: boolean;
   setOpen: (open: boolean) => void;
+  onCreated: () => void;
 }
 
 const createLocationSchema = z.object({
@@ -44,32 +46,69 @@ const initialData: CreateLocationFormData = {
   timezone: "",
 };
 
-export function AddLocationDialog({ open, setOpen }: Props) {
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<CreateLocationFormData>({
+const fieldMap = {
+  Name: "name",
+  Timezone: "timezone",
+  "Address.Country": "country",
+  "Address.City": "city",
+  "Address.Street": "street",
+} as const;
+
+export function AddLocationDialog({ open, setOpen, onCreated }: Props) {
+  const { register, handleSubmit, formState: { errors }, reset, setError } = useForm<CreateLocationFormData>({
     resolver: zodResolver(createLocationSchema),
     defaultValues: initialData,
   });
 
-  const { createLocation, isPending, error } = useCreateLocation();
+  const { createLocation, isPending, error, commonError, resetError } =
+    useCreateLocation();
 
   const onSubmit = (data: CreateLocationFormData) => {
-    createLocation({
-      address: {
-        city: data.city,
-        country: data.country,
-        street: data.street
+    resetError();
+
+    createLocation(
+      {
+        address: {
+          city: data.city,
+          country: data.country,
+          street: data.street,
+        },
+        name: data.name,
+        timezone: data.timezone,
       },
-      name: data.name,
-      timezone: data.timezone
-    },
-    {onSuccess: () => {
-      setOpen(false);
-      reset(initialData);
-    }});
+      {
+        onSuccess: () => {
+          onCreated();
+          setOpen(false);
+          reset(initialData);
+        },
+        onError: (error) => {
+          if (!(isEnvelopeError(error))) {
+            return;
+          }
+
+          error.fieldErrors.forEach((fieldError) => {
+            const fieldName = fieldMap[fieldError.invalidField as keyof typeof fieldMap];
+            
+            setError(fieldName, {
+              message: fieldError.message,
+            });
+          });
+        },
+      }
+    );
   }
+
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+
+    if (!isOpen) {
+      resetError();
+    }
+  };
   
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button size="lg" type="button" className="w-full sm:w-auto">
           <Plus data-icon="inline-start" />
@@ -150,6 +189,18 @@ export function AddLocationDialog({ open, setOpen }: Props) {
             </div>
           </div>
 
+          {error && (
+            <p className="text-sm text-destructive">
+              {error.message}
+            </p>
+          )}
+
+          {commonError && (
+            <p className="text-sm text-destructive">
+              Не удалось создать локацию. Попробуйте позже.
+            </p>
+          )}
+
           <DialogFooter>
             <DialogClose asChild>
               <Button type="button" variant="outline">
@@ -159,11 +210,6 @@ export function AddLocationDialog({ open, setOpen }: Props) {
             <Button type="submit" disabled={isPending}>
               {isPending ? "Добавляем..." : "Добавить"}
             </Button>
-            {error && (
-              <p className="mt-2 text-sm text-destructive">
-                {error.message}
-              </p>
-            )}
           </DialogFooter>
         </form>
       </DialogContent>

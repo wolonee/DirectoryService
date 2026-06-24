@@ -45,11 +45,11 @@ export const locationsApi = {
     };
   },
 
-  createLocation: async (request: CreateLocationRequest) => {
-    const response = await apiClient.post("/locations", request);
+createLocation: async (request: CreateLocationRequest) => {
+  const response = await apiClient.post<Envelope<string>>("/locations", request);
 
-    return response.data;
-  },
+  return response.data;
+}
 };
 
 

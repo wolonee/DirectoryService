@@ -21,11 +21,11 @@ public static class LocationErrors
     
     // DataBase Errors
     public static Error NameConflict(string name) =>
-        Error.Conflict("location.name.conflict", $"Location with name: {name} already exists.");
+        Error.Conflict("location.name.conflict", $"Location with name {name} already exists.");
     
     public static Error NameAlreadyExists(string name) =>
-        Error.Conflict("location.name.already.exists", $"Name: {name} already exists.");
+        Error.Conflict("location.name.already.exists", $"Name {name} already exists.");
     
     public static Error AddressAlreadyExists(string address) =>
-        Error.Conflict("location.address.already.exists", $"Address: {address} already exists.");
+        Error.Conflict("location.address.already.exists", $"Address {address} already exists.");
 }

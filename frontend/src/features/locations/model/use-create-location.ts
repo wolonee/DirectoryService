@@ -1,4 +1,5 @@
 import { locationQueryOptions, locationsApi } from "@/entities/locations/api";
+import { EnvelopeError } from "@/shared/api/types/errors";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -10,6 +11,11 @@ export function useCreateLocation(){
     onSettled: () => queryClient.invalidateQueries({ queryKey: [locationQueryOptions.baseKey], 
     }),
     onError: (error) => {
+        if (error instanceof EnvelopeError){
+          toast.error(error.message);
+          return;
+        }
+
         toast.error("Ошибка при создании локации: " + error.message);
     },
     onSuccess: () => {
@@ -17,9 +23,14 @@ export function useCreateLocation(){
     }
   })
 
+  const envelopeError =
+    mutation.error instanceof EnvelopeError ? mutation.error : undefined;
+
   return {
     createLocation: mutation.mutate,
     isPending: mutation.isPending,
-    error: mutation.error,
+    error: envelopeError,
+    commonError: mutation.error && !envelopeError ? mutation.error : undefined,
+    resetError: mutation.reset,
   }
 }
