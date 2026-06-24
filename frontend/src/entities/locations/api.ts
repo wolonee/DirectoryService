@@ -16,6 +16,8 @@ export const locationsApi = {
       {
         params: {
           Search: request.search,
+          SortBy: request.sortBy,
+          SortDirection: request.sortDirection,
           "Pagination.Page": request.pagination?.page,
           "Pagination.PageSize": request.pagination?.pageSize,
         },
@@ -49,3 +51,15 @@ export const locationsApi = {
     return response.data;
   },
 };
+
+
+export const locationQueryOptions = {
+  baseKey: "locations",
+
+  getLocationsOptions: ({ page, pageSize, sortBy, sortDirection }: { page: number; pageSize: number; sortBy: string; sortDirection: string }) => {
+    return {
+        queryFn: () => locationsApi.getLocations({pagination: {page, pageSize}, sortBy, sortDirection}),
+        queryKey: [locationQueryOptions.baseKey, { page, sortBy, sortDirection }],
+    }
+  }
+}
