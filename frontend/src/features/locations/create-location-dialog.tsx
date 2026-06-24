@@ -13,6 +13,7 @@ import { useForm } from "react-hook-form";
 type Props = {
   open: boolean;
   setOpen: (open: boolean) => void;
+  onCreated: () => void;
 }
 
 const createLocationSchema = z.object({
@@ -44,15 +45,18 @@ const initialData: CreateLocationFormData = {
   timezone: "",
 };
 
-export function AddLocationDialog({ open, setOpen }: Props) {
+export function AddLocationDialog({ open, setOpen, onCreated }: Props) {
   const { register, handleSubmit, formState: { errors }, reset } = useForm<CreateLocationFormData>({
     resolver: zodResolver(createLocationSchema),
     defaultValues: initialData,
   });
 
-  const { createLocation, isPending, error } = useCreateLocation();
+  const { createLocation, isPending, error, commonError, resetError } =
+    useCreateLocation();
 
   const onSubmit = (data: CreateLocationFormData) => {
+    resetError();
+
     createLocation({
       address: {
         city: data.city,
@@ -63,13 +67,22 @@ export function AddLocationDialog({ open, setOpen }: Props) {
       timezone: data.timezone
     },
     {onSuccess: () => {
+      onCreated();
       setOpen(false);
       reset(initialData);
     }});
   }
+
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+
+    if (!isOpen) {
+      resetError();
+    }
+  };
   
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button size="lg" type="button" className="w-full sm:w-auto">
           <Plus data-icon="inline-start" />
@@ -150,6 +163,18 @@ export function AddLocationDialog({ open, setOpen }: Props) {
             </div>
           </div>
 
+          {error && (
+            <p className="text-sm text-destructive">
+              {error.message}
+            </p>
+          )}
+
+          {commonError && (
+            <p className="text-sm text-destructive">
+              Не удалось создать локацию. Попробуйте позже.
+            </p>
+          )}
+
           <DialogFooter>
             <DialogClose asChild>
               <Button type="button" variant="outline">
@@ -159,11 +184,6 @@ export function AddLocationDialog({ open, setOpen }: Props) {
             <Button type="submit" disabled={isPending}>
               {isPending ? "Добавляем..." : "Добавить"}
             </Button>
-            {error && (
-              <p className="mt-2 text-sm text-destructive">
-                {error.message}
-              </p>
-            )}
           </DialogFooter>
         </form>
       </DialogContent>

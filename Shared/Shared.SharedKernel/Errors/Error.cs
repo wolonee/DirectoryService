@@ -10,10 +10,10 @@ public record Error
     public string? InvalidField { get; }
 
     [JsonConstructor]
-    private Error(string message, string code, ErrorType type, string? invalidField = null)
+    private Error(string code, string message, ErrorType type, string? invalidField = null)
     {
-        Message = message;
         Code = code;
+        Message = message;
         Type = type;
         InvalidField = invalidField;
     }

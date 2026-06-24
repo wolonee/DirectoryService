@@ -2,8 +2,8 @@ import { locationQueryOptions } from "@/entities/locations/api";
 import { useQuery } from "@tanstack/react-query";
 
 const PAGE_SIZE = 2;
-const SORT_BY = "createdAt";
-const SORT_DIRECTION = "asc";
+const SORT_BY = "created_at";
+const SORT_DIRECTION = "desc";
 
 export function useLocationsList({ page }: { page: number; }) {
     const { data, isLoading, error, isFetching, refetch } = useQuery(
