@@ -9,6 +9,7 @@ import { useCreateLocation } from "./model/use-create-location";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { isEnvelopeError } from "@/shared/api/types/errors";
 
 type Props = {
   open: boolean;
@@ -45,8 +46,16 @@ const initialData: CreateLocationFormData = {
   timezone: "",
 };
 
+const fieldMap = {
+  Name: "name",
+  Timezone: "timezone",
+  "Address.Country": "country",
+  "Address.City": "city",
+  "Address.Street": "street",
+} as const;
+
 export function AddLocationDialog({ open, setOpen, onCreated }: Props) {
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<CreateLocationFormData>({
+  const { register, handleSubmit, formState: { errors }, reset, setError } = useForm<CreateLocationFormData>({
     resolver: zodResolver(createLocationSchema),
     defaultValues: initialData,
   });
@@ -57,20 +66,37 @@ export function AddLocationDialog({ open, setOpen, onCreated }: Props) {
   const onSubmit = (data: CreateLocationFormData) => {
     resetError();
 
-    createLocation({
-      address: {
-        city: data.city,
-        country: data.country,
-        street: data.street
+    createLocation(
+      {
+        address: {
+          city: data.city,
+          country: data.country,
+          street: data.street,
+        },
+        name: data.name,
+        timezone: data.timezone,
       },
-      name: data.name,
-      timezone: data.timezone
-    },
-    {onSuccess: () => {
-      onCreated();
-      setOpen(false);
-      reset(initialData);
-    }});
+      {
+        onSuccess: () => {
+          onCreated();
+          setOpen(false);
+          reset(initialData);
+        },
+        onError: (error) => {
+          if (!(isEnvelopeError(error))) {
+            return;
+          }
+
+          error.fieldErrors.forEach((fieldError) => {
+            const fieldName = fieldMap[fieldError.invalidField as keyof typeof fieldMap];
+            
+            setError(fieldName, {
+              message: fieldError.message,
+            });
+          });
+        },
+      }
+    );
   }
 
   const handleOpenChange = (isOpen: boolean) => {
