@@ -3,8 +3,10 @@ using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Positions.Commands.CreatePosition;
 using DirectoryService.Application.Positions.Commands.DeletePosition;
 using DirectoryService.Application.Positions.Commands.RenamePosition;
+using DirectoryService.Application.Positions.Queries.Get;
 using DirectoryService.Contracts.Positions;
 using DirectoryService.Contracts.Positions.Requests;
+using DirectoryService.Contracts.Positions.Responses;
 using DirectoryService.Presentation.EndpointResults;
 using DirectoryService.Shared;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +17,17 @@ namespace DirectoryService.Presentation.Controllers;
 [Route("api/positions")]
 public class PositionsController : ControllerBase
 {
+    [HttpGet]
+    public async Task<EndpointResult<GetPositionsResponse>> GetPositions(
+        [FromQuery] GetPositionsRequest request,
+        [FromServices] IQueryHandler<GetPositionsResponse, GetPositionsQuery> handler,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetPositionsQuery(request);
+
+        return await handler.Handle(query, cancellationToken);
+    }
+
     [HttpPost]
     public async Task<EndpointResult<Guid>> Create(
         [FromServices] ICommandHandler<Guid, CreatePositionCommand> handler,

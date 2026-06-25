@@ -1,7 +1,6 @@
 import { locationQueryOptions } from "@/entities/locations/api";
 import { useIntersectionRef } from "@/shared/hooks/use-intersection-ref";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { RefCallback, useCallback } from "react";
 
 const PAGE_SIZE = 10;
 const SORT_BY = "created_at";
