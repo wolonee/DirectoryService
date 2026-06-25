@@ -25,7 +25,7 @@ export type RenamePositionRequest = {
 export type GetPositionsRequest = {
   search?: string;
   sortBy?: string;
-  sortDir?: string;
+  sortDirection?: string;
   pagination?: PaginationRequest;
 };
 
