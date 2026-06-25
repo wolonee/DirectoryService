@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/shared/components/ui/button";
-import useCounter from "@/shared/hooks/use-counter";
+import useCounter from "@/features/counter/model/use-counter";
 
 
 

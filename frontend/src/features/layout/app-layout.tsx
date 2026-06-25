@@ -3,8 +3,8 @@
 import { SidebarInset, SidebarProvider } from "@/shared/components/ui/sidebar";
 import { TooltipProvider } from "@/shared/components/ui/tooltip";
 import { QueryClientProvider } from "@tanstack/react-query";
-import AppSidebar from "../sidebar/app-sidebar";
-import Header from "../header/header";
+import AppSidebar from "./app-sidebar";
+import Header from "./header";
 import { queryClient } from "@/shared/api/query-client";
 import { Toaster } from "@/shared/components/ui/sonner";
 

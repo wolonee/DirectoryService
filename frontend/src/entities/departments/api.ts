@@ -7,6 +7,7 @@ import type {
   GetDepartmentsRequest,
   GetDepartmentsResponse,
 } from "./types";
+import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
 export const departmentsApi = {
   getDepartments: async (
@@ -52,5 +53,31 @@ export const departmentsApi = {
 
     return response.data;
   }
+};
+
+export const departmentQueryOptions = {
+  baseKey: "departments",
+
+  getAllOptions: () =>
+    queryOptions({
+      queryKey: ["departments", "all"],
+      queryFn: () =>
+        departmentsApi.getDepartments({ pagination: { page: 1, pageSize: 100 } }),
+    }),
+
+  getInfiniteOptions: ({ pageSize }: { pageSize: number }) =>
+    infiniteQueryOptions({
+      queryKey: ["departments", "infinite", { pageSize }],
+      queryFn: ({ pageParam }) =>
+        departmentsApi.getDepartments({ pagination: { page: pageParam, pageSize } }),
+      initialPageParam: 1,
+      getNextPageParam: (response) => {
+        if (!response || response.page >= response.totalPages) return undefined;
+        return response.page + 1;
+      },
+      select: (data): { items: GetDepartmentDto[] } => ({
+        items: data.pages.flatMap((page) => page?.items ?? []),
+      }),
+    }),
 };
         

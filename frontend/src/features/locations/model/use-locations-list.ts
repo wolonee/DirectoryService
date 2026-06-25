@@ -1,14 +1,21 @@
 import { locationQueryOptions } from "@/entities/locations/api";
-import { useQuery } from "@tanstack/react-query";
+import { useIntersectionRef } from "@/shared/hooks/use-intersection-ref";
+import { useInfiniteQuery } from "@tanstack/react-query";
 
-const PAGE_SIZE = 2;
+const PAGE_SIZE = 10;
 const SORT_BY = "created_at";
 const SORT_DIRECTION = "desc";
 
-export function useLocationsList({ page }: { page: number; }) {
-    const { data, isLoading, error, isFetching, refetch } = useQuery(
-        locationQueryOptions.getLocationsOptions({ page, pageSize: PAGE_SIZE, sortBy: SORT_BY, sortDirection: SORT_DIRECTION })
-    );
+export function useLocationsList() {
+    // const { data, isLoading, error, isFetching, refetch } = useQuery(
+    //     locationQueryOptions.getLocationsOptions({ page, pageSize: PAGE_SIZE, sortBy: SORT_BY, sortDirection: SORT_DIRECTION })
+    // );
+
+    const { data, isLoading, error, isFetching, refetch, fetchNextPage, isFetchingNextPage, hasNextPage } = useInfiniteQuery({
+        ...locationQueryOptions.getLocationsInfiniteOptions({ pageSize: PAGE_SIZE, sortBy: SORT_BY, sortDirection: SORT_DIRECTION })
+    });
+
+    const cursorRef = useIntersectionRef({hasNextPage, isFetchingNextPage, fetchNextPage})
 
     return {
         locations: data?.items,
@@ -19,5 +26,9 @@ export function useLocationsList({ page }: { page: number; }) {
         error,
         isFetching,
         refetch,
+        fetchNextPage,
+        isFetchingNextPage,
+        hasNextPage,
+        cursorRef,
     };
 }
