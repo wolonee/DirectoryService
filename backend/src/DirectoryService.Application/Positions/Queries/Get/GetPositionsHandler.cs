@@ -44,7 +44,7 @@ public class GetPositionsHandler : IQueryHandler<GetPositionsResponse, GetPositi
             return validationResult.ToValidationErrors();
         }
 
-        var connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
+        await using var connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
 
         var parameters = new DynamicParameters();
         var conditions = new List<string> { "p.is_deleted = false" };
@@ -79,7 +79,7 @@ public class GetPositionsHandler : IQueryHandler<GetPositionsResponse, GetPositi
 
         long? totalCount = null;
 
-        var result = await connection.QueryAsync<GetPositionsDto, long, GetPositionsDto>(
+        var command = new CommandDefinition(
             $"""
              SELECT p.id,
                     p.name->>'Speciality' AS speciality,
@@ -92,15 +92,19 @@ public class GetPositionsHandler : IQueryHandler<GetPositionsResponse, GetPositi
              {orderByClause}
              LIMIT @{PAGE_SIZE_PARAMETER} OFFSET @{OFFSET_PARAMETER}
              """,
-            param: parameters,
-            splitOn: "total_count",
+            parameters,
+            cancellationToken: cancellationToken);
+
+        var result = await connection.QueryAsync<GetPositionsDto, long, GetPositionsDto>(
+            command,
             map: (pos, count) =>
             {
                 if (totalCount == null)
                     totalCount = count;
 
                 return pos;
-            });
+            },
+            splitOn: "total_count");
 
         var count = totalCount ?? 0;
         var totalPages = (int)Math.Ceiling((double)count / pageSize);

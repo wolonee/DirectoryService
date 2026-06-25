@@ -1,9 +1,9 @@
 import { Button } from "./ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
 
-function getLocationsErrorMessage(error: Error) {
+function getErrorMessage(error: Error) {
   if (error.message === "Network Error") {
-    return "Не удалось подключиться к backend. Проверьте, что сервер запущен, и попробуйте снова.";
+    return "Не удалось подключиться к серверу. Проверьте, что сервер запущен, и попробуйте снова.";
   }
 
   return error.message || "Произошла неизвестная ошибка.";
@@ -23,7 +23,7 @@ export default function PageError({refetch, isFetching, error, name} : Props) {
           <CardHeader className="text-center">
             <CardTitle>Не удалось загрузить {name}</CardTitle>
             <CardDescription className="max-w-none whitespace-normal wrap-break-word leading-6">
-              {getLocationsErrorMessage(error)}
+              {getErrorMessage(error)}
             </CardDescription>
             <Button
               type="button"

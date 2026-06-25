@@ -19,7 +19,7 @@ export const positionApi = {
         params: {
           Search: request.search,
           SortBy: request.sortBy,
-          SortDirection: request.sortDirection,
+          SortDir: request.sortDirection,
           "Pagination.Page": request.pagination?.page,
           "Pagination.PageSize": request.pagination?.pageSize,
         },
