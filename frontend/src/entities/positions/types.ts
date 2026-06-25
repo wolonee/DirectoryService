@@ -1,8 +1,10 @@
+import { PaginationRequest } from "@/shared/api/types/pagination";
+
 export type GetPositionDto = {
   id: string;
   speciality: string;
   direction: string;
-  isActive: boolean;
+  createdAt: string;
 };
 
 export type PositionNameRequest = {
@@ -18,4 +20,19 @@ export type CreatePositionRequest = {
 
 export type RenamePositionRequest = {
   positionName: PositionNameRequest;
+};
+
+export type GetPositionsRequest = {
+  search?: string;
+  sortBy?: string;
+  sortDir?: string;
+  pagination?: PaginationRequest;
+};
+
+export type GetPositionsResponse = {
+  positions: GetPositionDto[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 };
