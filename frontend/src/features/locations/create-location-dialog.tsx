@@ -10,12 +10,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { isEnvelopeError } from "@/shared/api/types/errors";
-
-type Props = {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-  onCreated: () => void;
-}
+import { useState } from "react";
 
 const createLocationSchema = z.object({
   name: z
@@ -54,7 +49,9 @@ const fieldMap = {
   "Address.Street": "street",
 } as const;
 
-export function AddLocationDialog({ open, setOpen, onCreated }: Props) {
+export function AddLocationDialog() {
+  const [open, setOpen] = useState(false);
+
   const { register, handleSubmit, formState: { errors }, reset, setError } = useForm<CreateLocationFormData>({
     resolver: zodResolver(createLocationSchema),
     defaultValues: initialData,
@@ -78,7 +75,6 @@ export function AddLocationDialog({ open, setOpen, onCreated }: Props) {
       },
       {
         onSuccess: () => {
-          onCreated();
           setOpen(false);
           reset(initialData);
         },

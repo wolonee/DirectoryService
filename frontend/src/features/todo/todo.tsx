@@ -13,7 +13,7 @@ import {
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import { useState } from "react";
 import { Input } from "@/shared/components/ui/input";
-import { useTodos } from "@/shared/hooks/use-todos";
+import { useTodos } from "@/features/todo/model/use-todos";
 import { Button } from "@/shared/components/ui/button";
 
 type Todo = {
