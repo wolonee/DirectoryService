@@ -1,17 +1,6 @@
 "use client";
 
-import { BriefcaseBusiness, Clock3, Building2 } from "lucide-react";
 import { Spinner } from "@/shared/components/ui/spinner";
-import { Button } from "@/shared/components/ui/button";
-import { AddPositionDialog } from "@/features/positions/create-position-dialog";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardAction,
-  CardContent,
-} from "@/shared/components/ui/card";
 import { usePositionsList } from "@/features/positions/model/use-position-list";
 import { PostitionEmptyState } from "@/features/positions/position-empty-state";
 import PageError from "@/shared/components/page-error";

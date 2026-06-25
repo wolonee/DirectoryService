@@ -18,6 +18,11 @@ import {
 } from "@/shared/components/ui/dialog";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
+import { Checkbox } from "@/shared/components/ui/checkbox";
+import { Spinner } from "@/shared/components/ui/spinner";
+import { useCreatePosition } from "./model/use-create-position";
+import { useDepartmentsList } from "./model/use-departments-list";
+import { isEnvelopeError } from "@/shared/api/types/errors";
 
 const createPositionSchema = z.object({
   speciality: z
@@ -35,7 +40,16 @@ const createPositionSchema = z.object({
     .trim()
     .max(1000, "Максимум 1000 символов")
     .optional(),
+  departmentIds: z
+    .array(z.string())
+    .min(1, "Выберите хотя бы один департамент"),
 });
+
+const fieldMap = {
+  PositionName: "speciality",
+  Description: "description",
+  DepartmentIds: "departmentIds",
+} as const;
 
 type CreatePositionFormData = z.infer<typeof createPositionSchema>;
 
@@ -43,6 +57,7 @@ const initialData: CreatePositionFormData = {
   speciality: "",
   direction: "",
   description: "",
+  departmentIds: [],
 };
 
 export function AddPositionDialog() {
@@ -53,17 +68,64 @@ export function AddPositionDialog() {
     handleSubmit,
     formState: { errors },
     reset,
+    setError,
+    watch,
+    setValue,
   } = useForm<CreatePositionFormData>({
     resolver: zodResolver(createPositionSchema),
     defaultValues: initialData,
   });
 
+  const { departments, isLoading: isLoadingDepartments, isFetchingNextPage: isFetchingNextDepartments, cursorRef: departmentCursorRef } = useDepartmentsList();
+  const selectedDepartmentIds = watch("departmentIds");
+
+  const toggleDepartment = (id: string) => {
+    const current = selectedDepartmentIds ?? [];
+    const next = current.includes(id)
+      ? current.filter((d) => d !== id)
+      : [...current, id];
+    setValue("departmentIds", next, { shouldValidate: true });
+  };
+
+  const {createPosition, isPending, error, commonError, resetError} = useCreatePosition();
+
   const onSubmit = (data: CreatePositionFormData) => {
-    console.log(data);
+    resetError();
+
+    createPosition(
+      {
+        positionName: {
+          speciality: data.speciality,
+          direction: data.direction,
+        },
+        description: data.description,
+        departmentIds: data.departmentIds,
+      },
+      {
+        onSuccess: () => {
+          setOpen(false)
+          reset(initialData)
+        },
+        onError: (error) => {
+          if (!(isEnvelopeError(error))) {
+            return;
+          }
+
+          error.fieldErrors.forEach((fieldError) => {
+            const fieldName = fieldMap[fieldError.invalidField as keyof typeof fieldMap];
+            
+            setError(fieldName, {
+              message: fieldError.message,
+            });
+          });
+        },
+      }
+    )
   };
 
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
+
     if (!isOpen) {
       reset(initialData);
     }
@@ -113,6 +175,41 @@ export function AddPositionDialog() {
             </div>
 
             <div className="grid gap-2">
+              <Label>Департаменты</Label>
+              <div className="max-h-40 overflow-y-auto rounded-md border border-input p-3">
+                {isLoadingDepartments ? (
+                  <div className="flex justify-center py-2">
+                    <Spinner />
+                  </div>
+                ) : (
+                  <div className="grid gap-2">
+                    {departments.map((dept) => (
+                      <div key={dept.id} className="flex items-center gap-2">
+                        <Checkbox
+                          id={`dept-${dept.id}`}
+                          checked={selectedDepartmentIds.includes(dept.id)}
+                          onCheckedChange={() => toggleDepartment(dept.id)}
+                        />
+                        <Label
+                          htmlFor={`dept-${dept.id}`}
+                          className="font-normal cursor-pointer"
+                        >
+                          {dept.name}
+                        </Label>
+                      </div>
+                    ))}
+                    <div ref={departmentCursorRef} className="flex justify-center py-1">
+                      {isFetchingNextDepartments && <Spinner />}
+                    </div>
+                  </div>
+                )}
+              </div>
+              {errors.departmentIds && (
+                <p className="text-xs text-destructive">{errors.departmentIds.message}</p>
+              )}
+            </div>
+
+            <div className="grid gap-2">
               <Label htmlFor="position-description">
                 Описание{" "}
                 <span className="text-muted-foreground">(необязательно)</span>
@@ -128,14 +225,26 @@ export function AddPositionDialog() {
             </div>
           </div>
 
+          {error && (
+            <p className="text-sm text-destructive">
+              {error.message}
+            </p>
+          )}
+
+          {commonError && (
+            <p className="text-sm text-destructive">
+              Не удалось создать локацию. Попробуйте позже.
+            </p>
+          )}
+
           <DialogFooter>
             <DialogClose asChild>
               <Button type="button" variant="outline">
                 Отмена
               </Button>
             </DialogClose>
-            <Button type="submit">
-              Добавить
+            <Button type="submit" disabled={isPending}>
+              {isPending ? "Добавляем..." : "Добавить"}
             </Button>
           </DialogFooter>
         </form>
