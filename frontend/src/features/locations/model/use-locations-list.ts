@@ -1,4 +1,5 @@
 import { locationQueryOptions } from "@/entities/locations/api";
+import { useIntersectionRef } from "@/shared/hooks/use-intersection-ref";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { RefCallback, useCallback } from "react";
 
@@ -15,29 +16,7 @@ export function useLocationsList() {
         ...locationQueryOptions.getLocationsInfiniteOptions({ pageSize: PAGE_SIZE, sortBy: SORT_BY, sortDirection: SORT_DIRECTION })
     });
 
-    const cursorRef: RefCallback<HTMLDivElement> = useCallback(
-    (el) => {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          if (
-            entries[0].isIntersecting &&
-            hasNextPage &&
-            !isFetchingNextPage
-          ) {
-            fetchNextPage();
-          }
-        },
-        { threshold: 0.5 }
-      );
-
-      if (el) {
-        observer.observe(el);
-
-        return () => observer.disconnect();
-      }
-    },
-    [fetchNextPage, hasNextPage, isFetchingNextPage]
-  );
+    const cursorRef = useIntersectionRef({hasNextPage, isFetchingNextPage, fetchNextPage})
 
     return {
         locations: data?.items,

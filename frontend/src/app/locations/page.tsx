@@ -1,9 +1,7 @@
 "use client";
 
-import { MapPin } from "lucide-react";
 import { Spinner } from "@/shared/components/ui/spinner";
 import { useLocationsList } from "../../features/locations/model/use-locations-list";
-import { AddLocationDialog } from "@/features/locations/create-location-dialog";
 import PageError from "@/shared/components/page-error";
 import LocationEmptyState from "../../features/locations/location-empty-state";
 import LocationCard from "./ui/location-card";
@@ -47,7 +45,7 @@ export default function LocationsPage() {
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-background text-foreground">
       <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-        
+
         <LocationHeader />
 
         <LocationStats locations={locations} totalCount={totalCount}/>

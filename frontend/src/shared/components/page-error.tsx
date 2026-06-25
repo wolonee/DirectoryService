@@ -22,7 +22,7 @@ export default function PageError({refetch, isFetching, error, name} : Props) {
         <Card className="w-full max-w-lg">
           <CardHeader className="text-center">
             <CardTitle>Не удалось загрузить {name}</CardTitle>
-            <CardDescription className="max-w-none whitespace-normal break-words leading-6">
+            <CardDescription className="max-w-none whitespace-normal wrap-break-word leading-6">
               {getLocationsErrorMessage(error)}
             </CardDescription>
             <Button
