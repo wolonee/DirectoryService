@@ -4,6 +4,7 @@ import type {
   GetLocationDto,
   GetLocationsRequest,
   GetLocationsResponse,
+  UpdateLocationRequest,
 } from "./types";
 import type { Envelope } from "@/shared/api/types/envelope";
 import type { PaginationResponse } from "@/shared/api/types/pagination";
@@ -51,6 +52,25 @@ export const locationsApi = {
     const response = await apiClient.post<Envelope<string>>(
       "/locations",
       request,
+    );
+
+    return response.data;
+  },
+
+  updateLocation: async (request: UpdateLocationRequest) => {
+    const { locationId, ...body } = request;
+
+    const response = await apiClient.put<Envelope<string>>(
+      `/locations/${locationId}`,
+      body,
+    );
+
+    return response.data;
+  },
+
+  deleteLocation: async (locationId: string) => {
+    const response = await apiClient.delete<Envelope<string>>(
+      `/locations/${locationId}`,
     );
 
     return response.data;
