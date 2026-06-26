@@ -4,9 +4,9 @@ import { Spinner } from "@/shared/components/ui/spinner";
 import { useLocationsList } from "../../features/locations/model/use-locations-list";
 import PageError from "@/shared/components/page-error";
 import LocationEmptyState from "../../features/locations/location-empty-state";
-import LocationCard from "../../features/locations/location-card";
-import LocationStats from "../../entities/locations/ui/location-stats";
-import LocationHeader from "../../entities/locations/ui/location-header";
+import LocationCard from "./ui/location-card";
+import LocationStats from "./ui/location-stats";
+import LocationHeader from "./ui/location-header";
 // import { LocationPagination } from "@/features/locations/location-pagination";
 
 

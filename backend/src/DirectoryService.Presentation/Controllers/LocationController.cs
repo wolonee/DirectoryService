@@ -2,7 +2,6 @@ using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Locations;
 using DirectoryService.Application.Locations.Commands.CreateLocation;
 using DirectoryService.Application.Locations.Commands.DeleteLocation;
-using DirectoryService.Application.Locations.Commands.UpdateLocation;
 using DirectoryService.Application.Locations.Queries.GetLocationById;
 using DirectoryService.Application.Locations.Queries.GetLocations;
 using DirectoryService.Contracts.Locations;
@@ -62,18 +61,6 @@ public class LocationController : ControllerBase
         var query = new GetLocationByIdQuery(id);
         
         return await handler.Handle(query, cancellationToken);
-    }
-
-    [HttpPut("{id:guid}")]
-    public async Task<EndpointResult> Update(
-        [FromRoute] Guid id,
-        [FromServices] ICommandHandler<UpdateLocationCommand> handler,
-        [FromBody] UpdateLocationRequest request,
-        CancellationToken cancellationToken = default)
-    {
-        var command = new UpdateLocationCommand(id, request);
-
-        return await handler.Handle(command, cancellationToken);
     }
 
     [HttpDelete("{id:guid}")]

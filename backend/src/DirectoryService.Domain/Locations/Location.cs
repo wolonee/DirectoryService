@@ -50,14 +50,6 @@ public class Location
         return new Location(addressResult, name, timezone);
     }
 
-    public void Update(LocationAddress address, LocationName name, LocationTimeZone timezone)
-    {
-        Address = address;
-        Name = name;
-        Timezone = timezone;
-        UpdatedAt = DateTime.UtcNow;
-    }
-
     public void Activate(bool boolean)
     {
         IsActive = boolean;

@@ -44,7 +44,7 @@ public class GetPositionsHandler : IQueryHandler<GetPositionsResponse, GetPositi
             return validationResult.ToValidationErrors();
         }
 
-        using var connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
+        await using var connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
 
         var parameters = new DynamicParameters();
         var conditions = new List<string> { "p.is_deleted = false" };
