@@ -38,3 +38,10 @@ export type GetLocationsRequest = {
   pagination?: PaginationRequest;
 };
 
+export type UpdateLocationRequest = {
+  locationId: string;
+  address: CreateLocationAddressRequest;
+  name: string;
+  timezone: string;
+};
+

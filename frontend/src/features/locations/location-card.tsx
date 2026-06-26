@@ -1,5 +1,4 @@
 import { GetLocationDto } from "@/entities/locations/types";
-import { Button } from "@/shared/components/ui/button";
 import {
   Card,
   CardHeader,
@@ -8,7 +7,9 @@ import {
   CardAction,
   CardContent,
 } from "@/shared/components/ui/card";
-import { Building2, MoreHorizontal, MapPin, Clock3 } from "lucide-react";
+import { Building2, MapPin, Clock3 } from "lucide-react";
+import { UpdateLocationDialog } from "@/features/locations/update-location-dialog";
+import { DeleteLocationDialog } from "@/features/locations/delete-location-dialog";
 
 type Props = {
   location: GetLocationDto;
@@ -36,15 +37,9 @@ export default function LocationCard({ location }: Props) {
           </CardDescription>
         </div>
 
-        <CardAction className="static col-auto row-auto">
-          <Button
-            variant="ghost"
-            size="icon"
-            type="button"
-            aria-label={`Действия для ${location.name}`}
-          >
-            <MoreHorizontal />
-          </Button>
+        <CardAction className="static col-auto row-auto flex items-center gap-1">
+          <UpdateLocationDialog location={location} />
+          <DeleteLocationDialog location={location} />
         </CardAction>
       </CardHeader>
 

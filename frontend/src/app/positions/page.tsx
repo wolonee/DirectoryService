@@ -4,9 +4,9 @@ import { Spinner } from "@/shared/components/ui/spinner";
 import { usePositionsList } from "@/features/positions/model/use-position-list";
 import { PostitionEmptyState } from "@/features/positions/position-empty-state";
 import PageError from "@/shared/components/page-error";
-import PositionStats from "./ui/position-stats";
-import PositionCard from "./ui/position-card";
-import PositionHeader from "./ui/position-header";
+import PositionStats from "../../entities/positions/ui/position-stats";
+import PositionCard from "../../features/positions/position-card";
+import PositionHeader from "../../entities/positions/ui/position-header";
 
 // const mockPositions: GetPositionDto[] = [
 //   { id: "1", speciality: "Software Engineer", direction: "Backend", createdAt: "2024-01-15T10:00:00Z" },

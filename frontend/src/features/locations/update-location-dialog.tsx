@@ -1,27 +1,29 @@
 "use client";
 
+import { GetLocationDto } from "@/entities/locations/types";
 import { Button } from "@/shared/components/ui/button";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/shared/components/ui/dialog";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/shared/components/ui/dialog";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
-import { Plus } from "lucide-react";
-import { useCreateLocation } from "./model/use-create-location";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { isEnvelopeError } from "@/shared/api/types/errors";
+import { Pencil } from "lucide-react";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { useUpdateLocation } from "./model/use-update-location";
+import { isEnvelopeError } from "@/shared/api/types/errors";
 import {
   locationSchema,
   LocationFormData,
 } from "@/entities/locations/model/location-schema";
-
-const initialData: LocationFormData = {
-  name: "",
-  country: "",
-  city: "",
-  street: "",
-  timezone: "",
-};
 
 const fieldMap = {
   Name: "name",
@@ -31,22 +33,39 @@ const fieldMap = {
   "Address.Street": "street",
 } as const;
 
-export function AddLocationDialog() {
+type Props = {
+  location: GetLocationDto;
+};
+
+export function UpdateLocationDialog({ location }: Props) {
   const [open, setOpen] = useState(false);
 
-  const { register, handleSubmit, formState: { errors }, reset, setError } = useForm<LocationFormData>({
+  const initialData: LocationFormData = {
+    name: location.name,
+    country: location.country,
+    city: location.city,
+    street: location.street,
+    timezone: location.timezone,
+  };
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    setError,
+  } = useForm<LocationFormData>({
     resolver: zodResolver(locationSchema),
     defaultValues: initialData,
   });
 
-  const { createLocation, isPending, error, commonError, resetError } =
-    useCreateLocation();
+  const { updateLocation, isPending, error, commonError, resetError } =
+    useUpdateLocation();
 
   const onSubmit = (data: LocationFormData) => {
-    resetError();
-
-    createLocation(
+    updateLocation(
       {
+        locationId: location.id,
         address: {
           city: data.city,
           country: data.country,
@@ -58,59 +77,65 @@ export function AddLocationDialog() {
       {
         onSuccess: () => {
           setOpen(false);
-          reset(initialData);
         },
         onError: (error) => {
-          if (!(isEnvelopeError(error))) {
+          if (!isEnvelopeError(error)) {
             return;
           }
 
           error.fieldErrors.forEach((fieldError) => {
-            const fieldName = fieldMap[fieldError.invalidField as keyof typeof fieldMap];
-            
+            const fieldName =
+              fieldMap[fieldError.invalidField as keyof typeof fieldMap];
+
             setError(fieldName, {
               message: fieldError.message,
             });
           });
         },
-      }
+      },
     );
-  }
+  };
 
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
 
     if (!isOpen) {
       resetError();
+      reset(initialData)
     }
   };
-  
+
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={(bool) => handleOpenChange(bool)}>
       <DialogTrigger asChild>
-        <Button size="lg" type="button" className="w-full sm:w-auto">
-          <Plus data-icon="inline-start" />
-          Добавить локацию
+        <Button
+          variant="ghost"
+          size="icon"
+          type="button"
+          aria-label={`Редактировать ${location.name}`}>
+          <Pencil />
         </Button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-lg">
-        <form onSubmit={handleSubmit((data) => onSubmit(data))} className="space-y-4">
+        <form
+          onSubmit={handleSubmit((data) => onSubmit(data))}
+          className="space-y-4">
           <DialogHeader>
-            <DialogTitle>Новая локация</DialogTitle>
+            <DialogTitle>Редактировать локацию</DialogTitle>
             <DialogDescription>
-              Заполните информацию об офисе или рабочей площадке.
+              Измените информацию об офисе или рабочей площадке.
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-2">
             <div className="grid gap-2">
-              <Label htmlFor="location-name">Название</Label>
+              <Label htmlFor="update-location-name">Название</Label>
               <Input
-                id="location-name"
+                id="update-location-name"
                 placeholder="Главный офис"
                 {...register("name")}
-              />
+                />
               { errors.name && (
                 <p className="text-xs text-destructive">{errors.name.message}</p>
               )}
@@ -118,34 +143,34 @@ export function AddLocationDialog() {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
-                <Label htmlFor="location-country">Страна</Label>
+                <Label htmlFor="update-location-country">Страна</Label>
                 <Input
-                  id="location-country"
+                  id="update-location-country"
                   placeholder="Россия"
                   {...register("country")}
                 />
-                { errors.country && (
-                  <p className="text-xs text-destructive">{errors.country.message}</p>
-                )}
+              { errors.country && (
+                <p className="text-xs text-destructive">{errors.country.message}</p>
+              )}
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="location-city">Город</Label>
+                <Label htmlFor="update-location-city">Город</Label>
                 <Input
-                  id="location-city"
+                  id="update-location-city"
                   placeholder="Москва"
                   {...register("city")}
                 />
-                { errors.city && (
-                  <p className="text-xs text-destructive">{errors.city.message}</p>
-                )}
+              { errors.city && (
+                <p className="text-xs text-destructive">{errors.city.message}</p>
+              )}
               </div>
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="location-street">Улица и дом</Label>
+              <Label htmlFor="update-location-street">Улица и дом</Label>
               <Input
-                id="location-street"
+                id="update-location-street"
                 placeholder="ул. Ленина, 1"
                 {...register("street")}
               />
@@ -155,9 +180,9 @@ export function AddLocationDialog() {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="location-timezone">Часовой пояс</Label>
+              <Label htmlFor="update-location-timezone">Часовой пояс</Label>
               <Input
-                id="location-timezone"
+                id="update-location-timezone"
                 placeholder="Europe/Moscow"
                 {...register("timezone")}
               />

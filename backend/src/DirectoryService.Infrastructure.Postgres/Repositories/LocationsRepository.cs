@@ -138,14 +138,57 @@ public class LocationsRepository : ILocationsRepository
         }
     }
 
+    public async Task<Result<bool, Error>> NameExistsAsync(string name, Guid excludeLocationId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await _dbContext.Locations.AnyAsync(
+                x => x.Name.Value == name && x.Id != excludeLocationId,
+                cancellationToken);
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation was cancelled while checking NameExists with name {Name}", name);
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while creating NameExists with name {Name}", name);
+            return GeneralErrors.DatabaseError();
+        }
+    }
+
     public async Task<Result<bool, Error>> AddressExistsAsync(CreateLocationAddressRequest address, CancellationToken cancellationToken = default)
     {
         try
         {
             return await _dbContext.Locations.AnyAsync(
-                x => x.Address.Country == address.Country && 
-                     x.Address.Street == address.Street && 
-                     x.Address.City == address.City, 
+                x => x.Address.Country == address.Country &&
+                     x.Address.Street == address.Street &&
+                     x.Address.City == address.City,
+                cancellationToken);
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogError(ex, "Operation was cancelled while checking AddressExists with address {Address}", address.ToString());
+            return GeneralErrors.OperationCancelled();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while creating AddressExists with address {Address}", address.ToString());
+            return GeneralErrors.DatabaseError();
+        }
+    }
+
+    public async Task<Result<bool, Error>> AddressExistsAsync(CreateLocationAddressRequest address, Guid excludeLocationId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await _dbContext.Locations.AnyAsync(
+                x => x.Address.Country == address.Country &&
+                     x.Address.Street == address.Street &&
+                     x.Address.City == address.City &&
+                     x.Id != excludeLocationId,
                 cancellationToken);
         }
         catch (OperationCanceledException ex)
