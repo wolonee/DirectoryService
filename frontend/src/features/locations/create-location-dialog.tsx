@@ -6,16 +6,34 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Plus } from "lucide-react";
 import { useCreateLocation } from "./model/use-create-location";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { isEnvelopeError } from "@/shared/api/types/errors";
 import { useState } from "react";
-import {
-  locationSchema,
-  LocationFormData,
-} from "@/entities/locations/model/location-schema";
 
-const initialData: LocationFormData = {
+const createLocationSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(3, "Название должно содержать минимум 3 символа")
+    .max(120, "Название должно содержать максимум 120 символов"),
+  country: z.string().trim().min(1, "Укажите страну"),
+  city: z.string().trim().min(1, "Укажите город"),
+  street: z.string().trim().min(1, "Укажите улицу и дом"),
+  timezone: z
+    .string()
+    .trim()
+    .min(1, "Укажите часовой пояс")
+    .regex(
+      /^[A-Za-z_]+(?:\/[A-Za-z0-9_+-]+)+$/,
+      "Используйте формат Europe/Moscow"
+    ),
+});
+
+type CreateLocationFormData = z.infer<typeof createLocationSchema>;
+
+const initialData: CreateLocationFormData = {
   name: "",
   country: "",
   city: "",
@@ -34,15 +52,15 @@ const fieldMap = {
 export function AddLocationDialog() {
   const [open, setOpen] = useState(false);
 
-  const { register, handleSubmit, formState: { errors }, reset, setError } = useForm<LocationFormData>({
-    resolver: zodResolver(locationSchema),
+  const { register, handleSubmit, formState: { errors }, reset, setError } = useForm<CreateLocationFormData>({
+    resolver: zodResolver(createLocationSchema),
     defaultValues: initialData,
   });
 
   const { createLocation, isPending, error, commonError, resetError } =
     useCreateLocation();
 
-  const onSubmit = (data: LocationFormData) => {
+  const onSubmit = (data: CreateLocationFormData) => {
     resetError();
 
     createLocation(
