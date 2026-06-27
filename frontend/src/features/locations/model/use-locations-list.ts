@@ -6,13 +6,13 @@ const PAGE_SIZE = 10;
 const SORT_BY = "created_at";
 const SORT_DIRECTION = "desc";
 
-export function useLocationsList() {
+export function useLocationsList({search} : {search: string}) {
     // const { data, isLoading, error, isFetching, refetch } = useQuery(
     //     locationQueryOptions.getLocationsOptions({ page, pageSize: PAGE_SIZE, sortBy: SORT_BY, sortDirection: SORT_DIRECTION })
     // );
 
     const { data, isLoading, error, isFetching, refetch, fetchNextPage, isFetchingNextPage, hasNextPage } = useInfiniteQuery({
-        ...locationQueryOptions.getLocationsInfiniteOptions({ pageSize: PAGE_SIZE, sortBy: SORT_BY, sortDirection: SORT_DIRECTION })
+        ...locationQueryOptions.getLocationsInfiniteOptions({ search: search, pageSize: PAGE_SIZE, sortBy: SORT_BY, sortDirection: SORT_DIRECTION })
     });
 
     const cursorRef = useIntersectionRef({hasNextPage, isFetchingNextPage, fetchNextPage})

@@ -103,10 +103,12 @@ export const locationQueryOptions = {
   },
 
   getLocationsInfiniteOptions: ({
+    search,
     pageSize,
     sortBy,
     sortDirection,
   }: {
+    search: string;
     pageSize: number;
     sortBy: string;
     sortDirection: string;
@@ -115,10 +117,11 @@ export const locationQueryOptions = {
       queryKey: [
         locationQueryOptions.baseKey,
         "infinite",
-        { pageSize, sortBy, sortDirection },
+        { search, pageSize, sortBy, sortDirection },
       ],
       queryFn: ({ pageParam }) => {
         return locationsApi.getLocations({
+          search,
           pagination: { page: pageParam, pageSize },
           sortBy,
           sortDirection,
