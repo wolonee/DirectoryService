@@ -33,6 +33,7 @@ export type CreateLocationRequest = {
 
 export type GetLocationsRequest = {
   search?: string;
+  isActive?: boolean;
   sortBy?: string;
   sortDirection?: string;
   pagination?: PaginationRequest;

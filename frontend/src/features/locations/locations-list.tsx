@@ -8,11 +8,21 @@ import LocationCard from "../../features/locations/location-card";
 import LocationStats from "../../entities/locations/ui/location-stats";
 import LocationHeader from "../../entities/locations/ui/location-header";
 import { Input } from "@/shared/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
 import { Search } from "lucide-react";
 import { useState } from "react";
+import { useDebounce } from "use-debounce";
 
 export default function LocationsList() {
   const [search, setSearch] = useState("");
+  const [debouncedSearch] = useDebounce(search, 300);
+  const [isActive, setIsActive] = useState<boolean | undefined>(undefined);
 
   const {
     locations,
@@ -23,7 +33,7 @@ export default function LocationsList() {
     refetch,
     isFetchingNextPage,
     cursorRef,
-  } = useLocationsList({ search });
+  } = useLocationsList({ search: debouncedSearch, isActive });
 
   if (error) {
     return (
@@ -54,15 +64,37 @@ export default function LocationsList() {
               </p>
             </div>
 
-            <div className="relative w-full lg:max-w-xs">
-              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Поиск локаций..."
-                className="pl-9"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Select
+                value={
+                  isActive === undefined ? "all" : isActive ? "active" : "inactive"
+                }
+                onValueChange={(value) => {
+                  if (value === "all") setIsActive(undefined);
+                  else if (value === "active") setIsActive(true);
+                  else setIsActive(false);
+                }}
+              >
+                <SelectTrigger className="w-full sm:w-40">
+                  <SelectValue placeholder="Статус" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Все</SelectItem>
+                  <SelectItem value="active">Активные</SelectItem>
+                  <SelectItem value="inactive">Неактивные</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <div className="relative w-full lg:max-w-xs">
+                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Поиск локаций..."
+                  className="pl-9"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
             </div>
           </div>
 
