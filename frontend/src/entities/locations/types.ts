@@ -46,3 +46,9 @@ export type UpdateLocationRequest = {
   timezone: string;
 };
 
+export const LocationSortByOptions = {
+    name: "name",
+    created_at: "created_at",
+    country: "country"
+}
+

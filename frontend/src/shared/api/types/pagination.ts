@@ -8,5 +8,5 @@ export type PaginationResponse<T> = {
 
 export type PaginationRequest = {
   page: number;
-  pageSize: number;
+  pageSize?: number;
 };

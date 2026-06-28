@@ -9,6 +9,7 @@ import type {
 import type { Envelope } from "@/shared/api/types/envelope";
 import type { PaginationResponse } from "@/shared/api/types/pagination";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
+import { LocationFilterState } from "@/features/locations/model/locations-filter-store";
 
 export const locationsApi = {
   getLocations: async (
@@ -106,16 +107,10 @@ export const locationQueryOptions = {
   getLocationsInfiniteOptions: ({
     isActive,
     search,
-    pageSize,
     sortBy,
     sortDirection,
-  }: {
-    isActive?: boolean;
-    search: string;
-    pageSize: number;
-    sortBy: string;
-    sortDirection: string;
-  }) => {
+    pageSize,
+  }: LocationFilterState) => {
     return infiniteQueryOptions({
       queryKey: [
         locationQueryOptions.baseKey,
