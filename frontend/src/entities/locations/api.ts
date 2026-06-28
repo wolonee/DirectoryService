@@ -9,6 +9,7 @@ import type {
 import type { Envelope } from "@/shared/api/types/envelope";
 import type { PaginationResponse } from "@/shared/api/types/pagination";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
+import { LocationFilterState } from "@/features/locations/model/locations-filter-store";
 
 export const locationsApi = {
   getLocations: async (
@@ -19,6 +20,7 @@ export const locationsApi = {
       {
         params: {
           Search: request.search,
+          IsActive: request.isActive,
           SortBy: request.sortBy,
           SortDirection: request.sortDirection,
           "Pagination.Page": request.pagination?.page,
@@ -103,22 +105,22 @@ export const locationQueryOptions = {
   },
 
   getLocationsInfiniteOptions: ({
-    pageSize,
+    isActive,
+    search,
     sortBy,
     sortDirection,
-  }: {
-    pageSize: number;
-    sortBy: string;
-    sortDirection: string;
-  }) => {
+    pageSize,
+  }: LocationFilterState) => {
     return infiniteQueryOptions({
       queryKey: [
         locationQueryOptions.baseKey,
         "infinite",
-        { pageSize, sortBy, sortDirection },
+        { search, pageSize, sortBy, sortDirection, isActive },
       ],
       queryFn: ({ pageParam }) => {
         return locationsApi.getLocations({
+          isActive,
+          search,
           pagination: { page: pageParam, pageSize },
           sortBy,
           sortDirection,
@@ -138,4 +140,19 @@ export const locationQueryOptions = {
       }),
     });
   },
+
+  getInfiniteOptions: ({ pageSize }: { pageSize: number }) =>
+    infiniteQueryOptions({
+      queryKey: [locationQueryOptions.baseKey, "infinite-select", { pageSize }],
+      queryFn: ({ pageParam }) =>
+        locationsApi.getLocations({ pagination: { page: pageParam, pageSize } }),
+      initialPageParam: 1,
+      getNextPageParam: (response) => {
+        if (!response || response.page >= response.totalPages) return undefined;
+        return response.page + 1;
+      },
+      select: (data): { items: GetLocationDto[] } => ({
+        items: data.pages.flatMap((page) => page?.items ?? []),
+      }),
+    }),
 };

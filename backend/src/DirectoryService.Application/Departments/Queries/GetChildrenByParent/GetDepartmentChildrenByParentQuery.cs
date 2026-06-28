@@ -1,5 +1,8 @@
 ﻿using DirectoryService.Application.Abstractions;
+using DirectoryService.Contracts.Locations.Common;
 
 namespace DirectoryService.Application.Departments.Queries.GetChildrenByParent;
 
-public record GetDepartmentChildrenByParentQuery(Guid ParentId) : IQuery;
+public record GetDepartmentChildrenByParentQuery(
+    Guid ParentId,
+    PaginationRequest? Pagination = null) : IQuery;

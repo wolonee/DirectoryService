@@ -200,7 +200,7 @@ export function UpdateLocationDialog({ location }: Props) {
 
           {commonError && (
             <p className="text-sm text-destructive">
-              Не удалось создать локацию. Попробуйте позже.
+              Не удалось обновить локацию. Попробуйте позже.
             </p>
           )}
 
@@ -211,7 +211,7 @@ export function UpdateLocationDialog({ location }: Props) {
               </Button>
             </DialogClose>
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Добавляем..." : "Добавить"}
+              {isPending ? "Сохраняем..." : "Сохранить"}
             </Button>
           </DialogFooter>
         </form>

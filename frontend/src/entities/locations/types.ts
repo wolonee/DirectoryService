@@ -33,6 +33,7 @@ export type CreateLocationRequest = {
 
 export type GetLocationsRequest = {
   search?: string;
+  isActive?: boolean;
   sortBy?: string;
   sortDirection?: string;
   pagination?: PaginationRequest;
@@ -44,4 +45,10 @@ export type UpdateLocationRequest = {
   name: string;
   timezone: string;
 };
+
+export const LocationSortByOptions = {
+    name: "name",
+    created_at: "created_at",
+    country: "country"
+}
 
