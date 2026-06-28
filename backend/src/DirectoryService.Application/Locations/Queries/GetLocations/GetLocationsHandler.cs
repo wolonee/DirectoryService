@@ -108,8 +108,7 @@ public class GetLocationsHandler : IQueryHandler<GetLocationsResponse, GetLocati
         
         var parameters = new DynamicParameters();
         var conditions = new List<string>();
-        var joins = new List<string>();
-        
+
         var pagination = request.Pagination ?? new PaginationRequest();
         
         int pageSize = pagination.PageSize;
@@ -138,8 +137,7 @@ public class GetLocationsHandler : IQueryHandler<GetLocationsResponse, GetLocati
 
         if (request.DepartmentIds != null && request.DepartmentIds.Length > 0)
         {
-            joins.Add("JOIN department_locations dl ON dl.location_id = l.id");
-            conditions.Add($"dl.department_id = ANY(@{DEPARTMENT_IDS_PARAMETER})");
+            conditions.Add($"EXISTS (SELECT 1 FROM department_locations dl WHERE dl.location_id = l.id AND dl.department_id = ANY(@{DEPARTMENT_IDS_PARAMETER}))");
             parameters.Add(DEPARTMENT_IDS_PARAMETER, request.DepartmentIds);
         }
         
@@ -156,8 +154,6 @@ public class GetLocationsHandler : IQueryHandler<GetLocationsResponse, GetLocati
         };
 
         var orderByClause = $"ORDER BY {orderByField} {direction}";
-            
-        var joinClause = string.Join("\n", joins);
 
         long? totalCount = null;
 
@@ -182,7 +178,6 @@ public class GetLocationsHandler : IQueryHandler<GetLocationsResponse, GetLocati
             
             FROM locations l
             LEFT JOIN count_departments_table as dt ON dt.location_id = l.id
-            {joinClause}
             {whereClause}
             {orderByClause}
             LIMIT @{PAGE_SIZE_PARAMETER} OFFSET @{OFFSET_PARAMETER}

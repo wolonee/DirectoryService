@@ -13,6 +13,7 @@ using DirectoryService.Application.Departments.Queries.GetParentsById;
 using DirectoryService.Contracts.Departments;
 using DirectoryService.Contracts.Departments.Requests;
 using DirectoryService.Contracts.Departments.Responses;
+using DirectoryService.Contracts.Locations.Common;
 using DirectoryService.Presentation.EndpointResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -135,11 +136,12 @@ public class DepartmentsController : ControllerBase
     [HttpGet("{id:guid}/children")]
     public async Task<EndpointResult<GetDepartmentChildrenByParentResponse>> GetChildrenByParent(
         [FromRoute] Guid id,
+        [FromQuery] PaginationRequest? pagination,
         [FromServices] IQueryHandler<GetDepartmentChildrenByParentResponse, GetDepartmentChildrenByParentQuery> handler,
         CancellationToken cancellationToken = default)
     {
-        var query = new GetDepartmentChildrenByParentQuery(id);
-        
+        var query = new GetDepartmentChildrenByParentQuery(id, pagination);
+
         return await handler.Handle(query, cancellationToken);
     }
     

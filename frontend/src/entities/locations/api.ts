@@ -140,4 +140,19 @@ export const locationQueryOptions = {
       }),
     });
   },
+
+  getInfiniteOptions: ({ pageSize }: { pageSize: number }) =>
+    infiniteQueryOptions({
+      queryKey: [locationQueryOptions.baseKey, "infinite-select", { pageSize }],
+      queryFn: ({ pageParam }) =>
+        locationsApi.getLocations({ pagination: { page: pageParam, pageSize } }),
+      initialPageParam: 1,
+      getNextPageParam: (response) => {
+        if (!response || response.page >= response.totalPages) return undefined;
+        return response.page + 1;
+      },
+      select: (data): { items: GetLocationDto[] } => ({
+        items: data.pages.flatMap((page) => page?.items ?? []),
+      }),
+    }),
 };

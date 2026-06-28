@@ -9,8 +9,14 @@ export type CreateDepartmentRequest = {
 
 export type CreateDepartmentResponse = string;
 
+export type UpdateDepartmentLocationsRequest = {
+  departmentId: string;
+  locationsIds: string[];
+};
+
 export type GetDepartmentsRequest = {
   search?: string;
+  isActive?: boolean;
   sortBy?: "name" | "created_at";
   sortDir?: "asc" | "desc";
   pagination?: PaginationRequest;

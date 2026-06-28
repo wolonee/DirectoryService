@@ -24,6 +24,8 @@ public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsResponse, GetDe
     private const string SEARCH_PARAMETER = "search";
     private const string OFFSET_PARAMETER = "offset";
     private const string PAGE_SIZE_PARAMETER = "page_size";
+    private const string IS_ACTIVE_PARAMETER = "is_active";
+    private const string LOCATION_IDS_PARAMETER = "location_ids";
 
     public GetDepartmentsHandler(
         IValidator<GetDepartmentsQuery> validator,
@@ -57,7 +59,19 @@ public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsResponse, GetDe
             conditions.Add($"d.name ILIKE '%' || @{SEARCH_PARAMETER} || '%'");
             parameters.Add(SEARCH_PARAMETER, request.Search, DbType.String);
         }
-        
+
+        if (request.IsActive.HasValue)
+        {
+            conditions.Add($"d.is_active = @{IS_ACTIVE_PARAMETER}");
+            parameters.Add(IS_ACTIVE_PARAMETER, request.IsActive, DbType.Boolean);
+        }
+
+        if (request.LocationIds != null && request.LocationIds.Length > 0)
+        {
+            conditions.Add($"EXISTS (SELECT 1 FROM department_locations dl WHERE dl.department_id = d.id AND dl.location_id = ANY(@{LOCATION_IDS_PARAMETER}))");
+            parameters.Add(LOCATION_IDS_PARAMETER, request.LocationIds);
+        }
+
         var pagination = request.Pagination ?? new PaginationRequest();
         
         int pageSize = pagination.PageSize;
@@ -78,7 +92,7 @@ public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsResponse, GetDe
 
         var orderByClause = $"ORDER BY {orderByField} {direction}";
         
-        string whereClause = conditions.Count > 0 ? $"WHERE {string.Join("and", conditions)}" : "";
+        string whereClause = conditions.Count > 0 ? $"WHERE {string.Join(" and ", conditions)}" : "";
         
         long? totalCount = null;
         
