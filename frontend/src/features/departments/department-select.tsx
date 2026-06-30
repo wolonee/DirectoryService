@@ -1,6 +1,7 @@
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import { Label } from "@/shared/components/ui/label";
 import { Spinner } from "@/shared/components/ui/spinner";
+import { X } from "lucide-react";
 import { useDepartmentsSelect } from "./model/use-departments-select";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 
@@ -34,34 +35,56 @@ export function DepartmentSelect(props: DepartmentSelectProps) {
     };
 
     return (
-      <div className="max-h-40 overflow-y-auto rounded-md border border-input p-3">
-        {isLoading ? (
-          <div className="flex justify-center py-2">
-            <Spinner />
-          </div>
-        ) : (
-          <div className="grid gap-2">
-            {departments.map((dept) => (
-              <div key={dept.id} className="flex items-center gap-2">
-                <Checkbox
-                  id={`dept-${dept.id}`}
-                  checked={value.includes(dept.id)}
+      <div className="grid gap-2">
+        {value.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {value.map((id) => {
+              const dept = departments.find((d) => d.id === id);
+              return (
+                <button
+                  key={id}
+                  type="button"
                   disabled={disabled}
-                  onCheckedChange={() => toggle(dept.id)}
-                />
-                <Label
-                  htmlFor={`dept-${dept.id}`}
-                  className="cursor-pointer font-normal"
+                  onClick={() => toggle(id)}
+                  className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs text-secondary-foreground transition-colors hover:bg-secondary/80 disabled:opacity-50"
                 >
-                  {dept.name}
-                </Label>
-              </div>
-            ))}
-            <div ref={cursorRef} className="flex justify-center py-1">
-              {isFetchingNextPage && <Spinner />}
-            </div>
+                  {dept?.name ?? id}
+                  <X className="size-3" />
+                </button>
+              );
+            })}
           </div>
         )}
+
+        <div className="max-h-40 overflow-y-auto rounded-md border border-input p-3">
+          {isLoading ? (
+            <div className="flex justify-center py-2">
+              <Spinner />
+            </div>
+          ) : (
+            <div className="grid gap-2">
+              {departments.map((dept) => (
+                <div key={dept.id} className="flex items-center gap-2">
+                  <Checkbox
+                    id={`dept-${dept.id}`}
+                    checked={value.includes(dept.id)}
+                    disabled={disabled}
+                    onCheckedChange={() => toggle(dept.id)}
+                  />
+                  <Label
+                    htmlFor={`dept-${dept.id}`}
+                    className="cursor-pointer font-normal"
+                  >
+                    {dept.name}
+                  </Label>
+                </div>
+              ))}
+              <div ref={cursorRef} className="flex justify-center py-1">
+                {isFetchingNextPage && <Spinner />}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     );
   } else {

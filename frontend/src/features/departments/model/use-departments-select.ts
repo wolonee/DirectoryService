@@ -11,7 +11,7 @@ const PAGE_SIZE = 20;
 export function useDepartmentsSelect() {
   const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
     useInfiniteQuery(
-      departmentQueryOptions.getInfiniteOptions({ pageSize: PAGE_SIZE }),
+      departmentQueryOptions.getListInfiniteOptions({ pageSize: PAGE_SIZE }),
     );
 
   const cursorRef = useIntersectionRef({
