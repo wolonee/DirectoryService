@@ -22,9 +22,8 @@ import { Checkbox } from "@/shared/components/ui/checkbox";
 import { Spinner } from "@/shared/components/ui/spinner";
 import { useCreateDepartment } from "./model/use-create-department";
 import { useLocationsSelect } from "./model/use-locations-select";
-import { useDepartmentsSelect } from "./model/use-departments-select";
 import { isEnvelopeError } from "@/shared/api/types/errors";
-import { DepartmentSelect } from "./department-select";
+import { DepartmentSelect } from "@/features/department-select";
 
 const createDepartmentSchema = z.object({
   name: z

@@ -22,8 +22,7 @@ import { Checkbox } from "@/shared/components/ui/checkbox";
 import { Spinner } from "@/shared/components/ui/spinner";
 import { useCreatePosition } from "./model/use-create-position";
 import { isEnvelopeError } from "@/shared/api/types/errors";
-import { useDepartmentsSelect } from "../departments/model/use-departments-select";
-import { DepartmentSelect } from "../departments/department-select";
+import { DepartmentSelect } from "@/features/department-select";
 
 const createPositionSchema = z.object({
   speciality: z

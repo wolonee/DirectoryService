@@ -2,7 +2,7 @@ import { Checkbox } from "@/shared/components/ui/checkbox";
 import { Label } from "@/shared/components/ui/label";
 import { Spinner } from "@/shared/components/ui/spinner";
 import { X } from "lucide-react";
-import { useDepartmentsSelect } from "./model/use-departments-select";
+import { useDepartmentsSelect } from "../model/use-departments-select";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 
 type Base = { placeholder?: string; disabled?: boolean };

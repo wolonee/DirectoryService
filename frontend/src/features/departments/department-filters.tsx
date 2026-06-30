@@ -15,7 +15,7 @@ import {
   setDepartmentFilterSortDir,
   useGetDepartmentFilter,
 } from "./model/departments-filter-store";
-import { DepartmentSelect, NO_PARENT } from "./department-select";
+import { DepartmentSelect, NO_PARENT } from "@/features/department-select";
 
 export function DepartmentFilters() {
   const { search, isActive, sortBy, sortDir } = useGetDepartmentFilter();
