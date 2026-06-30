@@ -21,8 +21,8 @@ import { Label } from "@/shared/components/ui/label";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import { Spinner } from "@/shared/components/ui/spinner";
 import { useCreatePosition } from "./model/use-create-position";
-import { useDepartmentsList } from "./model/use-departments-list";
 import { isEnvelopeError } from "@/shared/api/types/errors";
+import { DepartmentSelect } from "@/entities/departments/features/department-select";
 
 const createPositionSchema = z.object({
   speciality: z
@@ -35,11 +35,7 @@ const createPositionSchema = z.object({
     .trim()
     .min(1, "Укажите направление")
     .max(100, "Максимум 100 символов"),
-  description: z
-    .string()
-    .trim()
-    .max(1000, "Максимум 1000 символов")
-    .optional(),
+  description: z.string().trim().max(1000, "Максимум 1000 символов").optional(),
   departmentIds: z
     .array(z.string())
     .min(1, "Выберите хотя бы один департамент"),
@@ -76,18 +72,10 @@ export function AddPositionDialog() {
     defaultValues: initialData,
   });
 
-  const { departments, isLoading: isLoadingDepartments, isFetchingNextPage: isFetchingNextDepartments, cursorRef: departmentCursorRef } = useDepartmentsList();
   const selectedDepartmentIds = watch("departmentIds");
 
-  const toggleDepartment = (id: string) => {
-    const current = selectedDepartmentIds ?? [];
-    const next = current.includes(id)
-      ? current.filter((d) => d !== id)
-      : [...current, id];
-    setValue("departmentIds", next, { shouldValidate: true });
-  };
-
-  const {createPosition, isPending, error, commonError, resetError} = useCreatePosition();
+  const { createPosition, isPending, error, commonError, resetError } =
+    useCreatePosition();
 
   const onSubmit = (data: CreatePositionFormData) => {
     resetError();
@@ -103,24 +91,25 @@ export function AddPositionDialog() {
       },
       {
         onSuccess: () => {
-          setOpen(false)
-          reset(initialData)
+          setOpen(false);
+          reset(initialData);
         },
         onError: (error) => {
-          if (!(isEnvelopeError(error))) {
+          if (!isEnvelopeError(error)) {
             return;
           }
 
           error.fieldErrors.forEach((fieldError) => {
-            const fieldName = fieldMap[fieldError.invalidField as keyof typeof fieldMap];
-            
+            const fieldName =
+              fieldMap[fieldError.invalidField as keyof typeof fieldMap];
+
             setError(fieldName, {
               message: fieldError.message,
             });
           });
         },
-      }
-    )
+      },
+    );
   };
 
   const handleOpenChange = (isOpen: boolean) => {
@@ -158,7 +147,9 @@ export function AddPositionDialog() {
                 {...register("speciality")}
               />
               {errors.speciality && (
-                <p className="text-xs text-destructive">{errors.speciality.message}</p>
+                <p className="text-xs text-destructive">
+                  {errors.speciality.message}
+                </p>
               )}
             </div>
 
@@ -170,42 +161,25 @@ export function AddPositionDialog() {
                 {...register("direction")}
               />
               {errors.direction && (
-                <p className="text-xs text-destructive">{errors.direction.message}</p>
+                <p className="text-xs text-destructive">
+                  {errors.direction.message}
+                </p>
               )}
             </div>
 
             <div className="grid gap-2">
               <Label>Департаменты</Label>
-              <div className="max-h-40 overflow-y-auto rounded-md border border-input p-3">
-                {isLoadingDepartments ? (
-                  <div className="flex justify-center py-2">
-                    <Spinner />
-                  </div>
-                ) : (
-                  <div className="grid gap-2">
-                    {departments.map((dept) => (
-                      <div key={dept.id} className="flex items-center gap-2">
-                        <Checkbox
-                          id={`dept-${dept.id}`}
-                          checked={selectedDepartmentIds.includes(dept.id)}
-                          onCheckedChange={() => toggleDepartment(dept.id)}
-                        />
-                        <Label
-                          htmlFor={`dept-${dept.id}`}
-                          className="font-normal cursor-pointer"
-                        >
-                          {dept.name}
-                        </Label>
-                      </div>
-                    ))}
-                    <div ref={departmentCursorRef} className="flex justify-center py-1">
-                      {isFetchingNextDepartments && <Spinner />}
-                    </div>
-                  </div>
-                )}
-              </div>
+              <DepartmentSelect
+                multiple
+                value={selectedDepartmentIds}
+                onChange={(next) =>
+                  setValue("departmentIds", next, { shouldValidate: true })
+                }
+              />
               {errors.departmentIds && (
-                <p className="text-xs text-destructive">{errors.departmentIds.message}</p>
+                <p className="text-xs text-destructive">
+                  {errors.departmentIds.message}
+                </p>
               )}
             </div>
 
@@ -220,16 +194,14 @@ export function AddPositionDialog() {
                 {...register("description")}
               />
               {errors.description && (
-                <p className="text-xs text-destructive">{errors.description.message}</p>
+                <p className="text-xs text-destructive">
+                  {errors.description.message}
+                </p>
               )}
             </div>
           </div>
 
-          {error && (
-            <p className="text-sm text-destructive">
-              {error.message}
-            </p>
-          )}
+          {error && <p className="text-sm text-destructive">{error.message}</p>}
 
           {commonError && (
             <p className="text-sm text-destructive">

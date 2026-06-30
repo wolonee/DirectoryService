@@ -1,15 +1,15 @@
 "use client";
 
 import { useDebounce } from "use-debounce";
-import { Building2, FolderTree } from "lucide-react";
+import { FolderTree } from "lucide-react";
 
 import PageError from "@/shared/components/page-error";
 import { Spinner } from "@/shared/components/ui/spinner";
 import { useDepartmentsList } from "./model/use-departments-list";
 import { DepartmentFilters } from "./department-filters";
 import DepartmentCard from "./department-card";
-import { AddDepartmentDialog } from "./create-department-dialog";
 import { useGetDepartmentFilter } from "./model/departments-filter-store";
+import { DepartmentHeader } from "@/entities/departments/ui/department-header";
 
 export default function DepartmentsList() {
   const { search, isActive, sortBy, sortDir } = useGetDepartmentFilter();
@@ -41,24 +41,8 @@ export default function DepartmentsList() {
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-background text-foreground">
       <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-        <section className="flex flex-col gap-6 border-b border-border/70 pb-8 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <div className="mb-4 flex size-11 items-center justify-center rounded-xl bg-violet-500/10 text-violet-400 ring-1 ring-violet-400/20">
-              <Building2 className="size-5" />
-            </div>
-            <p className="text-sm font-medium text-muted-foreground">
-              Корпоративный справочник
-            </p>
-            <h1 className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">
-              Departments
-            </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-              Структура подразделений и команд организации.
-            </p>
-          </div>
 
-          <AddDepartmentDialog />
-        </section>
+        <DepartmentHeader />
 
         <section className="mt-8" aria-labelledby="departments-list-title">
           <div>
