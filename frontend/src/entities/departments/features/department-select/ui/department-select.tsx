@@ -21,8 +21,21 @@ type DepartmentSelectProps = Single | Multi;
 export const NO_PARENT = "none";
 
 export function DepartmentSelect(props: DepartmentSelectProps) {
-  const { departments, isLoading, isFetchingNextPage, cursorRef } =
+  const { departments, isLoading, isError, isFetchingNextPage, cursorRef, refetch } =
     useDepartmentsSelect();
+
+  const errorState = (
+    <div className="flex flex-col items-center gap-2 py-3 text-center text-sm text-destructive">
+      Не удалось загрузить подразделения
+      <button
+        type="button"
+        onClick={() => refetch()}
+        className="text-xs underline underline-offset-2"
+      >
+        Повторить
+      </button>
+    </div>
+  );
 
   if (props.multiple) {
     const { value, onChange, disabled } = props;
@@ -61,6 +74,8 @@ export function DepartmentSelect(props: DepartmentSelectProps) {
             <div className="flex justify-center py-2">
               <Spinner />
             </div>
+          ) : isError ? (
+            errorState
           ) : (
             <div className="grid gap-2">
               {departments.map((dept) => (
@@ -105,6 +120,8 @@ export function DepartmentSelect(props: DepartmentSelectProps) {
             <div className="flex justify-center py-2">
               <Spinner />
             </div>
+          ) : isError ? (
+            errorState
           ) : (
             departments.map((dept) => (
               <SelectItem key={dept.id} value={dept.id}>

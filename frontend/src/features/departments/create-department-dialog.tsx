@@ -98,7 +98,7 @@ export function AddDepartmentDialog() {
         onError: (error) => {
           if (!isEnvelopeError(error)) {
             return;
-          }
+          }  
 
           error.fieldErrors.forEach((fieldError) => {
             const fieldName =

@@ -9,10 +9,17 @@ const PAGE_SIZE = 20;
 // };
 
 export function useDepartmentsSelect() {
-  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
-    useInfiniteQuery(
-      departmentQueryOptions.getListInfiniteOptions({ pageSize: PAGE_SIZE }),
-    );
+  const {
+    data,
+    isLoading,
+    isError,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    refetch,
+  } = useInfiniteQuery(
+    departmentQueryOptions.getListInfiniteOptions({ pageSize: PAGE_SIZE }),
+  );
 
   const cursorRef = useIntersectionRef({
     hasNextPage,
@@ -23,7 +30,9 @@ export function useDepartmentsSelect() {
   return {
     departments: data?.items ?? [],
     isLoading,
+    isError,
     isFetchingNextPage,
     cursorRef,
+    refetch,
   };
 }
