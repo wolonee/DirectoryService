@@ -23,24 +23,8 @@ import { Spinner } from "@/shared/components/ui/spinner";
 import { useCreateDepartment } from "./model/use-create-department";
 import { useLocationsSelect } from "./model/use-locations-select";
 import { isEnvelopeError } from "@/shared/api/types/errors";
-import { DepartmentSelect } from "@/features/department-select";
-
-const createDepartmentSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(3, "Название должно содержать минимум 3 символа")
-    .max(150, "Максимум 150 символов"),
-  identifier: z
-    .string()
-    .trim()
-    .min(1, "Укажите идентификатор")
-    .max(150, "Максимум 150 символов"),
-  locationIds: z
-    .array(z.string())
-    .min(1, "Выберите хотя бы одну локацию"),
-  parentId: z.string(),
-});
+import { DepartmentSelect } from "@/entities/departments/features/department-select";
+import { departmentSchema } from "@/entities/departments/model/department-schema";
 
 const fieldMap = {
   Name: "name",
@@ -48,7 +32,7 @@ const fieldMap = {
   LocationIds: "locationIds",
 } as const;
 
-type CreateDepartmentFormData = z.infer<typeof createDepartmentSchema>;
+type CreateDepartmentFormData = z.infer<typeof departmentSchema>;
 
 const NO_PARENT = "none";
 
@@ -71,7 +55,7 @@ export function AddDepartmentDialog() {
     watch,
     setValue,
   } = useForm<CreateDepartmentFormData>({
-    resolver: zodResolver(createDepartmentSchema),
+    resolver: zodResolver(departmentSchema),
     defaultValues: initialData,
   });
 
@@ -82,10 +66,8 @@ export function AddDepartmentDialog() {
     cursorRef: locationCursorRef,
   } = useLocationsSelect();
 
-
   const selectedLocationIds = watch("locationIds");
   const selectedParentId = watch("parentId");
-
 
   const toggleLocation = (id: string) => {
     const current = selectedLocationIds ?? [];
@@ -166,7 +148,9 @@ export function AddDepartmentDialog() {
                 {...register("name")}
               />
               {errors.name && (
-                <p className="text-xs text-destructive">{errors.name.message}</p>
+                <p className="text-xs text-destructive">
+                  {errors.name.message}
+                </p>
               )}
             </div>
 
@@ -189,8 +173,8 @@ export function AddDepartmentDialog() {
               <DepartmentSelect
                 multiple={false}
                 value={selectedParentId}
-                onChange={(value) =>{
-                  setValue("parentId", value, { shouldValidate: true })
+                onChange={(value) => {
+                  setValue("parentId", value, { shouldValidate: true });
                 }}
                 placeholder="Без родителя"
               />
@@ -211,7 +195,10 @@ export function AddDepartmentDialog() {
                 ) : (
                   <div className="grid gap-2">
                     {locations.map((location) => (
-                      <div key={location.id} className="flex items-center gap-2">
+                      <div
+                        key={location.id}
+                        className="flex items-center gap-2"
+                      >
                         <Checkbox
                           id={`location-${location.id}`}
                           checked={selectedLocationIds.includes(location.id)}
@@ -245,9 +232,7 @@ export function AddDepartmentDialog() {
             </div>
           </div>
 
-          {error && (
-            <p className="text-sm text-destructive">{error.message}</p>
-          )}
+          {error && <p className="text-sm text-destructive">{error.message}</p>}
 
           {commonError && (
             <p className="text-sm text-destructive">

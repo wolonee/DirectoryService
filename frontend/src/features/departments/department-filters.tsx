@@ -15,7 +15,10 @@ import {
   setDepartmentFilterSortDir,
   useGetDepartmentFilter,
 } from "./model/departments-filter-store";
-import { DepartmentSelect, NO_PARENT } from "@/features/department-select";
+import {
+  DepartmentSelect,
+  NO_PARENT,
+} from "@/entities/departments/features/department-select";
 
 export function DepartmentFilters() {
   const { search, isActive, sortBy, sortDir } = useGetDepartmentFilter();
@@ -36,7 +39,9 @@ export function DepartmentFilters() {
       </div>
 
       <Select
-        value={isActive === undefined ? "all" : isActive ? "active" : "inactive"}
+        value={
+          isActive === undefined ? "all" : isActive ? "active" : "inactive"
+        }
         onValueChange={(value) => {
           if (value === "all") setDepartmentFilterIsActive(undefined);
           else if (value === "active") setDepartmentFilterIsActive(true);
@@ -83,7 +88,7 @@ export function DepartmentFilters() {
         </SelectContent>
       </Select>
 
-      <DepartmentSelect 
+      <DepartmentSelect
         value={parentId}
         onChange={(id) => setParentId(id)}
         placeholder="Все родители"

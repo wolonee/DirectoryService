@@ -22,7 +22,7 @@ import { Checkbox } from "@/shared/components/ui/checkbox";
 import { Spinner } from "@/shared/components/ui/spinner";
 import { useCreatePosition } from "./model/use-create-position";
 import { isEnvelopeError } from "@/shared/api/types/errors";
-import { DepartmentSelect } from "@/features/department-select";
+import { DepartmentSelect } from "@/entities/departments/features/department-select";
 
 const createPositionSchema = z.object({
   speciality: z
@@ -35,11 +35,7 @@ const createPositionSchema = z.object({
     .trim()
     .min(1, "Укажите направление")
     .max(100, "Максимум 100 символов"),
-  description: z
-    .string()
-    .trim()
-    .max(1000, "Максимум 1000 символов")
-    .optional(),
+  description: z.string().trim().max(1000, "Максимум 1000 символов").optional(),
   departmentIds: z
     .array(z.string())
     .min(1, "Выберите хотя бы один департамент"),
@@ -78,7 +74,8 @@ export function AddPositionDialog() {
 
   const selectedDepartmentIds = watch("departmentIds");
 
-  const {createPosition, isPending, error, commonError, resetError} = useCreatePosition();
+  const { createPosition, isPending, error, commonError, resetError } =
+    useCreatePosition();
 
   const onSubmit = (data: CreatePositionFormData) => {
     resetError();
@@ -94,24 +91,25 @@ export function AddPositionDialog() {
       },
       {
         onSuccess: () => {
-          setOpen(false)
-          reset(initialData)
+          setOpen(false);
+          reset(initialData);
         },
         onError: (error) => {
-          if (!(isEnvelopeError(error))) {
+          if (!isEnvelopeError(error)) {
             return;
           }
 
           error.fieldErrors.forEach((fieldError) => {
-            const fieldName = fieldMap[fieldError.invalidField as keyof typeof fieldMap];
-            
+            const fieldName =
+              fieldMap[fieldError.invalidField as keyof typeof fieldMap];
+
             setError(fieldName, {
               message: fieldError.message,
             });
           });
         },
-      }
-    )
+      },
+    );
   };
 
   const handleOpenChange = (isOpen: boolean) => {
@@ -149,7 +147,9 @@ export function AddPositionDialog() {
                 {...register("speciality")}
               />
               {errors.speciality && (
-                <p className="text-xs text-destructive">{errors.speciality.message}</p>
+                <p className="text-xs text-destructive">
+                  {errors.speciality.message}
+                </p>
               )}
             </div>
 
@@ -161,7 +161,9 @@ export function AddPositionDialog() {
                 {...register("direction")}
               />
               {errors.direction && (
-                <p className="text-xs text-destructive">{errors.direction.message}</p>
+                <p className="text-xs text-destructive">
+                  {errors.direction.message}
+                </p>
               )}
             </div>
 
@@ -175,7 +177,9 @@ export function AddPositionDialog() {
                 }
               />
               {errors.departmentIds && (
-                <p className="text-xs text-destructive">{errors.departmentIds.message}</p>
+                <p className="text-xs text-destructive">
+                  {errors.departmentIds.message}
+                </p>
               )}
             </div>
 
@@ -190,16 +194,14 @@ export function AddPositionDialog() {
                 {...register("description")}
               />
               {errors.description && (
-                <p className="text-xs text-destructive">{errors.description.message}</p>
+                <p className="text-xs text-destructive">
+                  {errors.description.message}
+                </p>
               )}
             </div>
           </div>
 
-          {error && (
-            <p className="text-sm text-destructive">
-              {error.message}
-            </p>
-          )}
+          {error && <p className="text-sm text-destructive">{error.message}</p>}
 
           {commonError && (
             <p className="text-sm text-destructive">
