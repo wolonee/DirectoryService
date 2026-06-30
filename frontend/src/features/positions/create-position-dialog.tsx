@@ -77,16 +77,7 @@ export function AddPositionDialog() {
     defaultValues: initialData,
   });
 
-  const { departments, isLoading: isLoadingDepartments, isFetchingNextPage: isFetchingNextDepartments, cursorRef: departmentCursorRef } = useDepartmentsSelect();
   const selectedDepartmentIds = watch("departmentIds");
-
-  const toggleDepartment = (id: string) => {
-    const current = selectedDepartmentIds ?? [];
-    const next = current.includes(id)
-      ? current.filter((d) => d !== id)
-      : [...current, id];
-    setValue("departmentIds", next, { shouldValidate: true });
-  };
 
   const {createPosition, isPending, error, commonError, resetError} = useCreatePosition();
 

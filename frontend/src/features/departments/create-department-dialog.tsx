@@ -19,18 +19,12 @@ import {
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Checkbox } from "@/shared/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
 import { Spinner } from "@/shared/components/ui/spinner";
 import { useCreateDepartment } from "./model/use-create-department";
 import { useLocationsSelect } from "./model/use-locations-select";
 import { useDepartmentsSelect } from "./model/use-departments-select";
 import { isEnvelopeError } from "@/shared/api/types/errors";
+import { DepartmentSelect } from "./department-select";
 
 const createDepartmentSchema = z.object({
   name: z
@@ -89,15 +83,10 @@ export function AddDepartmentDialog() {
     cursorRef: locationCursorRef,
   } = useLocationsSelect();
 
-  const {
-    departments,
-    isLoading: isLoadingDepartments,
-    isFetchingNextPage: isFetchingNextDepartments,
-    cursorRef: departmentCursorRef,
-  } = useDepartmentsSelect();
 
   const selectedLocationIds = watch("locationIds");
   const selectedParentId = watch("parentId");
+
 
   const toggleLocation = (id: string) => {
     const current = selectedLocationIds ?? [];
@@ -198,36 +187,14 @@ export function AddDepartmentDialog() {
 
             <div className="grid gap-2">
               <Label>Родитель</Label>
-              <Select
+              <DepartmentSelect
+                multiple={false}
                 value={selectedParentId}
-                onValueChange={(value) =>
+                onChange={(value) =>{
                   setValue("parentId", value, { shouldValidate: true })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Без родителя" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NO_PARENT}>Без родителя</SelectItem>
-                  {isLoadingDepartments ? (
-                    <div className="flex justify-center py-2">
-                      <Spinner />
-                    </div>
-                  ) : (
-                    departments.map((dept) => (
-                      <SelectItem key={dept.id} value={dept.id}>
-                        {dept.name}
-                      </SelectItem>
-                    ))
-                  )}
-                  <div
-                    ref={departmentCursorRef}
-                    className="flex justify-center py-1"
-                  >
-                    {isFetchingNextDepartments && <Spinner />}
-                  </div>
-                </SelectContent>
-              </Select>
+                }}
+                placeholder="Без родителя"
+              />
               {errors.parentId && (
                 <p className="text-xs text-destructive">
                   {errors.parentId.message}

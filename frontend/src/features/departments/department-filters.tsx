@@ -15,19 +15,12 @@ import {
   setDepartmentFilterSortDir,
   useGetDepartmentFilter,
 } from "./model/departments-filter-store";
-import { useDepartmentsSelect } from "./model/use-departments-select";
-import { Spinner } from "@/shared/components/ui/spinner";
+import { DepartmentSelect, NO_PARENT } from "./department-select";
 
 export function DepartmentFilters() {
   const { search, isActive, sortBy, sortDir } = useGetDepartmentFilter();
 
-  const [parentId, setParentId] = useState("all");
-  const {
-    departments: parents,
-    isLoading: isLoadingParents,
-    isFetchingNextPage: isFetchingNextParents,
-    cursorRef: parentCursorRef,
-  } = useDepartmentsSelect();
+  const [parentId, setParentId] = useState(NO_PARENT);
 
   return (
     <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -90,29 +83,11 @@ export function DepartmentFilters() {
         </SelectContent>
       </Select>
 
-      {/* только UI — выбор родителя пока не влияет на запрос */}
-      <Select value={parentId} onValueChange={setParentId}>
-        <SelectTrigger className="w-full sm:w-48">
-          <SelectValue placeholder="Родитель" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Все родители</SelectItem>
-          {isLoadingParents ? (
-            <div className="flex justify-center py-2">
-              <Spinner />
-            </div>
-          ) : (
-            parents.map((parent) => (
-              <SelectItem key={parent.id} value={parent.id}>
-                {parent.name}
-              </SelectItem>
-            ))
-          )}
-          <div ref={parentCursorRef} className="flex justify-center py-1">
-            {isFetchingNextParents && <Spinner />}
-          </div>
-        </SelectContent>
-      </Select>
+      <DepartmentSelect 
+        value={parentId}
+        onChange={(id) => setParentId(id)}
+        placeholder="Все родители"
+      />
     </div>
   );
 }

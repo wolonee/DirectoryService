@@ -2,12 +2,13 @@ import { Checkbox } from "@/shared/components/ui/checkbox";
 import { Label } from "@/shared/components/ui/label";
 import { Spinner } from "@/shared/components/ui/spinner";
 import { useDepartmentsSelect } from "./model/use-departments-select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 
 type Base = { placeholder?: string; disabled?: boolean };
 type Single = Base & {
   multiple?: false;
-  value: string | null;
-  onChange: (v: string | null) => void;
+  value: string;
+  onChange: (v: string) => void;
 };
 type Multi = Base & {
   multiple: true;
@@ -16,20 +17,20 @@ type Multi = Base & {
 };
 type DepartmentSelectProps = Single | Multi;
 
+export const NO_PARENT = "none";
+
 export function DepartmentSelect(props: DepartmentSelectProps) {
-  // мозг: данные одинаковы для обоих вариантов. Хук зовём безусловно (правило хуков).
   const { departments, isLoading, isFetchingNextPage, cursorRef } =
     useDepartmentsSelect();
 
   if (props.multiple) {
-    // тут TS уже знает: props это Multi → value это string[]
     const { value, onChange, disabled } = props;
 
     const toggle = (id: string) => {
       const next = value.includes(id)
-        ? value.filter((d) => d !== id) // был выбран → убираем
-        : [...value, id]; // не был → добавляем
-      onChange(next); // сообщаем наружу новый массив
+        ? value.filter((d) => d !== id)
+        : [...value, id];
+      onChange(next);
     };
 
     return (
@@ -63,8 +64,36 @@ export function DepartmentSelect(props: DepartmentSelectProps) {
         )}
       </div>
     );
-  }
+  } else {
+    const { value, onChange, placeholder, disabled } = props;
 
-  // single — заглушка, сделаем следующим шагом (Шаг 4)
-  return null;
+    return (
+      <Select
+        value={value}
+        onValueChange={(id) => onChange(id)}
+        disabled={disabled}
+      >
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={NO_PARENT}>{placeholder}</SelectItem>
+          {isLoading ? (
+            <div className="flex justify-center py-2">
+              <Spinner />
+            </div>
+          ) : (
+            departments.map((dept) => (
+              <SelectItem key={dept.id} value={dept.id}>
+                {dept.name}
+              </SelectItem>
+            ))
+          )}
+          <div ref={cursorRef} className="flex justify-center py-1">
+            {isFetchingNextPage && <Spinner />}
+          </div>
+        </SelectContent>
+      </Select>
+    );
+  }
 }
