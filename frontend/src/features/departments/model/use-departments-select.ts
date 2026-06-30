@@ -4,14 +4,14 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 
 const PAGE_SIZE = 20;
 
-type Props = {
-  parentId?: string;
-};
+// type Props = {
+//   parentId?: string;
+// };
 
-export function useDepartmentsSelect({ parentId }: Props = {}) {
+export function useDepartmentsSelect() {
   const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
     useInfiniteQuery(
-      departmentQueryOptions.getInfiniteOptions({ pageSize: PAGE_SIZE, parentId: parentId }),
+      departmentQueryOptions.getInfiniteOptions({ pageSize: PAGE_SIZE }),
     );
 
   const cursorRef = useIntersectionRef({

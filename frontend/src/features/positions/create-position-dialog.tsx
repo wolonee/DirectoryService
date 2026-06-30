@@ -21,8 +21,9 @@ import { Label } from "@/shared/components/ui/label";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import { Spinner } from "@/shared/components/ui/spinner";
 import { useCreatePosition } from "./model/use-create-position";
-import { useDepartmentsList } from "./model/use-departments-list";
 import { isEnvelopeError } from "@/shared/api/types/errors";
+import { useDepartmentsSelect } from "../departments/model/use-departments-select";
+import { DepartmentSelect } from "../departments/department-select";
 
 const createPositionSchema = z.object({
   speciality: z
@@ -76,7 +77,7 @@ export function AddPositionDialog() {
     defaultValues: initialData,
   });
 
-  const { departments, isLoading: isLoadingDepartments, isFetchingNextPage: isFetchingNextDepartments, cursorRef: departmentCursorRef } = useDepartmentsList();
+  const { departments, isLoading: isLoadingDepartments, isFetchingNextPage: isFetchingNextDepartments, cursorRef: departmentCursorRef } = useDepartmentsSelect();
   const selectedDepartmentIds = watch("departmentIds");
 
   const toggleDepartment = (id: string) => {
@@ -176,34 +177,13 @@ export function AddPositionDialog() {
 
             <div className="grid gap-2">
               <Label>Департаменты</Label>
-              <div className="max-h-40 overflow-y-auto rounded-md border border-input p-3">
-                {isLoadingDepartments ? (
-                  <div className="flex justify-center py-2">
-                    <Spinner />
-                  </div>
-                ) : (
-                  <div className="grid gap-2">
-                    {departments.map((dept) => (
-                      <div key={dept.id} className="flex items-center gap-2">
-                        <Checkbox
-                          id={`dept-${dept.id}`}
-                          checked={selectedDepartmentIds.includes(dept.id)}
-                          onCheckedChange={() => toggleDepartment(dept.id)}
-                        />
-                        <Label
-                          htmlFor={`dept-${dept.id}`}
-                          className="font-normal cursor-pointer"
-                        >
-                          {dept.name}
-                        </Label>
-                      </div>
-                    ))}
-                    <div ref={departmentCursorRef} className="flex justify-center py-1">
-                      {isFetchingNextDepartments && <Spinner />}
-                    </div>
-                  </div>
-                )}
-              </div>
+              <DepartmentSelect
+                multiple
+                value={selectedDepartmentIds}
+                onChange={(next) =>
+                  setValue("departmentIds", next, { shouldValidate: true })
+                }
+              />
               {errors.departmentIds && (
                 <p className="text-xs text-destructive">{errors.departmentIds.message}</p>
               )}
