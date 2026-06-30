@@ -21,7 +21,6 @@ import { Spinner } from "@/shared/components/ui/spinner";
 export function DepartmentFilters() {
   const { search, isActive, sortBy, sortDir } = useGetDepartmentFilter();
 
-  // только UI — логику фильтрации по родителю добавишь сам
   const [parentId, setParentId] = useState("all");
   const {
     departments: parents,

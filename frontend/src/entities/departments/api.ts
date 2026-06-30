@@ -92,9 +92,9 @@ export const departmentQueryOptions = {
         departmentsApi.getDepartments({ pagination: { page: 1, pageSize: 100 } }),
     }),
 
-  getInfiniteOptions: ({ pageSize }: { pageSize: number }) =>
+  getInfiniteOptions: ({ pageSize, parentId }: { pageSize: number; parentId?: string }) =>
     infiniteQueryOptions({
-      queryKey: ["departments", "infinite", { pageSize }],
+      queryKey: ["departments", "infinite", { pageSize, parentId }],
       queryFn: ({ pageParam }) =>
         departmentsApi.getDepartments({ pagination: { page: pageParam, pageSize } }),
       initialPageParam: 1,

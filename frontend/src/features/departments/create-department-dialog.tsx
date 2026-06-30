@@ -19,9 +19,17 @@ import {
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Checkbox } from "@/shared/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
 import { Spinner } from "@/shared/components/ui/spinner";
 import { useCreateDepartment } from "./model/use-create-department";
 import { useLocationsSelect } from "./model/use-locations-select";
+import { useDepartmentsSelect } from "./model/use-departments-select";
 import { isEnvelopeError } from "@/shared/api/types/errors";
 
 const createDepartmentSchema = z.object({
@@ -38,6 +46,7 @@ const createDepartmentSchema = z.object({
   locationIds: z
     .array(z.string())
     .min(1, "Выберите хотя бы одну локацию"),
+  parentId: z.string(),
 });
 
 const fieldMap = {
@@ -48,10 +57,13 @@ const fieldMap = {
 
 type CreateDepartmentFormData = z.infer<typeof createDepartmentSchema>;
 
+const NO_PARENT = "none";
+
 const initialData: CreateDepartmentFormData = {
   name: "",
   identifier: "",
   locationIds: [],
+  parentId: NO_PARENT,
 };
 
 export function AddDepartmentDialog() {
@@ -77,7 +89,15 @@ export function AddDepartmentDialog() {
     cursorRef: locationCursorRef,
   } = useLocationsSelect();
 
+  const {
+    departments,
+    isLoading: isLoadingDepartments,
+    isFetchingNextPage: isFetchingNextDepartments,
+    cursorRef: departmentCursorRef,
+  } = useDepartmentsSelect();
+
   const selectedLocationIds = watch("locationIds");
+  const selectedParentId = watch("parentId");
 
   const toggleLocation = (id: string) => {
     const current = selectedLocationIds ?? [];
@@ -97,7 +117,7 @@ export function AddDepartmentDialog() {
       {
         name: data.name,
         identifier: data.identifier,
-        parentId: null,
+        parentId: data.parentId === NO_PARENT ? null : data.parentId,
         locationIds: data.locationIds,
       },
       {
@@ -172,6 +192,45 @@ export function AddDepartmentDialog() {
               {errors.identifier && (
                 <p className="text-xs text-destructive">
                   {errors.identifier.message}
+                </p>
+              )}
+            </div>
+
+            <div className="grid gap-2">
+              <Label>Родитель</Label>
+              <Select
+                value={selectedParentId}
+                onValueChange={(value) =>
+                  setValue("parentId", value, { shouldValidate: true })
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Без родителя" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NO_PARENT}>Без родителя</SelectItem>
+                  {isLoadingDepartments ? (
+                    <div className="flex justify-center py-2">
+                      <Spinner />
+                    </div>
+                  ) : (
+                    departments.map((dept) => (
+                      <SelectItem key={dept.id} value={dept.id}>
+                        {dept.name}
+                      </SelectItem>
+                    ))
+                  )}
+                  <div
+                    ref={departmentCursorRef}
+                    className="flex justify-center py-1"
+                  >
+                    {isFetchingNextDepartments && <Spinner />}
+                  </div>
+                </SelectContent>
+              </Select>
+              {errors.parentId && (
+                <p className="text-xs text-destructive">
+                  {errors.parentId.message}
                 </p>
               )}
             </div>
