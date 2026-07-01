@@ -100,6 +100,15 @@ export type GetDepartmentParentsByNameWithParentsDto = DepartmentNode & {
   parents: GetDepartmentParentsByNameDto[];
 };
 
+/** GET /departments/{id}/positions — позиции конкретного департамента. */
+export type GetDepartmentPositionsDto = {
+  id: string;
+  speciality: string;
+  direction: string;
+  isActive: boolean;
+  createdAt: string;
+};
+
 /** GET /departments/top-positions — департамент + его позиции. */
 export type GetTopDepartmentsDepartmentPositionDto = {
   id: string;
