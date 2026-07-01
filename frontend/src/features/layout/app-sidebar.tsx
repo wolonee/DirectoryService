@@ -4,6 +4,7 @@ import {
   BriefcaseBusiness,
   Building2,
   FlaskConical,
+  FolderTree,
   MapPin,
   Network,
 } from "lucide-react";
@@ -36,6 +37,11 @@ const mainNavigation = [
     title: "Departments",
     href: routes.departments,
     icon: Building2,
+  },
+  {
+    title: "Org structure",
+    href: routes.orgStructure,
+    icon: FolderTree,
   },
   {
     title: "Positions",
