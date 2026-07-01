@@ -1,12 +1,5 @@
 ﻿namespace DirectoryService.Contracts.Departments.Responses;
 
-public record GetDepartmentChildrenByParentResponse(
-    List<GetDepartmentChildrenByParentDto> Children,
-    long TotalCount,
-    int Page,
-    int PageSize,
-    int TotalPages);
-
 public record GetDepartmentChildrenByParentDto
 {
     public Guid Id { get; init; }

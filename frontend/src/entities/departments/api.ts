@@ -50,7 +50,46 @@ export const departmentsApi = {
     }
 
     return {
-      items: result.departments,
+      items: result.items,
+      totalCount: result.totalCount,
+      page,
+      pageSize,
+      totalPages: Math.ceil(result.totalCount / pageSize),
+    };
+  },
+
+  getRoots: async (
+    request: GetDepartmentsRequest): Promise<PaginationResponse<GetDepartmentDto>> => {
+    const response = await apiClient.get<Envelope<GetDepartmentsResponse>>(
+      "/departments",
+      {
+        params: {
+          Search: request.search,
+          IsActive: request.isActive,
+          SortBy: request.sortBy,
+          SortDir: request.sortDir,
+          "Pagination.Page": request.pagination?.page,
+          "Pagination.PageSize": request.pagination?.pageSize,
+        },
+      }
+    );
+
+    const page = request.pagination?.page ?? 1;
+    const pageSize = request.pagination?.pageSize ?? 20;
+    const result = response.data.result;
+
+    if (!result) {
+      return {
+        items: [],
+        totalCount: 0,
+        page,
+        pageSize,
+        totalPages: 0,
+      };
+    }
+
+    return {
+      items: result.items,
       totalCount: result.totalCount,
       page,
       pageSize,
@@ -93,6 +132,52 @@ export const departmentQueryOptions = {
     }),
 
   getListInfiniteOptions: ({
+    search,
+    isActive,
+    sortBy,
+    sortDir,
+    pageSize,
+  }: DepartmentsListFilter) =>
+    infiniteQueryOptions({
+      queryKey: [
+        departmentQueryOptions.baseKey,
+        "list-infinite",
+        { search, isActive, sortBy, sortDir, pageSize },
+      ],
+      queryFn: ({ pageParam }) =>
+        departmentsApi.getDepartments({
+          search,
+          isActive,
+          sortBy,
+          sortDir,
+          pagination: { page: pageParam, pageSize },
+        }),
+      initialPageParam: 1,
+      getNextPageParam: (response) => {
+        if (!response || response.page >= response.totalPages) return undefined;
+        return response.page + 1;
+      },
+      select: (data): PaginationResponse<GetDepartmentDto> => {
+        const seen = new Set<string>();
+        const items = data.pages
+          .flatMap((page) => page?.items ?? [])
+          .filter((item) => {
+            if (seen.has(item.id)) return false;
+            seen.add(item.id);
+            return true;
+          });
+
+        return {
+          items,
+          totalCount: data.pages[0]?.totalCount ?? 0,
+          page: data.pages[0]?.page ?? 1,
+          pageSize: data.pages[0]?.pageSize ?? pageSize,
+          totalPages: data.pages[0]?.totalPages ?? 0,
+        };
+      },
+    }),
+
+  getRootsInfiniteOptions: ({
     search,
     isActive,
     sortBy,

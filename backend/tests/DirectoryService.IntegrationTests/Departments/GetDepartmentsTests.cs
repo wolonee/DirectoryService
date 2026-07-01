@@ -1,4 +1,5 @@
-using DirectoryService.Contracts.Departments.Responses;
+using DirectoryService.Contracts.Common;
+using DirectoryService.Contracts.Departments;
 using DirectoryService.IntegrationTests.Infrastructure;
 using DirectoryService.Shared.Errors;
 using DirectoryService.Shared.HttpCommunication;
@@ -22,12 +23,12 @@ public class GetDepartmentsTests : DirectoryBaseTests
         var response = await AppHttpClient.GetAsync(
             "/api/departments?Pagination.Page=1&Pagination.PageSize=20",
             ct);
-        var result = await response.HandleResponseAsync<GetDepartmentsResponse>(cancellationToken: ct);
+        var result = await response.HandleResponseAsync<PaginationResponse<GetDepartmentsDto>>(cancellationToken: ct);
 
         Assert.True(result.IsSuccess);
         Assert.True(result.Value.TotalCount >= 2);
-        Assert.Contains(result.Value.Departments, d => d.Name == "ParentDepartment");
-        Assert.Contains(result.Value.Departments, d => d.Name == "listchildDepartmentName");
+        Assert.Contains(result.Value.Items, d => d.Name == "ParentDepartment");
+        Assert.Contains(result.Value.Items, d => d.Name == "listchildDepartmentName");
     }
 
     [Fact]
@@ -41,12 +42,12 @@ public class GetDepartmentsTests : DirectoryBaseTests
         var response = await AppHttpClient.GetAsync(
             $"/api/departments?Search={searchTerm}&Pagination.Page=1&Pagination.PageSize=20",
             ct);
-        var result = await response.HandleResponseAsync<GetDepartmentsResponse>(cancellationToken: ct);
+        var result = await response.HandleResponseAsync<PaginationResponse<GetDepartmentsDto>>(cancellationToken: ct);
 
         Assert.True(result.IsSuccess);
-        Assert.NotEmpty(result.Value.Departments);
+        Assert.NotEmpty(result.Value.Items);
         Assert.All(
-            result.Value.Departments,
+            result.Value.Items,
             d => Assert.Contains(searchTerm, d.Name, StringComparison.OrdinalIgnoreCase));
     }
 
@@ -60,11 +61,11 @@ public class GetDepartmentsTests : DirectoryBaseTests
         var response = await AppHttpClient.GetAsync(
             "/api/departments?IsActive=false&Pagination.Page=1&Pagination.PageSize=20",
             ct);
-        var result = await response.HandleResponseAsync<GetDepartmentsResponse>(cancellationToken: ct);
+        var result = await response.HandleResponseAsync<PaginationResponse<GetDepartmentsDto>>(cancellationToken: ct);
 
         Assert.True(result.IsSuccess);
-        Assert.Contains(result.Value.Departments, d => d.Name == "inactivechildDepartmentName");
-        Assert.DoesNotContain(result.Value.Departments, d => d.Name == "ParentDepartment");
+        Assert.Contains(result.Value.Items, d => d.Name == "inactivechildDepartmentName");
+        Assert.DoesNotContain(result.Value.Items, d => d.Name == "ParentDepartment");
     }
 
     [Fact]
@@ -79,11 +80,11 @@ public class GetDepartmentsTests : DirectoryBaseTests
         var response = await AppHttpClient.GetAsync(
             $"/api/departments?LocationIds={locationId}&Pagination.Page=1&Pagination.PageSize=20",
             ct);
-        var result = await response.HandleResponseAsync<GetDepartmentsResponse>(cancellationToken: ct);
+        var result = await response.HandleResponseAsync<PaginationResponse<GetDepartmentsDto>>(cancellationToken: ct);
 
         Assert.True(result.IsSuccess);
-        Assert.Contains(result.Value.Departments, d => d.Name == "ParentDepartment");
-        Assert.DoesNotContain(result.Value.Departments, d => d.Name == "nolinkDepartmentName");
+        Assert.Contains(result.Value.Items, d => d.Name == "ParentDepartment");
+        Assert.DoesNotContain(result.Value.Items, d => d.Name == "nolinkDepartmentName");
     }
 
     [Fact]
@@ -93,7 +94,7 @@ public class GetDepartmentsTests : DirectoryBaseTests
         var response = await AppHttpClient.GetAsync(
             "/api/departments?Pagination.Page=0&Pagination.PageSize=20",
             ct);
-        var result = await response.HandleResponseAsync<GetDepartmentsResponse?>(cancellationToken: ct);
+        var result = await response.HandleResponseAsync<PaginationResponse<GetDepartmentsDto>?>(cancellationToken: ct);
 
         Assert.True(result.IsFailure);
         AssertErrorType(result.Error, ErrorType.VALIDATION);

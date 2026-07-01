@@ -5,6 +5,7 @@ using DirectoryService.Application.Locations.Commands.DeleteLocation;
 using DirectoryService.Application.Locations.Commands.UpdateLocation;
 using DirectoryService.Application.Locations.Queries.GetLocationById;
 using DirectoryService.Application.Locations.Queries.GetLocations;
+using DirectoryService.Contracts.Common;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Contracts.Locations.Requests;
 using DirectoryService.Contracts.Locations.Responses;
@@ -43,9 +44,9 @@ public class LocationController : ControllerBase
     }
     
     [HttpGet]
-    public async Task<EndpointResult<GetLocationsResponse>> Get(
+    public async Task<EndpointResult<PaginationResponse<GetLocationDto>>> Get(
         [FromQuery] GetLocationsRequest request,
-        [FromServices] IQueryHandler<GetLocationsResponse, GetLocationsQuery> handler,
+        [FromServices] IQueryHandler<PaginationResponse<GetLocationDto>, GetLocationsQuery> handler,
         CancellationToken cancellationToken = default)
     {
         var query = new GetLocationsQuery(request);

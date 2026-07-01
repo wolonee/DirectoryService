@@ -12,7 +12,7 @@ export type GetLocationDto = {
 };
 
 export type GetLocationsResponse = {
-  locations: GetLocationDto[];
+  items: GetLocationDto[];
   totalCount: number;
   page: number;
   pageSize: number;

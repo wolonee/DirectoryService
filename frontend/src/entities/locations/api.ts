@@ -42,7 +42,7 @@ export const locationsApi = {
     }
 
     return {
-      items: result.locations,
+      items: result.items,
       totalCount: result.totalCount,
       page: result.page,
       pageSize: result.pageSize,

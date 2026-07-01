@@ -30,6 +30,6 @@ export type GetDepartmentDto = {
 };
 
 export type GetDepartmentsResponse = {
-  departments: GetDepartmentDto[];
+  items: GetDepartmentDto[];
   totalCount: number;
 };

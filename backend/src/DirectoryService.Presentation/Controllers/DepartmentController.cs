@@ -13,7 +13,7 @@ using DirectoryService.Application.Departments.Queries.GetParentsById;
 using DirectoryService.Contracts.Departments;
 using DirectoryService.Contracts.Departments.Requests;
 using DirectoryService.Contracts.Departments.Responses;
-using DirectoryService.Contracts.Locations.Common;
+using DirectoryService.Contracts.Common;
 using DirectoryService.Presentation.EndpointResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -115,9 +115,9 @@ public class DepartmentsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<EndpointResult<GetDepartmentsResponse>> GetDepartments(
+    public async Task<EndpointResult<PaginationResponse<GetDepartmentsDto>>> GetDepartments(
         [FromQuery] GetDepartmentsRequest request,
-        [FromServices] IQueryHandler<GetDepartmentsResponse, GetDepartmentsQuery> handler,
+        [FromServices] IQueryHandler<PaginationResponse<GetDepartmentsDto>, GetDepartmentsQuery> handler,
         CancellationToken cancellationToken = default)
     {
         var query = new GetDepartmentsQuery(request);
@@ -134,10 +134,10 @@ public class DepartmentsController : ControllerBase
     }
 
     [HttpGet("{id:guid}/children")]
-    public async Task<EndpointResult<GetDepartmentChildrenByParentResponse>> GetChildrenByParent(
+    public async Task<EndpointResult<PaginationResponse<GetDepartmentChildrenByParentDto>>> GetChildrenByParent(
         [FromRoute] Guid id,
         [FromQuery] PaginationRequest? pagination,
-        [FromServices] IQueryHandler<GetDepartmentChildrenByParentResponse, GetDepartmentChildrenByParentQuery> handler,
+        [FromServices] IQueryHandler<PaginationResponse<GetDepartmentChildrenByParentDto>, GetDepartmentChildrenByParentQuery> handler,
         CancellationToken cancellationToken = default)
     {
         var query = new GetDepartmentChildrenByParentQuery(id, pagination);

@@ -1,4 +1,4 @@
-﻿using DirectoryService.Contracts.Locations.Common;
+﻿using DirectoryService.Contracts.Common;
 
 namespace DirectoryService.Contracts.Departments.Requests;
 

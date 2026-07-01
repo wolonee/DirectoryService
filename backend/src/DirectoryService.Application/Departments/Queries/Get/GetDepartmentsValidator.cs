@@ -1,6 +1,6 @@
 ﻿using DirectoryService.Application.Validation;
 using DirectoryService.Contracts.Departments.Requests;
-using DirectoryService.Contracts.Locations.Common;
+using DirectoryService.Contracts.Common;
 using DirectoryService.Shared.EntitiesErrors;
 using FluentValidation;
 

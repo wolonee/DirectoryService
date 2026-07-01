@@ -30,7 +30,7 @@ export type GetPositionsRequest = {
 };
 
 export type GetPositionsResponse = {
-  positions: GetPositionDto[];
+  items: GetPositionDto[];
   totalCount: number;
   page: number;
   pageSize: number;

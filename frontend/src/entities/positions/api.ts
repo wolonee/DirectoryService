@@ -39,7 +39,7 @@ export const positionApi = {
     }
 
     return {
-      items: result.positions,
+      items: result.items,
       totalCount: result.totalCount,
       page: result.page,
       pageSize: result.pageSize,
