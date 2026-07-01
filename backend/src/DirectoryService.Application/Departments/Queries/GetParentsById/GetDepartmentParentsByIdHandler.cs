@@ -2,13 +2,14 @@
 using Dapper;
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Database;
+using DirectoryService.Contracts.Common;
 using DirectoryService.Contracts.Departments.Responses;
 using DirectoryService.Shared.Errors;
 using Microsoft.Extensions.Logging;
 
 namespace DirectoryService.Application.Departments.Queries.GetParentsById;
 
-public class GetDepartmentParentsByIdHandler : IQueryHandler<GetDepartmentParentsByIdResponse, GetDepartmentParentsByIdQuery>
+public class GetDepartmentParentsByIdHandler : IQueryHandler<PaginationResponse<GetDepartmentParentsByIdDto>, GetDepartmentParentsByIdQuery>
 {
     private readonly IDepartmentsRepository _departmentsRepository;
     private readonly IDbConnectionFactory _dbConnectionFactory;
@@ -26,7 +27,7 @@ public class GetDepartmentParentsByIdHandler : IQueryHandler<GetDepartmentParent
     
     private const string DEPARTMENT_PATH = "department_path";
 
-    public async Task<Result<GetDepartmentParentsByIdResponse, Errors>> Handle(
+    public async Task<Result<PaginationResponse<GetDepartmentParentsByIdDto>, Errors>> Handle(
         GetDepartmentParentsByIdQuery query,
         CancellationToken cancellationToken = default)
     {
@@ -59,6 +60,8 @@ public class GetDepartmentParentsByIdHandler : IQueryHandler<GetDepartmentParent
             """,
             param: parameters);
         
-        return new GetDepartmentParentsByIdResponse(result.ToList());
+        var items = result.ToList();
+
+        return new PaginationResponse<GetDepartmentParentsByIdDto>(items, items.Count, 1, items.Count, 1);
     }
 }

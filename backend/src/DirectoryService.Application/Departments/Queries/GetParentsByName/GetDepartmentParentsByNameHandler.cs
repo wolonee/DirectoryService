@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DirectoryService.Application.Departments.Queries.GetDepartmentParentsByName;
 
-public class GetDepartmentParentsByNameHandler : IQueryHandler<GetDepartmentParentsByNameResponse, GetDepartmentParentsByNameQuery>
+public class GetDepartmentParentsByNameHandler : IQueryHandler<PaginationResponse<GetDepartmentParentsByNameWithParentsDto>, GetDepartmentParentsByNameQuery>
 {
     private readonly IValidator<GetDepartmentParentsByNameQuery> _validator;
     private readonly IDbConnectionFactory _dbConnectionFactory;
@@ -31,7 +31,7 @@ public class GetDepartmentParentsByNameHandler : IQueryHandler<GetDepartmentPare
     private const string LIMIT = "limit";
     private const string OFFSET = "offset";
 
-    public async Task<Result<GetDepartmentParentsByNameResponse, Errors>> Handle(
+    public async Task<Result<PaginationResponse<GetDepartmentParentsByNameWithParentsDto>, Errors>> Handle(
         GetDepartmentParentsByNameQuery query,
         CancellationToken cancellationToken = default)
     {
@@ -152,6 +152,14 @@ public class GetDepartmentParentsByNameHandler : IQueryHandler<GetDepartmentPare
             })
             .ToList();
 
-        return new GetDepartmentParentsByNameResponse(lookup, totalCount ?? 0);
+        var count = totalCount ?? 0;
+        var totalPages = (int)Math.Ceiling((double)count / pagination.PageSize);
+
+        return new PaginationResponse<GetDepartmentParentsByNameWithParentsDto>(
+            lookup,
+            count,
+            pagination.Page,
+            pagination.PageSize,
+            totalPages);
     }
 }

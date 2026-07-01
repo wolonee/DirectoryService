@@ -2,6 +2,7 @@
 using Dapper;
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Database;
+using DirectoryService.Contracts.Common;
 using DirectoryService.Contracts.Departments.Responses;
 using DirectoryService.Shared.Errors;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DirectoryService.Application.Departments.Queries;
 
-public class GetByTopPositionsHandler : IQueryHandler<GetTopDepartmentsByPositionsResponse>
+public class GetByTopPositionsHandler : IQueryHandler<PaginationResponse<GetTopDepartmentsDepartmentDto>>
 {
     private readonly IDbConnectionFactory _dbConnectionFactory;
     private readonly IReadDbContext _dbContext;
@@ -25,7 +26,7 @@ public class GetByTopPositionsHandler : IQueryHandler<GetTopDepartmentsByPositio
         _logger = logger;
     }
 
-    public async Task<Result<GetTopDepartmentsByPositionsResponse, Errors>> Handle(
+    public async Task<Result<PaginationResponse<GetTopDepartmentsDepartmentDto>, Errors>> Handle(
         CancellationToken cancellationToken = default)
     {
         var connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
@@ -116,7 +117,7 @@ public class GetByTopPositionsHandler : IQueryHandler<GetTopDepartmentsByPositio
             })
             .ToList();
         
-        return new GetTopDepartmentsByPositionsResponse(result);
+        return new PaginationResponse<GetTopDepartmentsDepartmentDto>(result, result.Count, 1, result.Count, 1);
 
         // var deparmentsQuery = _dbContext.DepartmentsRead;
         // var deparmentPositionsQuery = _dbContext.DepartmentPositionsRead;

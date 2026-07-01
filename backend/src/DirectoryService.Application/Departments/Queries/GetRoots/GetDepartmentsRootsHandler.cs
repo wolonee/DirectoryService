@@ -3,13 +3,14 @@ using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Database;
+using DirectoryService.Contracts.Common;
 using DirectoryService.Contracts.Departments.Responses;
 using DirectoryService.Shared.Errors;
 using Microsoft.Extensions.Logging;
 
 namespace DirectoryService.Application.Departments.Queries.GetRoots;
 
-public class GetDepartmentsRootsHandler : IQueryHandler<GetDepartmentRootsResponse>
+public class GetDepartmentsRootsHandler : IQueryHandler<PaginationResponse<GetDepartmentRootsDto>>
 {
     private readonly IDbConnectionFactory _dbConnectionFactory;
     private readonly ILogger<GetDepartmentsRootsHandler> _logger;
@@ -22,7 +23,7 @@ public class GetDepartmentsRootsHandler : IQueryHandler<GetDepartmentRootsRespon
         _logger = logger;
     }
 
-    public async Task<Result<GetDepartmentRootsResponse, Errors>> Handle(CancellationToken cancellationToken = default)
+    public async Task<Result<PaginationResponse<GetDepartmentRootsDto>, Errors>> Handle(CancellationToken cancellationToken = default)
     {
         IDbConnection dbConnection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
         
@@ -45,6 +46,8 @@ public class GetDepartmentsRootsHandler : IQueryHandler<GetDepartmentRootsRespon
             FROM roots r
             """);
 
-        return new GetDepartmentRootsResponse(result.ToList());
+        var items = result.ToList();
+
+        return new PaginationResponse<GetDepartmentRootsDto>(items, items.Count, 1, items.Count, 1);
     }
 }
