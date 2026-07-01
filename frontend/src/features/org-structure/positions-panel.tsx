@@ -1,28 +1,21 @@
 import { Spinner } from "@/shared/components/ui/spinner";
 import { useGetOrgStructureFilter } from "./model/org-structure-filter-store";
 import { useDepartmentById } from "@/entities/departments/model/use-department-by-id";
-
-type Position = {
-  id: string;
-  speciality: string;
-  direction: string;
-  description: string;
-};
-
-const positions: Position[] = [
-  { id: "1", speciality: "Software Engineer", direction: "Backend", description: "Разработка API и сервисов" },
-  { id: "2", speciality: "Senior Software Engineer", direction: "Backend", description: "Архитектура и ревью" },
-  { id: "3", speciality: "Tech Lead", direction: "Backend", description: "Техническое лидерство команды" },
-  { id: "4", speciality: "DevOps Engineer", direction: "Infrastructure", description: "CI/CD и инфраструктура" },
-  { id: "5", speciality: "QA Engineer", direction: "Quality", description: "Автотесты и приёмка" },
-];
+import { usePositionsByDepartmentId } from "@/entities/departments/model/use-positions-by-department-id";
 
 export function PositionsPanel() {
-
   const { selectedId } = useGetOrgStructureFilter();
 
-  const { department, isLoading, isError, refetch } =
-    useDepartmentById(selectedId);
+  const { department } = useDepartmentById(selectedId);
+
+  const {
+    positions,
+    isLoading: isLoadingPositions,
+    isError: isErrorPositions,
+    isFetchingNextPage,
+    cursorRef,
+    refetch: refetchPositions,
+  } = usePositionsByDepartmentId(selectedId);
 
   return (
     <section className="flex min-h-0 flex-col rounded-lg border bg-card">
@@ -41,12 +34,65 @@ export function PositionsPanel() {
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto">
+        {renderBody()}
+      </div>
+    </section>
+  );
+
+  function renderBody() {
+    // подразделение ещё не выбрано
+    if (selectedId == null) {
+      return (
+        <div className="flex h-full items-center justify-center p-4 text-sm text-muted-foreground">
+          Выберите подразделение в дереве слева
+        </div>
+      );
+    }
+
+    // первичная загрузка позиций
+    if (isLoadingPositions) {
+      return (
+        <div className="flex h-full items-center justify-center gap-2 p-4 text-sm text-muted-foreground">
+          <Spinner className="size-4" />
+          Загрузка позиций…
+        </div>
+      );
+    }
+
+    // ошибка загрузки
+    if (isErrorPositions) {
+      return (
+        <div className="flex h-full flex-col items-center justify-center gap-2 p-4 text-center text-sm">
+          <span className="text-destructive">Не удалось загрузить позиции</span>
+          <button
+            type="button"
+            onClick={() => refetchPositions()}
+            className="rounded-md border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-accent"
+          >
+            Повторить
+          </button>
+        </div>
+      );
+    }
+
+    // позиций нет
+    if (positions.length === 0) {
+      return (
+        <div className="flex h-full items-center justify-center p-4 text-sm text-muted-foreground">
+          У подразделения нет позиций
+        </div>
+      );
+    }
+
+    // список позиций
+    return (
+      <>
         <table className="w-full text-sm">
           <thead className="sticky top-0 bg-card text-left text-muted-foreground shadow-[inset_0_-1px_0_var(--border)]">
             <tr>
               <th className="px-4 py-2 font-medium">Специальность</th>
               <th className="px-4 py-2 font-medium">Направление</th>
-              <th className="px-4 py-2 font-medium">Описание</th>
+              <th className="px-4 py-2 font-medium">Статус</th>
             </tr>
           </thead>
           <tbody>
@@ -62,7 +108,7 @@ export function PositionsPanel() {
                   {position.direction}
                 </td>
                 <td className="px-4 py-2.5 text-muted-foreground">
-                  {position.description}
+                  {position.isActive ? "Активна" : "Неактивна"}
                 </td>
               </tr>
             ))}
@@ -70,11 +116,18 @@ export function PositionsPanel() {
         </table>
 
         {/* сентинел подгрузки следующей порции позиций */}
-        <div className="flex items-center justify-center gap-2 py-3 text-xs text-muted-foreground">
-          <Spinner className="size-3" />
-          Загрузка позиций…
+        <div
+          ref={cursorRef}
+          className="flex items-center justify-center gap-2 py-3 text-xs text-muted-foreground"
+        >
+          {isFetchingNextPage && (
+            <>
+              <Spinner className="size-3" />
+              Загрузка позиций…
+            </>
+          )}
         </div>
-      </div>
-    </section>
-  );
+      </>
+    );
+  }
 }

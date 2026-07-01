@@ -1,11 +1,12 @@
 import { apiClient } from "@/shared/api/axios-instance";
 import type { Envelope } from "@/shared/api/types/envelope";
-import type { PaginationResponse } from "@/shared/api/types/pagination";
+import type { PaginationRequest, PaginationResponse } from "@/shared/api/types/pagination";
 import type {
   CreateDepartmentRequest,
   GetDepartmentByIdDto,
   GetDepartmentChildrenByParentDto,
   GetDepartmentDto,
+  GetDepartmentPositionsDto,
   GetDepartmentRootsDto,
   GetDepartmentsRequest,
   GetDepartmentsResponse,
@@ -147,6 +148,38 @@ export const departmentsApi = {
 
     return response.data;
   },
+
+  getPositionsByDepartment: async (departmentId: string, pagination?: PaginationRequest): Promise<PaginationResponse<GetDepartmentPositionsDto>> => {
+    const response = await apiClient.get<Envelope<GetDepartmentsResponse<GetDepartmentPositionsDto>>>(
+      `/departments/${departmentId}/positions`,
+      {
+        params: {
+          "Pagination.Page": pagination?.page,
+          "Pagination.PageSize": pagination?.pageSize,
+        },
+      },
+    );
+
+    const result = response.data.result;
+
+    if (!result) {
+      return {
+        items: [],
+        totalCount: 0,
+        page: pagination?.page ?? 1,
+        pageSize: pagination?.pageSize ?? 20,
+        totalPages: 0,
+      };
+    }
+
+    return {
+      items: result.items,
+      totalCount: result.totalCount,
+      page: result.page,
+      pageSize: result.pageSize,
+      totalPages: result.totalPages,
+    };
+  }
 };
 
 export const departmentQueryOptions = {
@@ -177,6 +210,39 @@ export const departmentQueryOptions = {
     queryOptions({
       queryKey: ["departments", "children", parentId],
       queryFn: () => departmentsApi.getChildrenById(parentId),
+    }),
+
+  getPositionsByDepartmentIdInfiniteOptions: (departmentId: string, pageSize: number) =>
+    infiniteQueryOptions({
+      queryKey: ["departments", "positions", departmentId, { pageSize }],
+      queryFn: ({ pageParam }) =>
+        departmentsApi.getPositionsByDepartment(departmentId, {
+          page: pageParam,
+          pageSize,
+        }),
+      initialPageParam: 1,
+      getNextPageParam: (response) => {
+        if (!response || response.page >= response.totalPages) return undefined;
+        return response.page + 1;
+      },
+      select: (data): PaginationResponse<GetDepartmentPositionsDto> => {
+        const seen = new Set<string>();
+        const items = data.pages
+          .flatMap((page) => page?.items ?? [])
+          .filter((item) => {
+            if (seen.has(item.id)) return false;
+            seen.add(item.id);
+            return true;
+          });
+
+        return {
+          items,
+          totalCount: data.pages[0]?.totalCount ?? 0,
+          page: data.pages[0]?.page ?? 1,
+          pageSize: data.pages[0]?.pageSize ?? pageSize,
+          totalPages: data.pages[0]?.totalPages ?? 0,
+        };
+      },
     }),
 
   getListInfiniteOptions: ({
