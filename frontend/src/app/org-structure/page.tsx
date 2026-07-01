@@ -1,5 +1,6 @@
 import { Building2, ChevronDown, ChevronRight } from "lucide-react";
 import { Spinner } from "@/shared/components/ui/spinner";
+import { useRootsList } from "@/features/org-structure/model/use-roots-list";
 
 // ⚠️ Всё ниже — только МОК для вёрстки. Ни хуков, ни запросов, ни выделенных
 // компонентов. Реальные данные (root-уровень, дети по parentId, позиции)
@@ -45,6 +46,8 @@ const positions: Position[] = [
 const selectedName = "Backend";
 
 export default function OrgStructurePage() {
+  const { roots, isLoading, isError } = useRootsList();
+
   return (
     <main className="min-h-screen bg-background p-4 text-foreground sm:p-6">
       <div className="mb-4">

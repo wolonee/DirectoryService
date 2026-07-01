@@ -1,5 +1,39 @@
 import { PaginationRequest } from "@/shared/api/types/pagination";
 
+// ─────────────────────────── Requests ───────────────────────────
+
+export type CreateLocationAddressRequest = {
+  country: string;
+  city: string;
+  street: string;
+};
+
+export type CreateLocationRequest = {
+  address: CreateLocationAddressRequest;
+  name: string;
+  timezone: string;
+};
+
+export type UpdateLocationRequest = {
+  locationId: string;
+  address: CreateLocationAddressRequest;
+  name: string;
+  timezone: string;
+};
+
+export type GetLocationsRequest = {
+  departmentIds?: string[];
+  minDepartmentCount?: number;
+  search?: string;
+  isActive?: boolean;
+  sortBy?: string;
+  sortDirection?: string;
+  pagination?: PaginationRequest;
+};
+
+// ─────────────────────────── Responses / DTO ───────────────────────────
+
+/** GET /locations — элемент списка. */
 export type GetLocationDto = {
   id: string;
   name: string;
@@ -19,36 +53,18 @@ export type GetLocationsResponse = {
   totalPages: number;
 };
 
-export type CreateLocationAddressRequest = {
+/** GET /locations/{id}. */
+export type GetLocationByIdResponse = {
+  id: string;
+  name: string;
   country: string;
   city: string;
   street: string;
-};
-
-export type CreateLocationRequest = {
-  address: CreateLocationAddressRequest;
-  name: string;
-  timezone: string;
-};
-
-export type GetLocationsRequest = {
-  search?: string;
-  isActive?: boolean;
-  sortBy?: string;
-  sortDirection?: string;
-  pagination?: PaginationRequest;
-};
-
-export type UpdateLocationRequest = {
-  locationId: string;
-  address: CreateLocationAddressRequest;
-  name: string;
   timezone: string;
 };
 
 export const LocationSortByOptions = {
-    name: "name",
-    created_at: "created_at",
-    country: "country"
-}
-
+  name: "name",
+  created_at: "created_at",
+  country: "country",
+};
