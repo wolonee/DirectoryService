@@ -17,8 +17,6 @@ const positions: Position[] = [
   { id: "5", speciality: "QA Engineer", direction: "Quality", description: "Автотесты и приёмка" },
 ];
 
-const selectedName = "Backend";
-
 export function PositionsPanel() {
 
   const { selectedId } = useGetOrgStructureFilter();
@@ -30,7 +28,9 @@ export function PositionsPanel() {
     <section className="flex min-h-0 flex-col rounded-lg border bg-card">
       <div className="flex items-center justify-between border-b px-4 py-2.5">
         <div>
-          <div className="text-sm font-medium">{selectedName}</div>
+          <div className="text-sm font-medium">
+            {department?.name ?? "Выберите подразделение"}
+          </div>
           <div className="text-xs text-muted-foreground">
             Позиции подразделения
           </div>

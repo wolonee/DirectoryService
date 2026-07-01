@@ -70,6 +70,7 @@ export type GetDepartmentsResponse<T> = {
 /** GET /departments/{id}. Внимание: на бэке поле называется `parent`, а не `parentId`. */
 export type GetDepartmentByIdDto = {
   id: string;
+  name: string;
   parent: string | null;
   identifier: string;
   path: string;

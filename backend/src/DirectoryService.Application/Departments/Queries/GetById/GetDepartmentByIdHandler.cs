@@ -31,6 +31,7 @@ public class GetDepartmentByIdHandler : IQueryHandler<GetByDepartmentIdDto, GetD
             .Select(d => new GetByDepartmentIdDto
             {
                 Id = d.Id,
+                Name = d.DepartmentName.Value,
                 Parent = d.ParentId,
                 Identifier = d.DepartmentIdentifier.Value,
                 Path = d.DepartmentPath.Value,
