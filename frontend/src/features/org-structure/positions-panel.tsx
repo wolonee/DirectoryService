@@ -1,6 +1,6 @@
 import { Spinner } from "@/shared/components/ui/spinner";
 import { useGetOrgStructureFilter } from "./model/org-structure-filter-store";
-import { useDepartmentById } from "../departments/model/use-department-by-id";
+import { useDepartmentById } from "@/entities/departments/model/use-department-by-id";
 
 type Position = {
   id: string;
