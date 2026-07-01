@@ -131,3 +131,13 @@ export function PositionsPanel() {
     );
   }
 }
+
+// Замечания из итерации 1 закрыты — бэкенд теперь возвращает признак наличия потомков.
+
+// ✅ HasMoreChildren добавлен в GetDepartmentRootsDto и GetDepartmentChildrenByParentDto.
+// ✅ SQL в GetDepartmentsRootsHandler и GetChildrenByParentHandler вычисляет его через EXISTS(SELECT 1 FROM department WHERE parent_id = <id>) AS has_more_children.
+// ✅ Фронтенд tree-node.tsx уже использует hasMoreChildren для отрисовки шеврона раскрытия — заглушки нет.
+// Реализовано в коммитах: 9a2ad54 (has_more_children в SQL + HasMoreChildren в DTO), 4842f48 и 3dc8671 (перенос списков на PaginationResponse<T>). Текущая голова ветки — 3d04a5b.
+
+// Прошу перепроверить (итерация 2).
+
