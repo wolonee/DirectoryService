@@ -2,7 +2,7 @@ import { departmentQueryOptions } from "@/entities/departments/api";
 import { useQuery } from "@tanstack/react-query";
 
 export function useRootsList() {
-  const { data, isLoading, isError } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery(
     departmentQueryOptions.getRootsOptions(),
   );
 
@@ -10,5 +10,6 @@ export function useRootsList() {
     roots: data?.items ?? [],
     isLoading,
     isError,
+    refetch,
   };
 }

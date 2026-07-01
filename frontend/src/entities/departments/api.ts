@@ -2,8 +2,11 @@ import { apiClient } from "@/shared/api/axios-instance";
 import type { Envelope } from "@/shared/api/types/envelope";
 import type { PaginationResponse } from "@/shared/api/types/pagination";
 import type {
-    CreateDepartmentRequest,
+  CreateDepartmentRequest,
+  GetDepartmentByIdDto,
+  GetDepartmentChildrenByParentDto,
   GetDepartmentDto,
+  GetDepartmentRootsDto,
   GetDepartmentsRequest,
   GetDepartmentsResponse,
   UpdateDepartmentLocationsRequest,
@@ -21,19 +24,17 @@ export type DepartmentsListFilter = {
 export const departmentsApi = {
   getDepartments: async (
     request: GetDepartmentsRequest): Promise<PaginationResponse<GetDepartmentDto>> => {
-    const response = await apiClient.get<Envelope<GetDepartmentsResponse>>(
-      "/departments",
-      {
-        params: {
-          Search: request.search,
-          IsActive: request.isActive,
-          SortBy: request.sortBy,
-          SortDir: request.sortDir,
-          "Pagination.Page": request.pagination?.page,
-          "Pagination.PageSize": request.pagination?.pageSize,
-        },
-      }
-    );
+    const response = await apiClient.get<Envelope<GetDepartmentsResponse<GetDepartmentDto>>
+    >("/departments", {
+      params: {
+        Search: request.search,
+        IsActive: request.isActive,
+        SortBy: request.sortBy,
+        SortDir: request.sortDir,
+        "Pagination.Page": request.pagination?.page,
+        "Pagination.PageSize": request.pagination?.pageSize,
+      },
+    });
 
     const result = response.data.result;
 
@@ -56,9 +57,49 @@ export const departmentsApi = {
     };
   },
 
-  getRoots: async () : Promise<PaginationResponse<GetDepartmentDto>> => {
-    const response = await apiClient.get<Envelope<GetDepartmentsResponse>>(
+  getRoots: async () : Promise<PaginationResponse<GetDepartmentRootsDto>> => {
+    const response = await apiClient.get<Envelope<GetDepartmentsResponse<GetDepartmentRootsDto>>>(
       "/departments/tree"
+    );
+
+    const result = response.data.result;
+
+    if (!result) {
+      return {
+        items: [],
+        totalCount: 0,
+        page: 1,
+        pageSize: 20,
+        totalPages: 0,
+      };
+    }
+
+    return {
+      items: result.items,
+      totalCount: result.totalCount,
+      page: result.page,
+      pageSize: result.pageSize,
+      totalPages: result.totalPages,
+    };
+  },
+
+  getById: async (id: string): Promise<GetDepartmentByIdDto | null> => {
+    const response = await apiClient.get<Envelope<GetDepartmentByIdDto>>(
+      `/departments/${id}`
+    );
+
+    const result = response.data.result;
+
+    if (!result) {
+      return null;
+    }
+
+    return result;
+  },
+
+  getChildrenById: async (id: string): Promise<PaginationResponse<GetDepartmentChildrenByParentDto>> => {
+    const response = await apiClient.get<Envelope<GetDepartmentsResponse<GetDepartmentChildrenByParentDto>>>(
+      `/departments/${id}/children`
     );
 
     const result = response.data.result;
@@ -88,7 +129,9 @@ export const departmentsApi = {
     return response.data;
   },
 
-  updateDepartmentLocations: async (request: UpdateDepartmentLocationsRequest) => {
+  updateDepartmentLocations: async (
+    request: UpdateDepartmentLocationsRequest,
+  ) => {
     const { departmentId, locationsIds } = request;
 
     const response = await apiClient.put(
@@ -113,13 +156,27 @@ export const departmentQueryOptions = {
     queryOptions({
       queryKey: ["departments", "all"],
       queryFn: () =>
-        departmentsApi.getDepartments({ pagination: { page: 1, pageSize: 100 } }),
+        departmentsApi.getDepartments({
+          pagination: { page: 1, pageSize: 100 },
+        }),
     }),
 
   getRootsOptions: () =>
     queryOptions({
       queryKey: ["departments", "roots"],
       queryFn: () => departmentsApi.getRoots(),
+    }),
+
+  getByIdOptions: (id: string) =>
+    queryOptions({
+      queryKey: ["departments", "by-id", id],
+      queryFn: () => departmentsApi.getById(id),
+    }),
+
+  getChildrenOptions: (parentId: string) =>
+    queryOptions({
+      queryKey: ["departments", "children", parentId],
+      queryFn: () => departmentsApi.getChildrenById(parentId),
     }),
 
   getListInfiniteOptions: ({
@@ -168,4 +225,3 @@ export const departmentQueryOptions = {
       },
     }),
 };
-        
