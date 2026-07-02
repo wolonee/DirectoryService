@@ -4,16 +4,15 @@ using Dapper;
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Database;
 using DirectoryService.Application.Validation;
-using DirectoryService.Contracts.Locations.Common;
+using DirectoryService.Contracts.Common;
 using DirectoryService.Contracts.Positions.Dto;
-using DirectoryService.Contracts.Positions.Responses;
 using DirectoryService.Shared.Errors;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 
 namespace DirectoryService.Application.Positions.Queries.Get;
 
-public class GetPositionsHandler : IQueryHandler<GetPositionsResponse, GetPositionsQuery>
+public class GetPositionsHandler : IQueryHandler<PaginationResponse<GetPositionsDto>, GetPositionsQuery>
 {
     private readonly IValidator<GetPositionsQuery> _validator;
     private readonly IDbConnectionFactory _dbConnectionFactory;
@@ -33,7 +32,7 @@ public class GetPositionsHandler : IQueryHandler<GetPositionsResponse, GetPositi
         _logger = logger;
     }
 
-    public async Task<Result<GetPositionsResponse, Errors>> Handle(
+    public async Task<Result<PaginationResponse<GetPositionsDto>, Errors>> Handle(
         GetPositionsQuery query,
         CancellationToken cancellationToken = default)
     {
@@ -109,7 +108,7 @@ public class GetPositionsHandler : IQueryHandler<GetPositionsResponse, GetPositi
         var count = totalCount ?? 0;
         var totalPages = (int)Math.Ceiling((double)count / pageSize);
 
-        return new GetPositionsResponse(
+        return new PaginationResponse<GetPositionsDto>(
             result.ToList(),
             count,
             pagination.Page,

@@ -1,5 +1,5 @@
 ﻿using DirectoryService.Application.Abstractions;
-using DirectoryService.Contracts.Locations.Common;
+using DirectoryService.Contracts.Common;
 
 namespace DirectoryService.Application.Departments.Queries.GetChildrenByParent;
 

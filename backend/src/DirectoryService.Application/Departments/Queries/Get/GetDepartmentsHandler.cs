@@ -4,9 +4,8 @@ using Dapper;
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Database;
 using DirectoryService.Application.Validation;
+using DirectoryService.Contracts.Common;
 using DirectoryService.Contracts.Departments;
-using DirectoryService.Contracts.Departments.Responses;
-using DirectoryService.Contracts.Locations.Common;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Shared.Errors;
 using FluentValidation;
@@ -15,7 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DirectoryService.Application.Departments.Queries.Get;
 
-public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsResponse, GetDepartmentsQuery>
+public class GetDepartmentsHandler : IQueryHandler<PaginationResponse<GetDepartmentsDto>, GetDepartmentsQuery>
 {
     private readonly IValidator<GetDepartmentsQuery> _validator;
     private readonly IDbConnectionFactory _dbConnectionFactory;
@@ -37,7 +36,7 @@ public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsResponse, GetDe
         _logger = logger;
     }
 
-    public async Task<Result<GetDepartmentsResponse, Errors>> Handle(
+    public async Task<Result<PaginationResponse<GetDepartmentsDto>, Errors>> Handle(
         GetDepartmentsQuery query,
         CancellationToken cancellationToken = default)
     {
@@ -122,7 +121,7 @@ public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsResponse, GetDe
         var count = totalCount ?? 0;
         var totalPages = (int)Math.Ceiling((double)count / pageSize);
 
-        return new GetDepartmentsResponse(
+        return new PaginationResponse<GetDepartmentsDto>(
             result.ToList(),
             count,
             pagination.Page,

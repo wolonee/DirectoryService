@@ -1,7 +1,5 @@
 ﻿namespace DirectoryService.Contracts.Departments.Responses;
 
-public record GetDepartmentRootsResponse(List<GetDepartmentRootsDto> DepartmentRoots);
-
 public record GetDepartmentRootsDto
 {
     public Guid Id { get; init; }

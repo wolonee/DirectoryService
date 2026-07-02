@@ -4,14 +4,14 @@ using Dapper;
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Database;
 using DirectoryService.Contracts.Departments.Responses;
-using DirectoryService.Contracts.Locations.Common;
+using DirectoryService.Contracts.Common;
 using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
 using Microsoft.Extensions.Logging;
 
 namespace DirectoryService.Application.Departments.Queries.GetChildrenByParent;
 
-public class GetChildrenByParentHandler : IQueryHandler<GetDepartmentChildrenByParentResponse, GetDepartmentChildrenByParentQuery>
+public class GetChildrenByParentHandler : IQueryHandler<PaginationResponse<GetDepartmentChildrenByParentDto>, GetDepartmentChildrenByParentQuery>
 {
     private readonly IDbConnectionFactory _dbConnectionFactory;
     private readonly IDepartmentsRepository _departmentsRepository;
@@ -31,7 +31,7 @@ public class GetChildrenByParentHandler : IQueryHandler<GetDepartmentChildrenByP
         _logger = logger;
     }
 
-    public async Task<Result<GetDepartmentChildrenByParentResponse, Errors>> Handle(
+    public async Task<Result<PaginationResponse<GetDepartmentChildrenByParentDto>, Errors>> Handle(
         GetDepartmentChildrenByParentQuery query,
         CancellationToken cancellationToken = default)
     {
@@ -94,7 +94,7 @@ public class GetChildrenByParentHandler : IQueryHandler<GetDepartmentChildrenByP
         var count = totalCount ?? 0;
         var totalPages = (int)Math.Ceiling((double)count / pageSize);
 
-        return new GetDepartmentChildrenByParentResponse(
+        return new PaginationResponse<GetDepartmentChildrenByParentDto>(
             result.ToList(),
             count,
             pagination.Page,

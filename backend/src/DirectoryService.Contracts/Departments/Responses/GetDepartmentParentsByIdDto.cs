@@ -1,7 +1,5 @@
 ﻿namespace DirectoryService.Contracts.Departments.Responses;
 
-public record GetDepartmentParentsByIdResponse(List<GetDepartmentParentsByIdDto> Parents);
-
 public record GetDepartmentParentsByIdDto
 {
     public Guid Id { get; init; }

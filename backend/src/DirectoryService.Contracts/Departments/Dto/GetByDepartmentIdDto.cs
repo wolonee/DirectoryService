@@ -4,6 +4,8 @@ public record GetByDepartmentIdDto
 {
     public Guid Id { get; set; }
 
+    public string Name { get; set; } = string.Empty;
+
     public Guid? Parent { get; set; }
     
     public string Identifier { get; set; } = string.Empty;

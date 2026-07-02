@@ -1,3 +1,4 @@
+using DirectoryService.Contracts.Common;
 using DirectoryService.Contracts.Locations.Responses;
 using DirectoryService.IntegrationTests.Infrastructure;
 using DirectoryService.Shared.Errors;
@@ -22,12 +23,12 @@ public class GetLocationsTests : DirectoryBaseTests
         var response = await AppHttpClient.GetAsync(
             "/api/location?Pagination.Page=1&Pagination.PageSize=20",
             ct);
-        var result = await response.HandleResponseAsync<GetLocationsResponse>(cancellationToken: ct);
+        var result = await response.HandleResponseAsync<PaginationResponse<GetLocationDto>>(cancellationToken: ct);
 
         Assert.True(result.IsSuccess);
         Assert.True(result.Value.TotalCount >= 2);
-        Assert.Contains(result.Value.Locations, l => l.Name == "ListOfficeOne");
-        Assert.Contains(result.Value.Locations, l => l.Name == "ListOfficeTwo");
+        Assert.Contains(result.Value.Items, l => l.Name == "ListOfficeOne");
+        Assert.Contains(result.Value.Items, l => l.Name == "ListOfficeTwo");
     }
 
     [Fact]
@@ -41,10 +42,10 @@ public class GetLocationsTests : DirectoryBaseTests
         var response = await AppHttpClient.GetAsync(
             $"/api/location?Search={uniqueName}&Pagination.Page=1&Pagination.PageSize=20",
             ct);
-        var result = await response.HandleResponseAsync<GetLocationsResponse>(cancellationToken: ct);
+        var result = await response.HandleResponseAsync<PaginationResponse<GetLocationDto>>(cancellationToken: ct);
 
         Assert.True(result.IsSuccess);
-        Assert.All(result.Value.Locations, l => Assert.Contains(uniqueName, l.Name, StringComparison.OrdinalIgnoreCase));
+        Assert.All(result.Value.Items, l => Assert.Contains(uniqueName, l.Name, StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -54,7 +55,7 @@ public class GetLocationsTests : DirectoryBaseTests
         var response = await AppHttpClient.GetAsync(
             "/api/location?Pagination.Page=0&Pagination.PageSize=20",
             ct);
-        var result = await response.HandleResponseAsync<GetLocationsResponse?>(cancellationToken: ct);
+        var result = await response.HandleResponseAsync<PaginationResponse<GetLocationDto>?>(cancellationToken: ct);
 
         Assert.True(result.IsFailure);
         AssertErrorType(result.Error, ErrorType.VALIDATION);

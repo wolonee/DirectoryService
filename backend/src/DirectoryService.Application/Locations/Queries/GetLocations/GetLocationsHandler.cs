@@ -6,7 +6,7 @@ using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Database;
 using DirectoryService.Application.Validation;
 using DirectoryService.Contracts.Locations;
-using DirectoryService.Contracts.Locations.Common;
+using DirectoryService.Contracts.Common;
 using DirectoryService.Contracts.Locations.Responses;
 using DirectoryService.Shared;
 using DirectoryService.Shared.Errors;
@@ -16,7 +16,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DirectoryService.Application.Locations.Queries.GetLocations;
 
-public class GetLocationsHandler : IQueryHandler<GetLocationsResponse, GetLocationsQuery>
+public class GetLocationsHandler : IQueryHandler<PaginationResponse<GetLocationDto>, GetLocationsQuery>
 {
     private readonly IReadDbContext _context;
     private readonly IValidator<GetLocationsQuery> _validator;
@@ -42,7 +42,7 @@ public class GetLocationsHandler : IQueryHandler<GetLocationsResponse, GetLocati
         _logger = logger;
     }
 
-    public async Task<Result<GetLocationsResponse, Errors>> Handle(
+    public async Task<Result<PaginationResponse<GetLocationDto>, Errors>> Handle(
         GetLocationsQuery query,
         CancellationToken cancellationToken = default)
     {
@@ -194,7 +194,7 @@ public class GetLocationsHandler : IQueryHandler<GetLocationsResponse, GetLocati
         var count = totalCount ?? 0;
         var totalPages = (int)Math.Ceiling((double)count / pageSize);
 
-        return new GetLocationsResponse(
+        return new PaginationResponse<GetLocationDto>(
             locations.ToList(),
             count,
             pagination.Page,
