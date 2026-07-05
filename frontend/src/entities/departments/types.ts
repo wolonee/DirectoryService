@@ -80,15 +80,16 @@ export type GetDepartmentByIdDto = {
   updatedAt: string;
 };
 
-/** GET /departments/tree — корневой уровень. */
-export type GetDepartmentRootsDto = DepartmentNode & {
+/** Узел дерева департаментов: общая форма для корней и детей (id, name, depth + признак наличия детей). */
+export type DepartmentTreeNode = DepartmentNode & {
   hasMoreChildren: boolean;
 };
 
+/** GET /departments/tree — корневой уровень. */
+export type GetDepartmentRootsDto = DepartmentTreeNode;
+
 /** GET /departments/{id}/children — прямые дети узла. */
-export type GetDepartmentChildrenByParentDto = DepartmentNode & {
-  hasMoreChildren: boolean;
-};
+export type GetDepartmentChildrenByParentDto = DepartmentTreeNode;
 
 /** GET /departments/{id}/ancestors — предки узла (путь до корня). */
 export type GetDepartmentParentsByIdDto = DepartmentNode;
