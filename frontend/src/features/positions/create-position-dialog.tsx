@@ -18,8 +18,6 @@ import {
 } from "@/shared/components/ui/dialog";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
-import { Checkbox } from "@/shared/components/ui/checkbox";
-import { Spinner } from "@/shared/components/ui/spinner";
 import { useCreatePosition } from "./model/use-create-position";
 import { isEnvelopeError } from "@/shared/api/types/errors";
 import { DepartmentSelect } from "@/entities/departments/features/department-select";
