@@ -5,6 +5,9 @@ import { EnvelopeError } from './types/errors';
 export const apiClient = axios.create({
     baseURL: 'http://localhost:5057/api',
     headers: { 'Content-Type': 'application/json' },
+    // ASP.NET биндит массивы как ?key=a&key=b (без скобок).
+    // По умолчанию axios шлёт key[]=a — indexes:null убирает скобки.
+    paramsSerializer: { indexes: null },
 })
 
 apiClient.interceptors.response.use(

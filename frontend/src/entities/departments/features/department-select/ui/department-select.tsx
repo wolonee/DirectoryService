@@ -1,11 +1,14 @@
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import { Label } from "@/shared/components/ui/label";
 import { Spinner } from "@/shared/components/ui/spinner";
-import { X } from "lucide-react";
+import { ChevronDownIcon, X } from "lucide-react";
 import { useDepartmentsSelect } from "../model/use-departments-select";
+import { useDepartmentNames } from "@/entities/departments/model/use-department-names";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/components/ui/popover";
+import { cn } from "@/shared/lib/utils";
 
-type Base = { placeholder?: string; disabled?: boolean };
+type Base = { placeholder?: string; disabled?: boolean; className?: string };
 type Single = Base & {
   multiple?: false;
   value: string;
@@ -24,6 +27,11 @@ export function DepartmentSelect(props: DepartmentSelectProps) {
   const { departments, isLoading, isError, isFetchingNextPage, cursorRef, refetch } =
     useDepartmentsSelect();
 
+  // Названия для выбранных id, которых может не быть в загруженном списке
+  // (например, восстановленных из URL). Вызывается безусловно — Rules of Hooks.
+  const selectedIds = props.multiple ? props.value : [];
+  const nameById = useDepartmentNames(selectedIds);
+
   const errorState = (
     <div className="flex flex-col items-center gap-2 py-3 text-center text-sm text-destructive">
       Не удалось загрузить подразделения
@@ -38,7 +46,7 @@ export function DepartmentSelect(props: DepartmentSelectProps) {
   );
 
   if (props.multiple) {
-    const { value, onChange, disabled } = props;
+    const { value, onChange, placeholder = "Выберите департаменты", disabled, className } = props;
 
     const toggle = (id: string) => {
       const next = value.includes(id)
@@ -48,62 +56,84 @@ export function DepartmentSelect(props: DepartmentSelectProps) {
     };
 
     return (
-      <div className="grid gap-2">
-        {value.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {value.map((id) => {
-              const dept = departments.find((d) => d.id === id);
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => toggle(id)}
-                  className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs text-secondary-foreground transition-colors hover:bg-secondary/80 disabled:opacity-50"
-                >
-                  {dept?.name ?? id}
-                  <X className="size-3" />
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        <div className="max-h-40 overflow-y-auto rounded-md border border-input p-3">
-          {isLoading ? (
-            <div className="flex justify-center py-2">
-              <Spinner />
-            </div>
-          ) : isError ? (
-            errorState
-          ) : (
-            <div className="grid gap-2">
-              {departments.map((dept) => (
-                <div key={dept.id} className="flex items-center gap-2">
-                  <Checkbox
-                    id={`dept-${dept.id}`}
-                    checked={value.includes(dept.id)}
-                    disabled={disabled}
-                    onCheckedChange={() => toggle(dept.id)}
-                  />
-                  <Label
-                    htmlFor={`dept-${dept.id}`}
-                    className="cursor-pointer font-normal"
-                  >
-                    {dept.name}
-                  </Label>
-                </div>
-              ))}
-              <div ref={cursorRef} className="flex justify-center py-1">
-                {isFetchingNextPage && <Spinner />}
+      <Popover modal>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            disabled={disabled}
+            className={cn(
+              "border-input flex min-h-9 w-full items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30 dark:hover:bg-input/50",
+              className,
+            )}
+          >
+            {value.length === 0 ? (
+              <span className="text-muted-foreground">{placeholder}</span>
+            ) : (
+              <div className="flex flex-1 flex-wrap gap-1">
+                {value.map((id) => {
+                  const dept = departments.find((d) => d.id === id);
+                  return (
+                    <span
+                      key={id}
+                      className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs text-secondary-foreground"
+                    >
+                      {dept?.name ?? nameById.get(id) ?? id}
+                      <X
+                        className="size-3 cursor-pointer hover:text-foreground"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggle(id);
+                        }}
+                      />
+                    </span>
+                  );
+                })}
               </div>
-            </div>
-          )}
-        </div>
-      </div>
+            )}
+            <ChevronDownIcon className="size-4 shrink-0 opacity-50" />
+          </button>
+        </PopoverTrigger>
+
+        <PopoverContent
+          align="start"
+          className="w-[var(--radix-popover-trigger-width)] p-0"
+        >
+          <div className="max-h-40 overflow-y-auto p-3">
+            {isLoading ? (
+              <div className="flex justify-center py-2">
+                <Spinner />
+              </div>
+            ) : isError ? (
+              errorState
+            ) : (
+              <div className="grid gap-2">
+                {departments.map((dept) => (
+                  <div key={dept.id} className="flex items-center gap-2">
+                    <Checkbox
+                      id={`dept-${dept.id}`}
+                      checked={value.includes(dept.id)}
+                      disabled={disabled}
+                      onCheckedChange={() => toggle(dept.id)}
+                    />
+                    <Label
+                      htmlFor={`dept-${dept.id}`}
+                      className="cursor-pointer font-normal"
+                    >
+                      {dept.name}
+                    </Label>
+                  </div>
+                ))}
+                <div ref={cursorRef} className="flex justify-center py-1">
+                  {isFetchingNextPage && <Spinner />}
+                </div>
+              </div>
+            )}
+          </div>
+        </PopoverContent>
+      </Popover>
     );
   } else {
-    const { value, onChange, placeholder, disabled } = props;
+    const { value, onChange, placeholder, disabled, className } = props;
 
     return (
       <Select
@@ -111,7 +141,7 @@ export function DepartmentSelect(props: DepartmentSelectProps) {
         onValueChange={(id) => onChange(id)}
         disabled={disabled}
       >
-        <SelectTrigger className="w-full">
+        <SelectTrigger className={cn("w-full", className)}>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>

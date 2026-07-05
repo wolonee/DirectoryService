@@ -1,4 +1,4 @@
-import { GetDepartmentChildrenByParentDto } from "@/entities/departments/types";
+import { DepartmentTreeNode } from "@/entities/departments/types";
 import { useChildrenList } from "./model/use-children-list";
 import {
   setOrgStructureFilterExpandedIds,
@@ -8,7 +8,7 @@ import {
 import { Building2, ChevronDown, ChevronRight } from "lucide-react";
 import { Spinner } from "@/shared/components/ui/spinner";
 
-export function TreeNode({ node }: { node: GetDepartmentChildrenByParentDto }) {
+export function TreeNode({ node }: { node: DepartmentTreeNode }) {
   const { expandedIds, selectedId } = useGetOrgStructureFilter();
   const isExpanded = expandedIds.includes(node.id);
 

@@ -1,5 +1,10 @@
+import { Suspense } from "react";
 import LocationsList from "@/features/locations/locations-list";
 
-export default function LessonsPage(){
-  return <LocationsList />
+export default function LocationsPage() {
+  return (
+    <Suspense>
+      <LocationsList />
+    </Suspense>
+  );
 }
