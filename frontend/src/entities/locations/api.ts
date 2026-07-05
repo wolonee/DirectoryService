@@ -19,6 +19,7 @@ export const locationsApi = {
       "/locations",
       {
         params: {
+          DepartmentIds: request.departmentIds,
           Search: request.search,
           IsActive: request.isActive,
           SortBy: request.sortBy,
@@ -105,6 +106,7 @@ export const locationQueryOptions = {
   },
 
   getLocationsInfiniteOptions: ({
+    departmentIds,
     isActive,
     search,
     sortBy,
@@ -115,10 +117,11 @@ export const locationQueryOptions = {
       queryKey: [
         locationQueryOptions.baseKey,
         "infinite",
-        { search, pageSize, sortBy, sortDirection, isActive },
+        { departmentIds, search, pageSize, sortBy, sortDirection, isActive },
       ],
       queryFn: ({ pageParam }) => {
         return locationsApi.getLocations({
+          departmentIds,
           isActive,
           search,
           pagination: { page: pageParam, pageSize },

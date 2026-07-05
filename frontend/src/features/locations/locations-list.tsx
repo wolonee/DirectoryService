@@ -10,11 +10,13 @@ import LocationHeader from "../../entities/locations/ui/location-header";
 import { useDebounce } from "use-debounce";
 import { useGetLocationFilter } from "./model/locations-filter-store";
 import { LocationFilters } from "./location-filters";
+import { useLocationsUrlFilter } from "./model/use-locations-url-filter";
 
 const PAGE_SIZE = 10
 
 export default function LocationsList() {
-  const { search, isActive, sortBy, sortDirection } = useGetLocationFilter();
+  useLocationsUrlFilter();
+  const { departmentIds, search, isActive, sortBy, sortDirection } = useGetLocationFilter();
 
   const [debouncedSearch] = useDebounce(search, 300);
 
@@ -27,7 +29,7 @@ export default function LocationsList() {
     refetch,
     isFetchingNextPage,
     cursorRef,
-  } = useLocationsList({ search: debouncedSearch, isActive, sortBy, sortDirection, pageSize: PAGE_SIZE });
+  } = useLocationsList({ departmentIds, search: debouncedSearch, isActive, sortBy, sortDirection, pageSize: PAGE_SIZE });
 
   if (error) {
     return (
@@ -68,7 +70,7 @@ export default function LocationsList() {
               </div>
             ) : !locations?.length ? (
               <div className="xl:col-span-2">
-                <LocationEmptyState search={search} />
+                <LocationEmptyState />
               </div>
             ) : (
               locations.map((location) => (

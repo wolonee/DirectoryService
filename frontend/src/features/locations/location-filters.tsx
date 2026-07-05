@@ -7,12 +7,16 @@ import {
   SelectContent,
   SelectItem,
 } from "@/shared/components/ui/select";
-import { Search } from "lucide-react";
-import { setFilterIsActive, setFilterSearch, setFilterSortBy, setFilterSortDirection, useGetLocationFilter } from "./model/locations-filter-store";
+import { Search, X } from "lucide-react";
+import { resetLocationFilter, setFilterDepartmentIds, setFilterIsActive, setFilterSearch, setFilterSortBy, setFilterSortDirection, useGetLocationFilter } from "./model/locations-filter-store";
 import { LocationSortByOptions } from "@/entities/locations/types";
+import { DepartmentSelect } from "@/entities/departments/features/department-select";
+import { Button } from "@/shared/components/ui/button";
 
 export function LocationFilters() {
-  const { search, isActive, sortBy, sortDirection } = useGetLocationFilter();
+  const { departmentIds, search, isActive, sortBy, sortDirection } = useGetLocationFilter();
+
+  const hasFilter = !!departmentIds?.length || isActive !== undefined || !!search?.trim();
 
   return (
     <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -75,6 +79,27 @@ export function LocationFilters() {
           <SelectItem value="desc">По убыванию</SelectItem>
         </SelectContent>
       </Select>
+
+      <DepartmentSelect
+        multiple
+        value={departmentIds ?? []}
+        onChange={(next) => setFilterDepartmentIds(next)}
+        placeholder="Департаменты"
+        className="w-full sm:w-56"
+      />
+
+      {hasFilter && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => resetLocationFilter()}
+          className="shrink-0 text-muted-foreground"
+        >
+          <X className="size-4" />
+          Сбросить
+        </Button>
+      )}
     </div>
   );
 }
