@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { Spinner } from "@/shared/components/ui/spinner";
+import { SegmentedControl } from "@/shared/components/ui/segmented-control";
 import { useLocationsList } from "../../features/locations/model/use-locations-list";
 import PageError from "@/shared/components/page-error";
 import LocationEmptyState from "../../features/locations/location-empty-state";
@@ -17,6 +19,9 @@ const PAGE_SIZE = 10
 export default function LocationsList() {
   useLocationsUrlFilter();
   const { departmentIds, search, isActive, sortBy, sortDirection } = useGetLocationFilter();
+
+  // Только UI: визуальное переключение вида. Пока не привязано к запросам/URL.
+  const [view, setView] = useState<"active" | "archived">("active");
 
   const [debouncedSearch] = useDebounce(search, 300);
 
@@ -59,6 +64,16 @@ export default function LocationsList() {
                 {totalCount} площадок
               </p>
             </div>
+
+            <SegmentedControl
+              aria-label="Показать активные или архивные локации"
+              value={view}
+              onChange={setView}
+              options={[
+                { label: "Активные", value: "active" },
+                { label: "Архивные", value: "archived" },
+              ]}
+            />
           </div>
 
           <LocationFilters />
