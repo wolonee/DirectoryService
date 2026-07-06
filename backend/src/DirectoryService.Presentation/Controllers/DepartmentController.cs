@@ -3,6 +3,7 @@ using DirectoryService.Application.Departments.Commands.AttachDepartmentPosition
 using DirectoryService.Application.Departments.Commands.CreateDepartment;
 using DirectoryService.Application.Departments.Commands.DeleteDepartment;
 using DirectoryService.Application.Departments.Commands.DetachDepartmentPosition;
+using DirectoryService.Application.Departments.Commands.RestoreDepartment;
 using DirectoryService.Application.Departments.Commands.UpdateLocations;
 using DirectoryService.Application.Departments.Commands.UpdateParent;
 using DirectoryService.Application.Departments.Queries.Get;
@@ -68,6 +69,17 @@ public class DepartmentsController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         var command = new DeleteDepartmentCommand(departmentId);
+
+        return await handler.Handle(command, cancellationToken);
+    }
+
+    [HttpPost("{departmentId:guid}/restore")]
+    public async Task<EndpointResult> Restore(
+        [FromRoute] Guid departmentId,
+        [FromServices] ICommandHandler<RestoreDepartmentCommand> handler,
+        CancellationToken cancellationToken = default)
+    {
+        var command = new RestoreDepartmentCommand(departmentId);
 
         return await handler.Handle(command, cancellationToken);
     }

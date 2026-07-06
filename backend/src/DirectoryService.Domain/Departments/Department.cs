@@ -140,6 +140,12 @@ public class Department
         DeletedAt = DateTime.UtcNow;
     }
 
+    public void Restore()
+    {
+        IsDeleted = false;
+        DeletedAt = null;
+    }
+
     // public UnitResult<Error> UpdateParentForChildren(Department parent)
     // {
     //     Depth = parent.Depth + 1;

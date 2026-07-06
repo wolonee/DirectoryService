@@ -179,6 +179,7 @@ public class GetLocationsHandler : IQueryHandler<PaginationResponse<GetLocationD
                    l.is_active,
                    l.timezone,
                    l.created_at,
+                   l.deleted_at,
             
                    COALESCE(dt.count_departments, 0) as count_departments,
             
