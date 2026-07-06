@@ -78,6 +78,14 @@ export const locationsApi = {
 
     return response.data;
   },
+
+  restoreLocation: async (locationId: string) => {
+    const response = await apiClient.post<Envelope<string>>(
+      `/locations/${locationId}/restore`,
+    );
+
+    return response.data;
+  },
 };
 
 export const locationQueryOptions = {

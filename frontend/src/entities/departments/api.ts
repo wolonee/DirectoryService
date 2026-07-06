@@ -149,6 +149,12 @@ export const departmentsApi = {
     return response.data;
   },
 
+  restoreDepartment: async (departmentId: string) => {
+    const response = await apiClient.post(`/departments/${departmentId}/restore`);
+
+    return response.data;
+  },
+
   getPositionsByDepartment: async (departmentId: string, pagination?: PaginationRequest): Promise<PaginationResponse<GetDepartmentPositionsDto>> => {
     const response = await apiClient.get<Envelope<GetDepartmentsResponse<GetDepartmentPositionsDto>>>(
       `/departments/${departmentId}/positions`,
