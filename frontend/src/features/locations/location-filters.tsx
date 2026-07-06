@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Input } from "@/shared/components/ui/input";
 import { SortDirectionOptions } from "@/shared/common-constants";
 import {
@@ -15,6 +16,9 @@ import { Button } from "@/shared/components/ui/button";
 
 export function LocationFilters() {
   const { departmentIds, search, isActive, sortBy, sortDirection } = useGetLocationFilter();
+
+  // Только UI: держит выбор пункта «Архивные». Логику архива подключим позже.
+  const [isArchived, setIsArchived] = useState(false);
 
   const hasFilter = !!departmentIds?.length || isActive !== undefined || !!search?.trim();
 
@@ -34,9 +38,22 @@ export function LocationFilters() {
 
       <Select
         value={
-          isActive === undefined ? "all" : isActive ? "active" : "inactive"
+          isArchived
+            ? "archived"
+            : isActive === undefined
+              ? "all"
+              : isActive
+                ? "active"
+                : "inactive"
         }
         onValueChange={(value: string) => {
+          if (value === "archived") {
+            // Только UI: логику архива пока не применяем.
+            setIsArchived(true);
+            return;
+          }
+
+          setIsArchived(false);
           if (value === "all") setFilterIsActive(undefined);
           else if (value === "active") setFilterIsActive(true);
           else setFilterIsActive(false);
@@ -49,6 +66,7 @@ export function LocationFilters() {
           <SelectItem value="all">Все</SelectItem>
           <SelectItem value="active">Активные</SelectItem>
           <SelectItem value="inactive">Неактивные</SelectItem>
+          <SelectItem value="archived">Архивные</SelectItem>
         </SelectContent>
       </Select>
 
