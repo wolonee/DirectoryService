@@ -25,7 +25,7 @@ export type GetLocationsRequest = {
   departmentIds?: string[];
   minDepartmentCount?: number;
   search?: string;
-  isActive?: boolean;
+  status?: string;
   sortBy?: string;
   sortDirection?: string;
   pagination?: PaginationRequest;
@@ -67,4 +67,11 @@ export const LocationSortByOptions = {
   name: "name",
   created_at: "created_at",
   country: "country",
+};
+
+export const LocationStatusOptions = {
+  all: "all",
+  active: "active",
+  inactive: "inactive",
+  archived: "archived",
 };

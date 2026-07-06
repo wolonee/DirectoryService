@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Input } from "@/shared/components/ui/input";
 import { SortDirectionOptions } from "@/shared/common-constants";
 import {
@@ -9,17 +8,15 @@ import {
   SelectItem,
 } from "@/shared/components/ui/select";
 import { Search, X } from "lucide-react";
-import { resetLocationFilter, setFilterDepartmentIds, setFilterIsActive, setFilterSearch, setFilterSortBy, setFilterSortDirection, useGetLocationFilter } from "./model/locations-filter-store";
+import { resetLocationFilter, setFilterDepartmentIds, setFilterStatus, setFilterSearch, setFilterSortBy, setFilterSortDirection, useGetLocationFilter } from "./model/locations-filter-store";
 import { LocationSortByOptions } from "@/entities/locations/types";
 import { DepartmentSelect } from "@/entities/departments/features/department-select";
 import { Button } from "@/shared/components/ui/button";
 
 export function LocationFilters() {
-  const { departmentIds, search, isActive, sortBy, sortDirection } = useGetLocationFilter();
+  const { departmentIds, search, status, sortBy, sortDirection } = useGetLocationFilter();
 
-  const [status, setStatus] = useState<"all" | "active" | "inactive" | "archived">("all");
-
-  const hasFilter = !!departmentIds?.length || isActive !== undefined || !!search?.trim();
+  const hasFilter = !!departmentIds?.length || status !== "all" || !!search?.trim();
 
   return (
     <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -37,14 +34,7 @@ export function LocationFilters() {
 
       <Select
         value={status}
-        onValueChange={(value: string) => {
-          setStatus(value as typeof status);
-
-          // "archived" — только UI, логику архива пока не применяем.
-          if (value === "all") setFilterIsActive(undefined);
-          else if (value === "active") setFilterIsActive(true);
-          else if (value === "inactive") setFilterIsActive(false);
-        }}
+        onValueChange={(value: string) => setFilterStatus(value)}
       >
         <SelectTrigger className="w-full sm:w-40">
           <SelectValue placeholder="Статус" />
@@ -100,7 +90,6 @@ export function LocationFilters() {
           size="sm"
           onClick={() => {
             resetLocationFilter();
-            setStatus("all");
           }}
           className="shrink-0 text-muted-foreground"
         >
