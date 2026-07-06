@@ -6,7 +6,7 @@ public record GetLocationsRequest(
     Guid[]? DepartmentIds,
     int MinDepartmentCount,
     string? Search,
-    bool? IsActive,
+    string? Status,
     string? SortBy,
     string? SortDirection,
     PaginationRequest? Pagination = null);
