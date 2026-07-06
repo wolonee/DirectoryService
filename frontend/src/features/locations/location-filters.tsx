@@ -17,8 +17,7 @@ import { Button } from "@/shared/components/ui/button";
 export function LocationFilters() {
   const { departmentIds, search, isActive, sortBy, sortDirection } = useGetLocationFilter();
 
-  // Только UI: держит выбор пункта «Архивные». Логику архива подключим позже.
-  const [isArchived, setIsArchived] = useState(false);
+  const [status, setStatus] = useState<"all" | "active" | "inactive" | "archived">("all");
 
   const hasFilter = !!departmentIds?.length || isActive !== undefined || !!search?.trim();
 
@@ -37,26 +36,14 @@ export function LocationFilters() {
       </div>
 
       <Select
-        value={
-          isArchived
-            ? "archived"
-            : isActive === undefined
-              ? "all"
-              : isActive
-                ? "active"
-                : "inactive"
-        }
+        value={status}
         onValueChange={(value: string) => {
-          if (value === "archived") {
-            // Только UI: логику архива пока не применяем.
-            setIsArchived(true);
-            return;
-          }
+          setStatus(value as typeof status);
 
-          setIsArchived(false);
+          // "archived" — только UI, логику архива пока не применяем.
           if (value === "all") setFilterIsActive(undefined);
           else if (value === "active") setFilterIsActive(true);
-          else setFilterIsActive(false);
+          else if (value === "inactive") setFilterIsActive(false);
         }}
       >
         <SelectTrigger className="w-full sm:w-40">
@@ -111,7 +98,10 @@ export function LocationFilters() {
           type="button"
           variant="ghost"
           size="sm"
-          onClick={() => resetLocationFilter()}
+          onClick={() => {
+            resetLocationFilter();
+            setStatus("all");
+          }}
           className="shrink-0 text-muted-foreground"
         >
           <X className="size-4" />
