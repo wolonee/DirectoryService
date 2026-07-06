@@ -7,15 +7,19 @@ import {
   CardAction,
   CardContent,
 } from "@/shared/components/ui/card";
-import { Building2, MapPin, Clock3 } from "lucide-react";
+import { Building2, MapPin, Clock3, RotateCcw } from "lucide-react";
 import { UpdateLocationDialog } from "@/features/locations/update-location-dialog";
 import { DeleteLocationDialog } from "@/features/locations/delete-location-dialog";
+import { Button } from "@/shared/components/ui/button";
 
 type Props = {
   location: GetLocationDto;
+  isArchived?: boolean;
 };
 
-export default function LocationCard({ location }: Props) {
+const dateFormatter = new Intl.DateTimeFormat("ru-RU", { dateStyle: "medium" });
+
+export default function LocationCard({ location, isArchived = false }: Props) {
   return (
     <Card key={location.id} className="transition-colors hover:bg-muted/30">
       <CardHeader className="grid-cols-[auto_1fr_auto] items-start gap-x-4">
@@ -38,8 +42,18 @@ export default function LocationCard({ location }: Props) {
         </div>
 
         <CardAction className="static col-auto row-auto flex items-center gap-1">
-          <UpdateLocationDialog location={location} />
-          <DeleteLocationDialog location={location} />
+          {isArchived ? (
+            // TODO: повесить мутацию восстановления на onClick
+            <Button type="button" variant="outline" size="sm">
+              <RotateCcw className="size-4" />
+              Восстановить
+            </Button>
+          ) : (
+            <>
+              <UpdateLocationDialog location={location} />
+              <DeleteLocationDialog location={location} />
+            </>
+          )}
         </CardAction>
       </CardHeader>
 
@@ -66,12 +80,18 @@ export default function LocationCard({ location }: Props) {
         </div>
 
         <div className="mt-5 flex items-center justify-between border-t border-border/70 pt-4">
-          <span className="text-xs text-muted-foreground">
-            Создана{" "}
-            {new Intl.DateTimeFormat("ru-RU", {
-              dateStyle: "medium",
-            }).format(new Date(location.createdAt))}
-          </span>
+          {isArchived ? (
+            <span className="text-xs text-destructive">
+              Удалена{" "}
+              {location.deletedAt
+                ? dateFormatter.format(new Date(location.deletedAt))
+                : "—"}
+            </span>
+          ) : (
+            <span className="text-xs text-muted-foreground">
+              Создана {dateFormatter.format(new Date(location.createdAt))}
+            </span>
+          )}
           <span className="inline-flex items-center rounded-full bg-sky-500/10 px-2.5 py-1 text-xs font-medium text-sky-400">
             {location.timezone}
           </span>

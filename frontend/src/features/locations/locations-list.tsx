@@ -74,7 +74,11 @@ export default function LocationsList() {
               </div>
             ) : (
               locations.map((location) => (
-                <LocationCard key={location.id} location={location} />
+                <LocationCard
+                  key={location.id}
+                  location={location}
+                  isArchived={status === "archived"}
+                />
               ))
             )}
           </div>

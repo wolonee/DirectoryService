@@ -42,6 +42,8 @@ export type GetLocationDto = {
   street: string;
   timezone: string;
   createdAt: string;
+  /** Заполняется бэкендом только для архивных (soft-deleted) записей. */
+  deletedAt?: string;
   countDepartments: number;
 };
 
