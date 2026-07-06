@@ -8,6 +8,8 @@ namespace DirectoryService.Application.Departments.Queries.Get;
 
 public class GetDepartmentsValidator : AbstractValidator<GetDepartmentsQuery>
 {
+    private static readonly string[] AllowedStatuses = ["all", "active", "inactive", "archived"];
+
     public GetDepartmentsValidator()
     {
         RuleFor(q => q.Request)
@@ -25,7 +27,12 @@ public class GetDepartmentsValidator : AbstractValidator<GetDepartmentsQuery>
         RuleFor(x => x.Request.SortDir)
             .Must(x => x == null || x.ToLower() == "asc" || x.ToLower() == "desc")
             .WithError(GeneralErrors.ValueIsInvalid(nameof(GetDepartmentsQuery.Request.SortDir)));
-        
+
+        RuleFor(q => q.Request.Status)
+            .Must(status => AllowedStatuses.Contains(status!.ToLower()))
+            .When(q => !string.IsNullOrWhiteSpace(q.Request.Status))
+            .WithError(GeneralErrors.ValueIsInvalid(nameof(GetDepartmentsQuery.Request.Status)));
+
         When(x => x.Request.Pagination != null, () =>
         {
             RuleFor(x => x.Request.Pagination!.Page)

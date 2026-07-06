@@ -5,7 +5,7 @@ namespace DirectoryService.Contracts.Departments.Requests;
 public record GetDepartmentsRequest(
     string? Search,
     Guid[]? LocationIds,
-    bool? IsActive,
+    string? Status,
     string? SortBy,
     string? SortDir,
     PaginationRequest? Pagination);

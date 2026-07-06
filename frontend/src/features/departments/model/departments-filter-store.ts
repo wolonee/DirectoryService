@@ -3,14 +3,14 @@ import { useShallow } from "zustand/shallow";
 
 export type DepartmentFilterState = {
   search?: string;
-  isActive?: boolean;
+  status: string;
   sortBy: "name" | "created_at";
   sortDir: "asc" | "desc";
 };
 
 type Actions = {
   setSearch: (input: DepartmentFilterState["search"]) => void;
-  setIsActive: (isActive: DepartmentFilterState["isActive"]) => void;
+  setStatus: (status: DepartmentFilterState["status"]) => void;
   setSortBy: (sortBy: DepartmentFilterState["sortBy"]) => void;
   setSortDir: (sortDir: DepartmentFilterState["sortDir"]) => void;
 };
@@ -19,7 +19,7 @@ type DepartmentsFilterStore = DepartmentFilterState & Actions;
 
 const initialState = {
   search: "",
-  isActive: undefined,
+  status: "all",
   sortBy: "created_at",
   sortDir: "desc",
 } satisfies DepartmentFilterState;
@@ -28,8 +28,8 @@ const useDepartmentsFilterStore = create<DepartmentsFilterStore>((set) => ({
   ...initialState,
   setSearch: (input: DepartmentFilterState["search"]) =>
     set(() => ({ search: input?.trim() })),
-  setIsActive: (isActive: DepartmentFilterState["isActive"]) =>
-    set(() => ({ isActive })),
+  setStatus: (status: DepartmentFilterState["status"]) =>
+    set(() => ({ status })),
   setSortBy: (sortBy: DepartmentFilterState["sortBy"]) =>
     set(() => ({ sortBy })),
   setSortDir: (sortDir: DepartmentFilterState["sortDir"]) =>
@@ -40,7 +40,7 @@ export const useGetDepartmentFilter = () => {
   return useDepartmentsFilterStore(
     useShallow((state) => ({
       search: state.search,
-      isActive: state.isActive,
+      status: state.status,
       sortBy: state.sortBy,
       sortDir: state.sortDir,
     })),
@@ -53,10 +53,10 @@ export const setDepartmentFilterSearch = (
   return useDepartmentsFilterStore.getState().setSearch(input);
 };
 
-export const setDepartmentFilterIsActive = (
-  input: DepartmentFilterState["isActive"],
+export const setDepartmentFilterStatus = (
+  input: DepartmentFilterState["status"],
 ) => {
-  return useDepartmentsFilterStore.getState().setIsActive(input);
+  return useDepartmentsFilterStore.getState().setStatus(input);
 };
 
 export const setDepartmentFilterSortBy = (

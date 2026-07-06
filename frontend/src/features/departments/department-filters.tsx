@@ -9,10 +9,10 @@ import {
 import { Search } from "lucide-react";
 import { useState } from "react";
 import {
-  setDepartmentFilterIsActive,
   setDepartmentFilterSearch,
   setDepartmentFilterSortBy,
   setDepartmentFilterSortDir,
+  setDepartmentFilterStatus,
   useGetDepartmentFilter,
 } from "./model/departments-filter-store";
 import {
@@ -21,7 +21,7 @@ import {
 } from "@/entities/departments/features/department-select";
 
 export function DepartmentFilters() {
-  const { search, isActive, sortBy, sortDir } = useGetDepartmentFilter();
+  const { search, status, sortBy, sortDir } = useGetDepartmentFilter();
 
   const [parentId, setParentId] = useState(NO_PARENT);
 
@@ -39,14 +39,8 @@ export function DepartmentFilters() {
       </div>
 
       <Select
-        value={
-          isActive === undefined ? "all" : isActive ? "active" : "inactive"
-        }
-        onValueChange={(value) => {
-          if (value === "all") setDepartmentFilterIsActive(undefined);
-          else if (value === "active") setDepartmentFilterIsActive(true);
-          else setDepartmentFilterIsActive(false);
-        }}
+        value={status}
+        onValueChange={(value) => setDepartmentFilterStatus(value)}
       >
         <SelectTrigger className="w-full sm:w-40">
           <SelectValue placeholder="Статус" />
@@ -55,6 +49,7 @@ export function DepartmentFilters() {
           <SelectItem value="all">Все</SelectItem>
           <SelectItem value="active">Активные</SelectItem>
           <SelectItem value="inactive">Неактивные</SelectItem>
+          <SelectItem value="archived">Архивные</SelectItem>
         </SelectContent>
       </Select>
 

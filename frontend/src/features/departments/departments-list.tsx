@@ -10,9 +10,12 @@ import { DepartmentFilters } from "./department-filters";
 import DepartmentCard from "./department-card";
 import { useGetDepartmentFilter } from "./model/departments-filter-store";
 import { DepartmentHeader } from "@/entities/departments/ui/department-header";
+import { useDepartmentsUrlFilter } from "./model/use-departments-url-filter";
 
 export default function DepartmentsList() {
-  const { search, isActive, sortBy, sortDir } = useGetDepartmentFilter();
+  useDepartmentsUrlFilter();
+
+  const { search, status, sortBy, sortDir } = useGetDepartmentFilter();
 
   const [debouncedSearch] = useDebounce(search, 300);
 
@@ -25,7 +28,7 @@ export default function DepartmentsList() {
     refetch,
     isFetchingNextPage,
     cursorRef,
-  } = useDepartmentsList({ search: debouncedSearch, isActive, sortBy, sortDir });
+  } = useDepartmentsList({ search: debouncedSearch, status, sortBy, sortDir });
 
   if (error) {
     return (
@@ -72,7 +75,11 @@ export default function DepartmentsList() {
               </div>
             ) : (
               departments.map((department) => (
-                <DepartmentCard key={department.id} department={department} />
+                <DepartmentCard
+                  key={department.id}
+                  department={department}
+                  isArchived={status === "archived"}
+                />
               ))
             )}
           </div>

@@ -16,7 +16,7 @@ import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
 export type DepartmentsListFilter = {
   search?: string;
-  isActive?: boolean;
+  status?: string;
   sortBy?: "name" | "created_at";
   sortDir?: "asc" | "desc";
   pageSize: number;
@@ -29,7 +29,7 @@ export const departmentsApi = {
     >("/departments", {
       params: {
         Search: request.search,
-        IsActive: request.isActive,
+        Status: request.status,
         SortBy: request.sortBy,
         SortDir: request.sortDir,
         "Pagination.Page": request.pagination?.page,
@@ -253,7 +253,7 @@ export const departmentQueryOptions = {
 
   getListInfiniteOptions: ({
     search,
-    isActive,
+    status,
     sortBy,
     sortDir,
     pageSize,
@@ -262,12 +262,12 @@ export const departmentQueryOptions = {
       queryKey: [
         departmentQueryOptions.baseKey,
         "list-infinite",
-        { search, isActive, sortBy, sortDir, pageSize },
+        { search, status, sortBy, sortDir, pageSize },
       ],
       queryFn: ({ pageParam }) =>
         departmentsApi.getDepartments({
           search,
-          isActive,
+          status,
           sortBy,
           sortDir,
           pagination: { page: pageParam, pageSize },

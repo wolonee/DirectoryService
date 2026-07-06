@@ -7,10 +7,10 @@ import {
   CardAction,
   CardContent,
 } from "@/shared/components/ui/card";
-import { Building2, MapPin, Clock3, RotateCcw } from "lucide-react";
+import { Building2, MapPin, Clock3 } from "lucide-react";
 import { UpdateLocationDialog } from "@/features/locations/update-location-dialog";
 import { DeleteLocationDialog } from "@/features/locations/delete-location-dialog";
-import { Button } from "@/shared/components/ui/button";
+import { RestoreLocationDialog } from "@/features/locations/restore-location-dialog";
 
 type Props = {
   location: GetLocationDto;
@@ -43,11 +43,7 @@ export default function LocationCard({ location, isArchived = false }: Props) {
 
         <CardAction className="static col-auto row-auto flex items-center gap-1">
           {isArchived ? (
-            // TODO: повесить мутацию восстановления на onClick
-            <Button type="button" variant="outline" size="sm">
-              <RotateCcw className="size-4" />
-              Восстановить
-            </Button>
+            <RestoreLocationDialog location={location} />
           ) : (
             <>
               <UpdateLocationDialog location={location} />

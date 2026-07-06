@@ -22,7 +22,7 @@ export type UpdateDepartmentParentRequest = {
 export type GetDepartmentsRequest = {
   search?: string;
   locationIds?: string[];
-  isActive?: boolean;
+  status?: string;
   sortBy?: "name" | "created_at";
   sortDir?: "asc" | "desc";
   pagination?: PaginationRequest;
@@ -57,6 +57,7 @@ export type GetDepartmentDto = {
   name: string;
   path: string;
   createdAt: string;
+  deletedAt?: string;
 };
 
 export type GetDepartmentsResponse<T> = {
@@ -128,4 +129,11 @@ export type GetTopDepartmentsDepartmentDto = {
   updatedAt: string;
   countPositions: number;
   positions: GetTopDepartmentsDepartmentPositionDto[];
+};
+
+export const DepartmentStatusOptions = {
+  all: "all",
+  active: "active",
+  inactive: "inactive",
+  archived: "archived",
 };
