@@ -8,7 +8,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/components/ui/popover";
 import { cn } from "@/shared/lib/utils";
 
-type Base = { placeholder?: string; disabled?: boolean; className?: string };
+type Base = {
+  placeholder?: string;
+  disabled?: boolean;
+  className?: string;
+  /** id подразделения, которое нужно убрать из списка вариантов. */
+  excludeId?: string;
+};
 type Single = Base & {
   multiple?: false;
   value: string;
@@ -26,6 +32,11 @@ export const NO_PARENT = "none";
 export function DepartmentSelect(props: DepartmentSelectProps) {
   const { departments, isLoading, isError, isFetchingNextPage, cursorRef, refetch } =
     useDepartmentsSelect();
+
+  // Убираем исключённое подразделение из вариантов (например, сам переносимый узел).
+  const options = props.excludeId
+    ? departments.filter((d) => d.id !== props.excludeId)
+    : departments;
 
   // Названия для выбранных id, которых может не быть в загруженном списке
   // (например, восстановленных из URL). Вызывается безусловно — Rules of Hooks.
@@ -107,7 +118,7 @@ export function DepartmentSelect(props: DepartmentSelectProps) {
               errorState
             ) : (
               <div className="grid gap-2">
-                {departments.map((dept) => (
+                {options.map((dept) => (
                   <div key={dept.id} className="flex items-center gap-2">
                     <Checkbox
                       id={`dept-${dept.id}`}
@@ -153,7 +164,7 @@ export function DepartmentSelect(props: DepartmentSelectProps) {
           ) : isError ? (
             errorState
           ) : (
-            departments.map((dept) => (
+            options.map((dept) => (
               <SelectItem key={dept.id} value={dept.id}>
                 {dept.name}
               </SelectItem>
