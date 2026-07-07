@@ -11,6 +11,7 @@ import type {
   GetDepartmentsRequest,
   GetDepartmentsResponse,
   UpdateDepartmentLocationsRequest,
+  UpdateDepartmentParentRequest,
 } from "./types";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
@@ -126,6 +127,15 @@ export const departmentsApi = {
 
   createDepartment: async (request: CreateDepartmentRequest) => {
     const response = await apiClient.post("/departments", request);
+
+    return response.data;
+  },
+
+  updateDepartmentParent: async (request: UpdateDepartmentParentRequest) => {
+    const response = await apiClient.put(
+      `/departments/${request.departmentId}/parent`,
+      { parentId: request.parentId }
+    );
 
     return response.data;
   },

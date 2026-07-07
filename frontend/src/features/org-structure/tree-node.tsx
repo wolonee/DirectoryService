@@ -7,7 +7,7 @@ import {
 } from "./model/org-structure-filter-store";
 import { Building2, ChevronDown, ChevronRight } from "lucide-react";
 import { Spinner } from "@/shared/components/ui/spinner";
-import { MoveDepartmentDialog } from "@/features/departments/move-department-dialog";
+import { UpdateDepartmentParentDialog } from "@/entities/departments/features/update-department-parent/ui/update-department-parent-dialog";
 
 export function TreeNode({ node }: { node: DepartmentTreeNode }) {
   const { expandedIds, selectedId } = useGetOrgStructureFilter();
@@ -63,7 +63,7 @@ export function TreeNode({ node }: { node: DepartmentTreeNode }) {
           <span className="truncate">{node.name}</span>
         </button>
 
-        <MoveDepartmentDialog node={node} />
+        <UpdateDepartmentParentDialog node={node} />
       </div>
 
       {isExpanded && (

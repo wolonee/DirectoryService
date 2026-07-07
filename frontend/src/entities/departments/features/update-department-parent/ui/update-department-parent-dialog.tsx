@@ -1,7 +1,7 @@
 "use client";
 
 import { DepartmentTreeNode } from "@/entities/departments/types";
-import { DepartmentSelect } from "@/entities/departments/features/department-select";
+import { DepartmentSelect, NO_PARENT } from "@/entities/departments/features/department-select";
 import { useDepartmentNames } from "@/entities/departments/model/use-department-names";
 import { Button } from "@/shared/components/ui/button";
 import { Label } from "@/shared/components/ui/label";
@@ -15,29 +15,48 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/shared/components/ui/dialog";
-import { FolderInput } from "lucide-react";
+import { ArrowRight, FolderInput } from "lucide-react";
 import { useState } from "react";
+import { useUpdateDepartmentParent } from "../model/use-update-department-parent";
 
 type Props = {
   node: DepartmentTreeNode;
 };
 
-export function MoveDepartmentDialog({ node }: Props) {
+export function UpdateDepartmentParentDialog({ node }: Props) {
   const [open, setOpen] = useState(false);
-
-  // Только UI: выбранный новый родитель. Мутацию/валидацию повесим позже.
   const [newParentId, setNewParentId] = useState("");
 
-  // Имя текущего родителя (display). Если parentId === null — это корень.
   const parentNames = useDepartmentNames(node.parentId ? [node.parentId] : []);
   const currentParent = node.parentId
     ? (parentNames.get(node.parentId) ?? "…")
     : "Корень";
 
+  // Имя выбранного нового родителя для preview ("none" = корень, "" = ещё не выбран).
+  const newParentNames = useDepartmentNames(
+    newParentId && newParentId !== NO_PARENT ? [newParentId] : [],
+  );
+  const hasSelection = newParentId !== "";
+  const newParent =
+    newParentId === NO_PARENT
+      ? "Корень"
+      : (newParentNames.get(newParentId) ?? "…");
+
   const onOpenChange = (next: boolean) => {
     setOpen(next);
-    if (!next) setNewParentId(""); // закрытие без сохранения сбрасывает выбор
+    if (!next) setNewParentId("");
   };
+
+  const { updateDepartmentParent, isPending } = useUpdateDepartmentParent();
+ 
+  const onSubmit = () => {
+    updateDepartmentParent({ departmentId: node.id, newParentId }, {
+      onSuccess: () => {
+        setOpen(false);
+        setNewParentId("");
+      },
+    });
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -79,8 +98,20 @@ export function MoveDepartmentDialog({ node }: Props) {
               value={newParentId}
               onChange={setNewParentId}
               placeholder="Без родителя (в корень)"
+              excludeId={[node.id, node.parentId ?? ""]}
             />
           </div>
+
+          {hasSelection && (
+            <div className="rounded-md bg-muted/50 p-3">
+              <span className="text-muted-foreground">Предпросмотр</span>
+              <div className="mt-1.5 flex items-center gap-2 font-medium text-foreground">
+                <span className="truncate">{currentParent}</span>
+                <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
+                <span className="truncate">{newParent}</span>
+              </div>
+            </div>
+          )}
         </div>
 
         <DialogFooter>
@@ -89,7 +120,7 @@ export function MoveDepartmentDialog({ node }: Props) {
               Отмена
             </Button>
           </DialogClose>
-          <Button type="button" onClick={() => setOpen(false)}>
+          <Button type="button" onClick={onSubmit} disabled={isPending}>
             Перенести
           </Button>
         </DialogFooter>

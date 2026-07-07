@@ -12,8 +12,7 @@ type Base = {
   placeholder?: string;
   disabled?: boolean;
   className?: string;
-  /** id подразделения, которое нужно убрать из списка вариантов. */
-  excludeId?: string;
+  excludeId?: string[];
 };
 type Single = Base & {
   multiple?: false;
@@ -35,7 +34,7 @@ export function DepartmentSelect(props: DepartmentSelectProps) {
 
   // Убираем исключённое подразделение из вариантов (например, сам переносимый узел).
   const options = props.excludeId
-    ? departments.filter((d) => d.id !== props.excludeId)
+    ? departments.filter((d) => !props.excludeId?.includes(d.id))
     : departments;
 
   // Названия для выбранных id, которых может не быть в загруженном списке
