@@ -33,10 +33,14 @@ export type GetDepartmentParentsByNameRequest = {
   pagination?: PaginationRequest;
 };
 
-/** GET /departments/{parentId}/children — прямые дети узла по id родителя. */
 export type GetDepartmentChildrenByParentRequest = {
   parentId: string;
   pagination?: PaginationRequest;
+};
+
+/** GET /departments/{parentId}/descendants — все потомки узла (весь поддерев). */
+export type GetDepartmentDescendantsRequest = {
+  parentId: string;
 };
 
 // ─────────────────────────── Responses / DTO ───────────────────────────

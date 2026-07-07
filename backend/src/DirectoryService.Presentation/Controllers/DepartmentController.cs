@@ -9,6 +9,7 @@ using DirectoryService.Application.Departments.Commands.UpdateParent;
 using DirectoryService.Application.Departments.Queries.Get;
 using DirectoryService.Application.Departments.Queries.GetById;
 using DirectoryService.Application.Departments.Queries.GetChildrenByParent;
+using DirectoryService.Application.Departments.Queries.GetDescendants;
 using DirectoryService.Application.Departments.Queries.GetDepartmentParentsByName;
 using DirectoryService.Application.Departments.Queries.GetDepartmentPositions;
 using DirectoryService.Application.Departments.Queries.GetParentsById;
@@ -157,7 +158,18 @@ public class DepartmentsController : ControllerBase
 
         return await handler.Handle(query, cancellationToken);
     }
-    
+
+    [HttpGet("{id:guid}/descendants")]
+    public async Task<EndpointResult<PaginationResponse<GetDepartmentChildrenByParentDto>>> GetDescendants(
+        [FromRoute] Guid id,
+        [FromServices] IQueryHandler<PaginationResponse<GetDepartmentChildrenByParentDto>, GetDepartmentDescendantsQuery> handler,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetDepartmentDescendantsQuery(id);
+
+        return await handler.Handle(query, cancellationToken);
+    }
+
     [HttpGet("{id:guid}/positions")]
     public async Task<EndpointResult<PaginationResponse<GetDepartmentPositionsDto>>> GetPositionsByDepartment(
         [FromRoute] Guid id,
