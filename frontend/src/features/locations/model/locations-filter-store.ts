@@ -4,7 +4,7 @@ import { useShallow } from "zustand/shallow";
 export type LocationFilterState = {
   departmentIds?: string[];
   search?: string;
-  isActive?: boolean; 
+  status: string;
   sortBy: string;
   sortDirection: string;
   pageSize?: number;
@@ -13,7 +13,7 @@ export type LocationFilterState = {
 type Actions = {
   setDepartmentIds: (ids: LocationFilterState["departmentIds"]) => void;
   setSearch: (input: LocationFilterState["search"]) => void;
-  setIsActive: (isActive: LocationFilterState["isActive"]) => void;
+  setStatus: (status: LocationFilterState["status"]) => void;
   setSortBy: (sortBy: LocationFilterState["sortBy"]) => void;
   setSortDirection: (sortDirection: LocationFilterState["sortDirection"]) => void;
 };
@@ -23,7 +23,7 @@ type LocationsFilterStore = LocationFilterState & Actions;
 const initialState = {
   departmentIds: undefined,
   search: "",
-  isActive: undefined,
+  status: "all",
   sortBy: "created_at",
   sortDirection: "desc",
   pageSize: 10
@@ -35,8 +35,8 @@ const useLocationsFilterStore = create<LocationsFilterStore>((set) => ({
     set(() => ({ departmentIds: ids })),
   setSearch: (input: LocationFilterState["search"]) =>
     set(() => ({ search: input?.trim() })),
-  setIsActive: (isActive: LocationFilterState["isActive"]) =>
-    set(() => ({ isActive })),
+  setStatus: (status: LocationFilterState["status"]) =>
+    set(() => ({ status })),
   setSortBy: (sortBy: LocationFilterState["sortBy"]) =>
     set(() => ({ sortBy })),
   setSortDirection: (sortDirection: LocationFilterState["sortDirection"]) =>
@@ -48,7 +48,7 @@ export const useGetLocationFilter = () => {
     useShallow((state) => ({
       departmentIds: state.departmentIds,
       search: state.search,
-      isActive: state.isActive,
+      status: state.status,
       sortBy: state.sortBy,
       sortDirection: state.sortDirection
     })),
@@ -56,10 +56,10 @@ export const useGetLocationFilter = () => {
 };
 
 export const resetLocationFilter = () => {
-  const { setDepartmentIds, setSearch, setIsActive, setSortBy, setSortDirection } = useLocationsFilterStore.getState();
+  const { setDepartmentIds, setSearch, setStatus, setSortBy, setSortDirection } = useLocationsFilterStore.getState();
   setDepartmentIds(undefined);
   setSearch("");
-  setIsActive(undefined);
+  setStatus("all");
   setSortBy("created_at");
   setSortDirection("desc");
 };
@@ -72,8 +72,8 @@ export const setFilterSearch = (input: LocationFilterState["search"]) => {
   return useLocationsFilterStore.getState().setSearch(input);
 };
 
-export const setFilterIsActive = (input: LocationFilterState["isActive"]) => {
-  return useLocationsFilterStore.getState().setIsActive(input);
+export const setFilterStatus = (input: LocationFilterState["status"]) => {
+  return useLocationsFilterStore.getState().setStatus(input);
 };
 
 export const setFilterSortBy = (input: LocationFilterState["sortBy"]) => {
@@ -83,4 +83,3 @@ export const setFilterSortBy = (input: LocationFilterState["sortBy"]) => {
 export const setFilterSortDirection = (input: LocationFilterState["sortDirection"]) => {
   return useLocationsFilterStore.getState().setSortDirection(input);
 };
-

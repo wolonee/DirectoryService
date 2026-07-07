@@ -9,7 +9,7 @@ const PAGE_SIZE = 10;
 
 type Params = Omit<DepartmentsListFilter, "pageSize">;
 
-export function useDepartmentsList({ search, isActive, sortBy, sortDir }: Params) {
+export function useDepartmentsList({ search, status, sortBy, sortDir }: Params) {
   const {
     data,
     isLoading,
@@ -22,7 +22,7 @@ export function useDepartmentsList({ search, isActive, sortBy, sortDir }: Params
   } = useInfiniteQuery(
     departmentQueryOptions.getListInfiniteOptions({
       search,
-      isActive,
+      status,
       sortBy,
       sortDir,
       pageSize: PAGE_SIZE,

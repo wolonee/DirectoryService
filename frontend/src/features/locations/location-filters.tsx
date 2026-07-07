@@ -8,15 +8,15 @@ import {
   SelectItem,
 } from "@/shared/components/ui/select";
 import { Search, X } from "lucide-react";
-import { resetLocationFilter, setFilterDepartmentIds, setFilterIsActive, setFilterSearch, setFilterSortBy, setFilterSortDirection, useGetLocationFilter } from "./model/locations-filter-store";
+import { resetLocationFilter, setFilterDepartmentIds, setFilterStatus, setFilterSearch, setFilterSortBy, setFilterSortDirection, useGetLocationFilter } from "./model/locations-filter-store";
 import { LocationSortByOptions } from "@/entities/locations/types";
 import { DepartmentSelect } from "@/entities/departments/features/department-select";
 import { Button } from "@/shared/components/ui/button";
 
 export function LocationFilters() {
-  const { departmentIds, search, isActive, sortBy, sortDirection } = useGetLocationFilter();
+  const { departmentIds, search, status, sortBy, sortDirection } = useGetLocationFilter();
 
-  const hasFilter = !!departmentIds?.length || isActive !== undefined || !!search?.trim();
+  const hasFilter = !!departmentIds?.length || status !== "all" || !!search?.trim();
 
   return (
     <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -33,14 +33,8 @@ export function LocationFilters() {
       </div>
 
       <Select
-        value={
-          isActive === undefined ? "all" : isActive ? "active" : "inactive"
-        }
-        onValueChange={(value: string) => {
-          if (value === "all") setFilterIsActive(undefined);
-          else if (value === "active") setFilterIsActive(true);
-          else setFilterIsActive(false);
-        }}
+        value={status}
+        onValueChange={(value: string) => setFilterStatus(value)}
       >
         <SelectTrigger className="w-full sm:w-40">
           <SelectValue placeholder="Статус" />
@@ -49,6 +43,7 @@ export function LocationFilters() {
           <SelectItem value="all">Все</SelectItem>
           <SelectItem value="active">Активные</SelectItem>
           <SelectItem value="inactive">Неактивные</SelectItem>
+          <SelectItem value="archived">Архивные</SelectItem>
         </SelectContent>
       </Select>
 
@@ -93,7 +88,9 @@ export function LocationFilters() {
           type="button"
           variant="ghost"
           size="sm"
-          onClick={() => resetLocationFilter()}
+          onClick={() => {
+            resetLocationFilter();
+          }}
           className="shrink-0 text-muted-foreground"
         >
           <X className="size-4" />

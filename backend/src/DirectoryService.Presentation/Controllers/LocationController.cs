@@ -2,6 +2,7 @@ using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Locations;
 using DirectoryService.Application.Locations.Commands.CreateLocation;
 using DirectoryService.Application.Locations.Commands.DeleteLocation;
+using DirectoryService.Application.Locations.Commands.RestoreLocation;
 using DirectoryService.Application.Locations.Commands.UpdateLocation;
 using DirectoryService.Application.Locations.Queries.GetLocationById;
 using DirectoryService.Application.Locations.Queries.GetLocations;
@@ -84,6 +85,17 @@ public class LocationController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         var command = new DeleteLocationCommand(id);
+
+        return await handler.Handle(command, cancellationToken);
+    }
+
+    [HttpPost("{id:guid}/restore")]
+    public async Task<EndpointResult> Restore(
+        [FromRoute] Guid id,
+        [FromServices] ICommandHandler<RestoreLocationCommand> handler,
+        CancellationToken cancellationToken = default)
+    {
+        var command = new RestoreLocationCommand(id);
 
         return await handler.Handle(command, cancellationToken);
     }

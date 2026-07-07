@@ -4,10 +4,10 @@ import { resetLocationFilter, useGetLocationFilter } from "./model/locations-fil
 import { Button } from "@/shared/components/ui/button";
 
 export default function LocationEmptyState() {
-  const { departmentIds, search, isActive } = useGetLocationFilter();
+  const { departmentIds, search, status } = useGetLocationFilter();
 
   const isSearching = !!search?.trim();
-  const hasFilter = !!departmentIds?.length || isActive !== undefined || isSearching;
+  const hasFilter = !!departmentIds?.length || status !== "all" || isSearching;
 
   // Есть активный фильтр, но результат пуст → понятный текст + сброс
   if (hasFilter) {

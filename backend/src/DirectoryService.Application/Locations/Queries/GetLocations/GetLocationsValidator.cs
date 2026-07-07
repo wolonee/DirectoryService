@@ -9,6 +9,8 @@ namespace DirectoryService.Application.Locations.Queries.GetLocations;
 
 public class GetLocationsValidator : AbstractValidator<GetLocationsQuery>
 {
+    private static readonly string[] AllowedStatuses = ["all", "active", "inactive", "archived"];
+
     public GetLocationsValidator()
     {
         RuleFor(q => q.Request)
@@ -32,6 +34,11 @@ public class GetLocationsValidator : AbstractValidator<GetLocationsQuery>
             .GreaterThan(0)
             .When(q => q.Request.Pagination != null)
             .WithError(GeneralErrors.MinimumLength(1, nameof(PaginationRequest)));
+
+        RuleFor(q => q.Request.Status)
+            .Must(status => AllowedStatuses.Contains(status!.ToLower()))
+            .When(q => !string.IsNullOrWhiteSpace(q.Request.Status))
+            .WithError(GeneralErrors.ValueIsInvalid(nameof(GetLocationsQuery.Request.Status)));
 
         RuleFor(q => q.Request.DepartmentIds)
             .Must(ids => ids!.Distinct().Count() == ids.Length)

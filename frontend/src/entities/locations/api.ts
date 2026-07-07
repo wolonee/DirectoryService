@@ -21,7 +21,7 @@ export const locationsApi = {
         params: {
           DepartmentIds: request.departmentIds,
           Search: request.search,
-          IsActive: request.isActive,
+          Status: request.status,
           SortBy: request.sortBy,
           SortDirection: request.sortDirection,
           "Pagination.Page": request.pagination?.page,
@@ -78,6 +78,14 @@ export const locationsApi = {
 
     return response.data;
   },
+
+  restoreLocation: async (locationId: string) => {
+    const response = await apiClient.post<Envelope<string>>(
+      `/locations/${locationId}/restore`,
+    );
+
+    return response.data;
+  },
 };
 
 export const locationQueryOptions = {
@@ -107,7 +115,7 @@ export const locationQueryOptions = {
 
   getLocationsInfiniteOptions: ({
     departmentIds,
-    isActive,
+    status,
     search,
     sortBy,
     sortDirection,
@@ -117,12 +125,12 @@ export const locationQueryOptions = {
       queryKey: [
         locationQueryOptions.baseKey,
         "infinite",
-        { departmentIds, search, pageSize, sortBy, sortDirection, isActive },
+        { departmentIds, search, pageSize, sortBy, sortDirection, status },
       ],
       queryFn: ({ pageParam }) => {
         return locationsApi.getLocations({
           departmentIds,
-          isActive,
+          status,
           search,
           pagination: { page: pageParam, pageSize },
           sortBy,

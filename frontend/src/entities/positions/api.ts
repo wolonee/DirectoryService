@@ -55,6 +55,14 @@ export const positionApi = {
 
     return response.data.result;
   },
+
+  restorePosition: async (positionId: string) => {
+    const response = await apiClient.post<Envelope<string>>(
+      `/positions/${positionId}/restore`,
+    );
+
+    return response.data;
+  },
 };
 
 export const positionQueryOptions = {

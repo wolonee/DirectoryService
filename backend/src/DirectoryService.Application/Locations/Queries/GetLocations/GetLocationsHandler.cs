@@ -24,7 +24,6 @@ public class GetLocationsHandler : IQueryHandler<PaginationResponse<GetLocationD
     private readonly ILogger<GetLocationsHandler> _logger;
 
     private const string SEARCH_PARAMETER = "search";
-    private const string IS_ACTIVE_PARAMETER = "is_active";
     private const string DEPARTMENT_IDS_PARAMETER = "department_ids";
     private const string OFFSET_PARAMETER = "offset";
     private const string PAGE_SIZE_PARAMETER = "page_size";
@@ -129,10 +128,20 @@ public class GetLocationsHandler : IQueryHandler<PaginationResponse<GetLocationD
             parameters.Add(SEARCH_PARAMETER, request.Search, DbType.String);
         }
         
-        if (request.IsActive.HasValue)
+        switch (request.Status?.ToLower())
         {
-            conditions.Add($"l.is_active = @{IS_ACTIVE_PARAMETER}");
-            parameters.Add(IS_ACTIVE_PARAMETER, request.IsActive, DbType.Boolean);
+            case "active":
+                conditions.Add("l.is_deleted = false AND l.is_active = true");
+                break;
+            case "inactive":
+                conditions.Add("l.is_deleted = false AND l.is_active = false");
+                break;
+            case "archived":
+                conditions.Add("l.is_deleted = true");
+                break;
+            default: // "all" or null/empty — everything except soft-deleted
+                conditions.Add("l.is_deleted = false");
+                break;
         }
 
         if (request.DepartmentIds != null && request.DepartmentIds.Length > 0)
@@ -170,6 +179,7 @@ public class GetLocationsHandler : IQueryHandler<PaginationResponse<GetLocationD
                    l.is_active,
                    l.timezone,
                    l.created_at,
+                   l.deleted_at,
             
                    COALESCE(dt.count_departments, 0) as count_departments,
             

@@ -25,7 +25,7 @@ export type GetLocationsRequest = {
   departmentIds?: string[];
   minDepartmentCount?: number;
   search?: string;
-  isActive?: boolean;
+  status?: string;
   sortBy?: string;
   sortDirection?: string;
   pagination?: PaginationRequest;
@@ -42,6 +42,8 @@ export type GetLocationDto = {
   street: string;
   timezone: string;
   createdAt: string;
+  /** Заполняется бэкендом только для архивных (soft-deleted) записей. */
+  deletedAt?: string;
   countDepartments: number;
 };
 
@@ -67,4 +69,11 @@ export const LocationSortByOptions = {
   name: "name",
   created_at: "created_at",
   country: "country",
+};
+
+export const LocationStatusOptions = {
+  all: "all",
+  active: "active",
+  inactive: "inactive",
+  archived: "archived",
 };

@@ -9,5 +9,6 @@ public record GetLocationDto
     public string Street { get; init; } = string.Empty;
     public string Timezone { get; init; } = string.Empty;
     public DateTime CreatedAt { get; init; }
+    public DateTime? DeletedAt { get; init; }
     public int CountDepartments { get; init; }
 }

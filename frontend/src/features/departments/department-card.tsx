@@ -10,16 +10,20 @@ import {
 import { Building2, CalendarDays, ChevronRight, FolderTree } from "lucide-react";
 import { UpdateDepartmentDialog } from "./update-department-dialog";
 import { DeleteDepartmentDialog } from "./delete-department-dialog";
+import { RestoreDepartmentDialog } from "./restore-department-dialog";
 
 type Props = {
   department: GetDepartmentDto;
+  isArchived?: boolean;
 };
 
 function getPathParts(path: string) {
   return path.split(/[./\\>]+/).filter(Boolean);
 }
 
-export default function DepartmentCard({ department }: Props) {
+const dateFormatter = new Intl.DateTimeFormat("ru-RU", { dateStyle: "medium" });
+
+export default function DepartmentCard({ department, isArchived = false }: Props) {
   const pathParts = getPathParts(department.path);
 
   return (
@@ -34,8 +38,14 @@ export default function DepartmentCard({ department }: Props) {
         </CardDescription>
 
         <CardAction className="flex items-center gap-1">
-          <UpdateDepartmentDialog department={department} />
-          <DeleteDepartmentDialog department={department} />
+          {isArchived ? (
+            <RestoreDepartmentDialog department={department} />
+          ) : (
+            <>
+              <UpdateDepartmentDialog department={department} />
+              <DeleteDepartmentDialog department={department} />
+            </>
+          )}
         </CardAction>
       </CardHeader>
 
@@ -61,10 +71,18 @@ export default function DepartmentCard({ department }: Props) {
 
         <div className="flex items-center gap-2.5 border-t border-border/70 pt-4 text-xs text-muted-foreground">
           <CalendarDays className="size-4" />
-          Создано{" "}
-          {new Intl.DateTimeFormat("ru-RU", {
-            dateStyle: "medium",
-          }).format(new Date(department.createdAt))}
+          {isArchived ? (
+            <span className="text-destructive">
+              Удалено{" "}
+              {department.deletedAt
+                ? dateFormatter.format(new Date(department.deletedAt))
+                : "—"}
+            </span>
+          ) : (
+            <span>
+              Создано {dateFormatter.format(new Date(department.createdAt))}
+            </span>
+          )}
         </div>
       </CardContent>
     </Card>

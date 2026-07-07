@@ -16,7 +16,7 @@ const PAGE_SIZE = 10
 
 export default function LocationsList() {
   useLocationsUrlFilter();
-  const { departmentIds, search, isActive, sortBy, sortDirection } = useGetLocationFilter();
+  const { departmentIds, search, status, sortBy, sortDirection } = useGetLocationFilter();
 
   const [debouncedSearch] = useDebounce(search, 300);
 
@@ -29,7 +29,7 @@ export default function LocationsList() {
     refetch,
     isFetchingNextPage,
     cursorRef,
-  } = useLocationsList({ departmentIds, search: debouncedSearch, isActive, sortBy, sortDirection, pageSize: PAGE_SIZE });
+  } = useLocationsList({ departmentIds, search: debouncedSearch, status, sortBy, sortDirection, pageSize: PAGE_SIZE });
 
   if (error) {
     return (
@@ -74,7 +74,11 @@ export default function LocationsList() {
               </div>
             ) : (
               locations.map((location) => (
-                <LocationCard key={location.id} location={location} />
+                <LocationCard
+                  key={location.id}
+                  location={location}
+                  isArchived={status === "archived"}
+                />
               ))
             )}
           </div>

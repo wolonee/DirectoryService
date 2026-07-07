@@ -23,7 +23,6 @@ public class GetDepartmentsHandler : IQueryHandler<PaginationResponse<GetDepartm
     private const string SEARCH_PARAMETER = "search";
     private const string OFFSET_PARAMETER = "offset";
     private const string PAGE_SIZE_PARAMETER = "page_size";
-    private const string IS_ACTIVE_PARAMETER = "is_active";
     private const string LOCATION_IDS_PARAMETER = "location_ids";
 
     public GetDepartmentsHandler(
@@ -59,10 +58,20 @@ public class GetDepartmentsHandler : IQueryHandler<PaginationResponse<GetDepartm
             parameters.Add(SEARCH_PARAMETER, request.Search, DbType.String);
         }
 
-        if (request.IsActive.HasValue)
+        switch (request.Status?.ToLower())
         {
-            conditions.Add($"d.is_active = @{IS_ACTIVE_PARAMETER}");
-            parameters.Add(IS_ACTIVE_PARAMETER, request.IsActive, DbType.Boolean);
+            case "active":
+                conditions.Add("d.is_deleted = false AND d.is_active = true");
+                break;
+            case "inactive":
+                conditions.Add("d.is_deleted = false AND d.is_active = false");
+                break;
+            case "archived":
+                conditions.Add("d.is_deleted = true");
+                break;
+            default:
+                conditions.Add("d.is_deleted = false");
+                break;
         }
 
         if (request.LocationIds != null && request.LocationIds.Length > 0)
@@ -101,6 +110,7 @@ public class GetDepartmentsHandler : IQueryHandler<PaginationResponse<GetDepartm
                     d.name,
                     d.path,
                     d.created_at,
+                    d.deleted_at,
                     COUNT(*) OVER() AS total_count
 
              FROM department d

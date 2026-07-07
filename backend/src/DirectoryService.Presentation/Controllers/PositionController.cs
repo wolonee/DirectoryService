@@ -3,6 +3,7 @@ using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Positions.Commands.CreatePosition;
 using DirectoryService.Application.Positions.Commands.DeletePosition;
 using DirectoryService.Application.Positions.Commands.RenamePosition;
+using DirectoryService.Application.Positions.Commands.RestorePosition;
 using DirectoryService.Application.Positions.Queries.Get;
 using DirectoryService.Contracts.Common;
 using DirectoryService.Contracts.Positions;
@@ -58,6 +59,17 @@ public class PositionsController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         var command = new DeletePositionCommand(id);
+
+        return await handler.Handle(command, cancellationToken);
+    }
+
+    [HttpPost("{id:guid}/restore")]
+    public async Task<EndpointResult> Restore(
+        [FromRoute] Guid id,
+        [FromServices] ICommandHandler<RestorePositionCommand> handler,
+        CancellationToken cancellationToken = default)
+    {
+        var command = new RestorePositionCommand(id);
 
         return await handler.Handle(command, cancellationToken);
     }
