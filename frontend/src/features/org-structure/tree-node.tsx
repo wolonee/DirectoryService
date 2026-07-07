@@ -1,5 +1,5 @@
 import { DepartmentTreeNode } from "@/entities/departments/types";
-import { useChildrenList } from "./model/use-children-list";
+import { useChildrenList } from "../../entities/departments/model/use-children-list";
 import {
   setOrgStructureFilterExpandedIds,
   setOrgStructureFilterSelectedId,

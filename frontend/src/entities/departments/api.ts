@@ -125,6 +125,14 @@ export const departmentsApi = {
     };
   },
 
+  getDescendants: async (id: string): Promise<GetDepartmentChildrenByParentDto[]> => {
+    const response = await apiClient.get<Envelope<GetDepartmentsResponse<GetDepartmentChildrenByParentDto>>>(
+      `/departments/${id}/descendants`
+    );
+
+    return response.data.result?.items ?? [];
+  },
+
   createDepartment: async (request: CreateDepartmentRequest) => {
     const response = await apiClient.post("/departments", request);
 
@@ -226,6 +234,12 @@ export const departmentQueryOptions = {
     queryOptions({
       queryKey: ["departments", "children", parentId],
       queryFn: () => departmentsApi.getChildrenById(parentId),
+    }),
+
+  getDescendantsOptions: (parentId: string) =>
+    queryOptions({
+      queryKey: ["departments", "descendants", parentId],
+      queryFn: () => departmentsApi.getDescendants(parentId),
     }),
 
   getPositionsByDepartmentIdInfiniteOptions: (departmentId: string, pageSize: number) =>
