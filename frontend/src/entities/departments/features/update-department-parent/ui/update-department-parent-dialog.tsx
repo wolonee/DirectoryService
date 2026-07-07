@@ -18,10 +18,27 @@ import {
 import { ArrowRight, FolderInput } from "lucide-react";
 import { useState } from "react";
 import { useUpdateDepartmentParent } from "../model/use-update-department-parent";
+import type { ApiError } from "@/shared/api/types/errors";
 
 type Props = {
   node: DepartmentTreeNode;
 };
+
+// Человекочитаемые тексты для известных кодов ошибок переноса.
+const ERROR_TEXT: Record<string, string> = {
+  "parent.id.equal.department.id": "Нельзя перенести подразделение в само себя.",
+  "department.already.has.this.parent":
+    "Подразделение уже находится в выбранном родителе.",
+  "department.childrens.contains.parent":
+    "Нельзя перенести подразделение в одного из его потомков.",
+  "department.move.cycle":
+    "Нельзя перенести подразделение в одного из его потомков.",
+  "department.is.deleted": "Подразделение удалено и не может быть перенесено.",
+  "department.move.parent_deleted": "Выбранный родитель был удалён.",
+};
+
+const humanizeError = (error: ApiError) =>
+  ERROR_TEXT[error.code] ?? error.message;
 
 export function UpdateDepartmentParentDialog({ node }: Props) {
   const [open, setOpen] = useState(false);
@@ -44,11 +61,25 @@ export function UpdateDepartmentParentDialog({ node }: Props) {
 
   const onOpenChange = (next: boolean) => {
     setOpen(next);
-    if (!next) setNewParentId("");
+    if (!next) {
+      setNewParentId("");
+      resetError();
+    }
   };
 
-  const { updateDepartmentParent, isPending } = useUpdateDepartmentParent();
- 
+  const onSelectParent = (value: string) => {
+    setNewParentId(value);
+    resetError(); // прошлая ошибка перестаёт быть актуальной при новом выборе
+  };
+
+  const { updateDepartmentParent, isPending, error, commonError, resetError } =
+    useUpdateDepartmentParent();
+
+  // Ошибка поля (есть invalidField) — под select; ошибка операции — в диалоге.
+  const fieldErrors = error?.fieldErrors ?? [];
+  const operationErrors =
+    error?.errorList.filter((e) => !e.invalidField) ?? [];
+
   const onSubmit = () => {
     updateDepartmentParent({ departmentId: node.id, newParentId }, {
       onSuccess: () => {
@@ -96,10 +127,16 @@ export function UpdateDepartmentParentDialog({ node }: Props) {
             <Label>Новый родитель</Label>
             <DepartmentSelect
               value={newParentId}
-              onChange={setNewParentId}
+              onChange={onSelectParent}
               placeholder="Без родителя (в корень)"
               excludeId={[node.id, node.parentId ?? ""]}
             />
+
+            {fieldErrors.map((e) => (
+              <p key={e.code} className="text-sm text-destructive">
+                {humanizeError(e)}
+              </p>
+            ))}
           </div>
 
           {hasSelection && (
@@ -110,6 +147,17 @@ export function UpdateDepartmentParentDialog({ node }: Props) {
                 <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
                 <span className="truncate">{newParent}</span>
               </div>
+            </div>
+          )}
+
+          {(operationErrors.length > 0 || commonError) && (
+            <div className="space-y-1 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-destructive">
+              {operationErrors.map((e) => (
+                <p key={e.code}>{humanizeError(e)}</p>
+              ))}
+              {commonError && (
+                <p>Не удалось перенести подразделение. Попробуйте позже.</p>
+              )}
             </div>
           )}
         </div>
