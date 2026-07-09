@@ -8,6 +8,7 @@ using DirectoryService.Presentation;
 using DirectoryService.Presentation.Extentions;
 using DirectoryService.Presentation.Middlewares;
 using DirectoryService.Shared.Serializations;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 var isTesting = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Testing";
@@ -50,6 +51,24 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 });
 
 var app = builder.Build();
+
+if (!isTesting)
+{
+    try
+    {
+        using var scope = app.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DirectoryServiceDbContext>();
+        Log.Information("Applying database migrations...");
+        dbContext.Database.Migrate();
+        Log.Information("Database migrations applied successfully.");
+    }
+    catch (Exception ex)
+    {
+        Log.Fatal(ex, "Database migration failed. Shutting down.");
+        Log.CloseAndFlush();
+        Environment.Exit(1);
+    }
+}
 
 app.UseExceptionMiddleware();
 app.UseCors(builder =>
