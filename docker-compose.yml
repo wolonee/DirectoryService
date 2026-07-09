@@ -1,4 +1,20 @@
 services:
+  directory-service:
+    container_name: directory-service
+    build:
+      context: ./backend/src
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=directory_service_db;Username=postgres;Password=postgres
+      - Seq__ServerUrl=http://seq:5341
+    depends_on:
+      - postgres
+      - seq
+
   postgres:
     container_name: postgres
     image: postgres:15
