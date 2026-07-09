@@ -2,8 +2,8 @@ services:
   directory-service:
     container_name: directory-service
     build:
-      context: ./backend/src
-      dockerfile: Dockerfile
+      context: ./backend/DirectoryService
+      dockerfile: src/DirectoryService.Presentation/Dockerfile
     restart: always
     ports:
       - "8080:8080"
