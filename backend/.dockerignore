@@ -1,0 +1,14 @@
+**/bin
+**/obj
+**/.git
+**/.gitignore
+**/.vs
+**/.vscode
+**/.idea
+**/.DS_Store
+**/*.user
+**/nuget.config
+**/.env
+**/docker-compose*
+**/Dockerfile*
+**/README.md

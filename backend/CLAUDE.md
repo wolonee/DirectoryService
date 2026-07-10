@@ -2,22 +2,22 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Scope: the **backend** (.NET 9 Web API, `DirectoryService.sln`). Run every command below from `backend/`.
+Scope: `backend/` holds **two independent** .NET solutions — see repo-root `CLAUDE.md` for how they relate. This file covers `backend/DirectoryService/` (`DirectoryService.sln`), the API service. Run every command below from `backend/DirectoryService/`.
 
 ## Commands
 
-- **Dependencies:** `docker compose up -d` — Postgres on `localhost:5434`, Seq (logs UI) on `http://localhost:8081`.
+- **Dependencies:** `docker compose up -d` (compose file at repo root) — Postgres on `localhost:5434`, Seq (logs UI) on `http://localhost:8081`.
 - **Build:** `dotnet build`
 - **Run API:** `dotnet run --project src/DirectoryService.Presentation` — serves `http://localhost:5057`, Swagger at `/swagger`, all routes under `/api`. `Program.cs` lives in the Presentation project (the startup project).
 - **All tests:** `dotnet test tests/DirectoryService.IntegrationTests` — **requires Docker** (Testcontainers spins up a throwaway Postgres per run).
 - **Single test / class:** `dotnet test tests/DirectoryService.IntegrationTests --filter "FullyQualifiedName~GetDepartmentsTests"`
-- **Migrations:** `dotnet ef migrations add <Name> --project src/DirectoryService.Infrastructure.Postgres --startup-project src/DirectoryService.Presentation` (then `dotnet ef database update ...`). Migrations are **not** auto-applied at startup.
+- **Migrations:** `dotnet ef migrations add <Name> --project src/DirectoryService.Infrastructure.Postgres --startup-project src/DirectoryService.Presentation` (then `dotnet ef database update ...`). Migrations are applied automatically on startup (`Program.cs`, guarded by `ASPNETCORE_ENVIRONMENT != Testing` since the test harness uses `EnsureCreatedAsync` instead) — a failed migration logs `Fatal` and exits the process.
 
 StyleCop analyzers are enabled repo-wide (`Directory.Build.props`); the build emits many style warnings — that is the existing baseline, **not** something to fix wholesale.
 
 ## Architecture
 
-Clean Architecture + CQRS. Layer dependencies: `Presentation → Application → Domain`. `Contracts` holds request/response/DTO records shared with clients; `Infrastructure.Postgres` provides EF Core + repositories. CQRS abstractions (`ICommand`/`IQuery`, handler interfaces, `Result`/`Errors` helpers) come from the shared kernel — see the repo-root `CLAUDE.md` for the separate `Shared/` solution.
+Clean Architecture + CQRS. Layer dependencies: `Presentation → Application → Domain`. `Contracts` holds request/response/DTO records shared with clients; `Infrastructure.Postgres` provides EF Core + repositories. CQRS abstractions (`ICommand`/`IQuery`, handler interfaces, `Result`/`Errors` helpers) come from `backend/Shared/` — consumed as versioned NuGet packages (`directoryservice.core`, `directoryservice.sharedkernel`, `directoryservice.framework`) via `PackageReference`, **not** a project reference. The feed credentials live in `nuget.config` (gitignored — never commit it).
 
 **CQRS, no MediatR.** Commands/queries implement marker interfaces `ICommand`/`IQuery`; handlers implement `ICommandHandler<TResp,TCmd>` / `ICommandHandler<TCmd>` / `IQueryHandler<TResp,TQuery>` (single-arg `IQueryHandler<TResp>` exists for parameterless queries). Handlers are auto-registered by a Scrutor assembly scan via `services.AddHandlers(assembly)` in `Application/DependencyInjection.cs` — **never register a handler manually**. Controllers receive the handler through `[FromServices] IQueryHandler<...>` and call `handler.Handle(query, ct)`.
 
