@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace DirectoryService.Presentation.Controllers;
 
 [ApiController]
-[Route("api/positions")]
+[Route("positions")]
 public class PositionsController : ControllerBase
 {
     [HttpGet]

@@ -7,7 +7,6 @@
 **/.idea
 **/.DS_Store
 **/*.user
-**/nuget.config
 **/.env
 **/docker-compose*
 **/Dockerfile*
