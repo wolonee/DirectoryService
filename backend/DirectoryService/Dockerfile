@@ -47,5 +47,5 @@ COPY --from=publish /app/publish .
 COPY --chown=$APP_UID:$APP_UID --from=build /app/efbundle .
 RUN chmod +x efbundle
 
-EXPOSE 8001
+EXPOSE 8002
 ENTRYPOINT ["dotnet", "DirectoryService.Presentation.dll"]
