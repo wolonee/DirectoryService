@@ -17,7 +17,7 @@ There are `node_modules` + `package.json` at **both** the repo root and `fronten
 ### Backend (run from `backend/DirectoryService/`)
 - Start dependencies: `docker compose up -d` (compose file at repo root) — Postgres on `localhost:5434`, Seq (logs) on `http://localhost:8081`.
 - Build: `dotnet build`
-- Run API: `dotnet run --project src/DirectoryService.Presentation` — serves on `http://localhost:5057`, Swagger at `/swagger`, all routes under `/api`.
+- Run API: `dotnet run --project src/DirectoryService.Presentation` — serves on `http://localhost:5057`, Swagger UI at the root path `/`. Controller routes have no `/api` prefix (e.g. `/locations`, `/departments`, `/positions`) — `/api` is added externally by the nginx gateway in the Docker Compose stack (`nginx.conf`), which strips it before proxying to the backend.
 - All tests: `dotnet test tests/DirectoryService.IntegrationTests` — **requires Docker** (Testcontainers spins up a throwaway Postgres).
 - Single test / class: `dotnet test tests/DirectoryService.IntegrationTests --filter "FullyQualifiedName~GetDepartmentsTests"`
 - Migrations: `dotnet ef migrations add <Name> --project src/DirectoryService.Infrastructure.Postgres --startup-project src/DirectoryService.Presentation` (and `database update`). Migrations are applied automatically on startup (`Program.cs` calls `Database.Migrate()` before the app starts serving; a failed migration logs fatally and exits).
@@ -25,7 +25,7 @@ There are `node_modules` + `package.json` at **both** the repo root and `fronten
 StyleCop analyzers are enabled repo-wide (`Directory.Build.Props`); the build emits many style warnings — that is the existing baseline, not something to fix wholesale.
 
 ### Frontend (run from `frontend/`)
-- Dev server: `npm run dev` (expects the API at `http://localhost:5057/api`)
+- Dev server: `npm run dev` — talks to the API through the nginx gateway at `http://localhost/api` (root `docker-compose.yml` + `nginx.conf`), not directly to the backend's own port/routes.
 - Build: `npm run build` · Lint: `npm run lint` · Typecheck: `npx tsc --noEmit`
 
 ## Backend architecture

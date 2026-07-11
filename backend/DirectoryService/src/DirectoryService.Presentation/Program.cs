@@ -55,7 +55,7 @@ var app = builder.Build();
 app.UseExceptionMiddleware();
 app.UseCors(builder =>
 {
-    builder.WithOrigins("http://localhost:3000")
+    builder.WithOrigins("http://localhost:3000", "http://frontend:3000")
         .AllowCredentials()
         .AllowAnyMethod()
         .AllowAnyHeader();

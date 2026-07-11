@@ -8,7 +8,7 @@ Scope: `backend/` holds **two independent** .NET solutions — see repo-root `CL
 
 - **Dependencies:** `docker compose up -d` (compose file at repo root) — Postgres on `localhost:5434`, Seq (logs UI) on `http://localhost:8081`.
 - **Build:** `dotnet build`
-- **Run API:** `dotnet run --project src/DirectoryService.Presentation` — serves `http://localhost:5057`, Swagger at `/swagger`, all routes under `/api`. `Program.cs` lives in the Presentation project (the startup project).
+- **Run API:** `dotnet run --project src/DirectoryService.Presentation` — serves `http://localhost:5057`, Swagger UI at the root path `/` (`RoutePrefix` is empty). Controller routes have **no** `/api` prefix (e.g. `LocationController` is `[Route("locations")]`, not `[Route("api/locations")]`) — `/api` is an external contract added by the nginx gateway in the Docker Compose stack, which strips it before forwarding to the backend (see root `nginx.conf`). `Program.cs` lives in the Presentation project (the startup project).
 - **All tests:** `dotnet test tests/DirectoryService.IntegrationTests` — **requires Docker** (Testcontainers spins up a throwaway Postgres per run).
 - **Single test / class:** `dotnet test tests/DirectoryService.IntegrationTests --filter "FullyQualifiedName~GetDepartmentsTests"`
 - **Migrations:** `dotnet ef migrations add <Name> --project src/DirectoryService.Infrastructure.Postgres --startup-project src/DirectoryService.Presentation` (then `dotnet ef database update ...`). Migrations are applied automatically on startup (`Program.cs`, guarded by `ASPNETCORE_ENVIRONMENT != Testing` since the test harness uses `EnsureCreatedAsync` instead) — a failed migration logs `Fatal` and exits the process.

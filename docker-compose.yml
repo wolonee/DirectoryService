@@ -12,7 +12,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Docker
       - ASPNETCORE_HTTP_PORTS=8002
-      - ConnectionStrings__DirectoryServiceDb=Server=postgres;Port=5432;Database=directory_service_db;User Id=postgres;Password=postgres;Search Path=public
+      - ConnectionStrings__DirectoryServiceDb=${DB_CONNECTION_STRING}
       - Seq__ServerUrl=http://seq:5341
     depends_on:
       postgres:
@@ -40,7 +40,7 @@ services:
       [
         "/bin/sh",
         "-c",
-        './efbundle --connection "Server=postgres;Port=5432;Database=directory_service_db;User Id=postgres;Password=postgres;Search Path=public"',
+        './efbundle --connection "${DB_CONNECTION_STRING}"',
       ]
 
   postgres:
@@ -48,15 +48,15 @@ services:
     image: postgres:15
     restart: always
     environment:
-      POSTGRES_DB: directory_service_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5434:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d directory_service_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -71,6 +71,32 @@ services:
       - "8081:80"
       - "5341:5341"
     restart: always
+
+  nginx:
+    container_name: nginx
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - directory-service
+    restart: always
+
+
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./frontend/.env
+    restart: always
+    
     
     
 volumes:
