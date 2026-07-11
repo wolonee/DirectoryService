@@ -11,6 +11,7 @@ import type {
   GetDepartmentsRequest,
   GetDepartmentsResponse,
   UpdateDepartmentLocationsRequest,
+  UpdateDepartmentParentRequest,
 } from "./types";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
@@ -124,8 +125,25 @@ export const departmentsApi = {
     };
   },
 
+  getDescendants: async (id: string): Promise<GetDepartmentChildrenByParentDto[]> => {
+    const response = await apiClient.get<Envelope<GetDepartmentsResponse<GetDepartmentChildrenByParentDto>>>(
+      `/departments/${id}/descendants`
+    );
+
+    return response.data.result?.items ?? [];
+  },
+
   createDepartment: async (request: CreateDepartmentRequest) => {
     const response = await apiClient.post("/departments", request);
+
+    return response.data;
+  },
+
+  updateDepartmentParent: async (request: UpdateDepartmentParentRequest) => {
+    const response = await apiClient.put(
+      `/departments/${request.departmentId}/parent`,
+      { parentId: request.parentId }
+    );
 
     return response.data;
   },
@@ -216,6 +234,12 @@ export const departmentQueryOptions = {
     queryOptions({
       queryKey: ["departments", "children", parentId],
       queryFn: () => departmentsApi.getChildrenById(parentId),
+    }),
+
+  getDescendantsOptions: (parentId: string) =>
+    queryOptions({
+      queryKey: ["departments", "descendants", parentId],
+      queryFn: () => departmentsApi.getDescendants(parentId),
     }),
 
   getPositionsByDepartmentIdInfiniteOptions: (departmentId: string, pageSize: number) =>

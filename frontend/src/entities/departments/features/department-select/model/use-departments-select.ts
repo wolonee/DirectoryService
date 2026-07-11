@@ -2,7 +2,7 @@ import { departmentQueryOptions } from "@/entities/departments/api";
 import { useIntersectionRef } from "@/shared/hooks/use-intersection-ref";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 100;
 
 // type Props = {
 //   parentId?: string;

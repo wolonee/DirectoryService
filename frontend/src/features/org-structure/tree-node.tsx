@@ -1,5 +1,5 @@
 import { DepartmentTreeNode } from "@/entities/departments/types";
-import { useChildrenList } from "./model/use-children-list";
+import { useChildrenList } from "../../entities/departments/model/use-children-list";
 import {
   setOrgStructureFilterExpandedIds,
   setOrgStructureFilterSelectedId,
@@ -7,6 +7,7 @@ import {
 } from "./model/org-structure-filter-store";
 import { Building2, ChevronDown, ChevronRight } from "lucide-react";
 import { Spinner } from "@/shared/components/ui/spinner";
+import { UpdateDepartmentParentDialog } from "@/entities/departments/features/update-department-parent/ui/update-department-parent-dialog";
 
 export function TreeNode({ node }: { node: DepartmentTreeNode }) {
   const { expandedIds, selectedId } = useGetOrgStructureFilter();
@@ -33,29 +34,37 @@ export function TreeNode({ node }: { node: DepartmentTreeNode }) {
 
   return (
     <div>
-      <button
-        type="button"
-        style={{ paddingLeft: 8 + node.depth * 18 }}
-        onClick={() => onNodeClick(node.id)}
-        className={`flex w-full items-center gap-1.5 rounded-md py-1.5 pr-2 text-left text-sm transition-colors hover:bg-accent ${
-          selectedId === node.id
-            ? "bg-accent font-medium text-accent-foreground"
-            : "text-foreground"
+      <div
+        className={`group flex items-center gap-1 rounded-md pr-1 transition-colors hover:bg-accent ${
+          selectedId === node.id ? "bg-accent" : ""
         }`}
       >
-        {node.hasMoreChildren ? (
-          expandedIds.includes(node.id) ? (
-            <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+        <button
+          type="button"
+          style={{ paddingLeft: 8 + node.depth * 18 }}
+          onClick={() => onNodeClick(node.id)}
+          className={`flex min-w-0 flex-1 items-center gap-1.5 rounded-md py-1.5 text-left text-sm ${
+            selectedId === node.id
+              ? "font-medium text-accent-foreground"
+              : "text-foreground"
+          }`}
+        >
+          {node.hasMoreChildren ? (
+            expandedIds.includes(node.id) ? (
+              <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+            ) : (
+              <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+            )
           ) : (
-            <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-          )
-        ) : (
-          <span className="size-4 shrink-0" /> // лист — место под иконку, но без кнопки
-        )}
+            <span className="size-4 shrink-0" /> // лист — место под иконку, но без кнопки
+          )}
 
-        <Building2 className="size-4 shrink-0 text-muted-foreground" />
-        <span className="truncate">{node.name}</span>
-      </button>
+          <Building2 className="size-4 shrink-0 text-muted-foreground" />
+          <span className="truncate">{node.name}</span>
+        </button>
+
+        <UpdateDepartmentParentDialog node={node} />
+      </div>
 
       {isExpanded && (
         <>

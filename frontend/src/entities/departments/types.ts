@@ -33,6 +33,16 @@ export type GetDepartmentParentsByNameRequest = {
   pagination?: PaginationRequest;
 };
 
+export type GetDepartmentChildrenByParentRequest = {
+  parentId: string;
+  pagination?: PaginationRequest;
+};
+
+/** GET /departments/{parentId}/descendants — все потомки узла (весь поддерев). */
+export type GetDepartmentDescendantsRequest = {
+  parentId: string;
+};
+
 // ─────────────────────────── Responses / DTO ───────────────────────────
 
 /** POST /departments — возвращает id созданного департамента (Guid). */

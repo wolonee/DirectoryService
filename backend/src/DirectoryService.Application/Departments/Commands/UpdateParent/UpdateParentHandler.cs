@@ -56,7 +56,10 @@ public class UpdateParentHandler : ICommandHandler<UpdateParentCommand>
 
         if (command.Request.ParentId == command.DepartmentId)
             return DepartmentErrors.ParentIdEqualDepartmentId().ToErrors();
-        
+
+        if (command.Request.ParentId == department.ParentId)
+            return DepartmentErrors.AlreadyHasThisParent().ToErrors();
+
         var lockDescendantsResult = await _departmentsRepository.LockDescendants(department.DepartmentPath.Value, cancellationToken);
         if (lockDescendantsResult.IsFailure)
             return lockDescendantsResult.Error.ToErrors();
