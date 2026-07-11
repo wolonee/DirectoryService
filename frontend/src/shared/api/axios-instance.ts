@@ -2,11 +2,11 @@ import axios from 'axios'
 import { Envelope } from './types/envelope';
 import { EnvelopeError } from './types/errors';
 
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost/api";
+
 export const apiClient = axios.create({
-    baseURL: 'http://localhost:5057/api',
+    baseURL: BASE_URL,
     headers: { 'Content-Type': 'application/json' },
-    // ASP.NET биндит массивы как ?key=a&key=b (без скобок).
-    // По умолчанию axios шлёт key[]=a — indexes:null убирает скобки.
     paramsSerializer: { indexes: null },
 })
 

@@ -8,6 +8,7 @@ using DirectoryService.Presentation;
 using DirectoryService.Presentation.Extentions;
 using DirectoryService.Presentation.Middlewares;
 using DirectoryService.Shared.Serializations;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 var isTesting = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Testing";
@@ -54,13 +55,13 @@ var app = builder.Build();
 app.UseExceptionMiddleware();
 app.UseCors(builder =>
 {
-    builder.WithOrigins("http://localhost:3000")
+    builder.WithOrigins("http://localhost:3000", "http://frontend:3000")
         .AllowCredentials()
         .AllowAnyMethod()
         .AllowAnyHeader();
 });
 
-if (app.Environment.IsDevelopment())
+if (!app.Environment.IsProduction())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c =>
@@ -89,6 +90,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.MapGet("/health", () => Results.Ok());
 
 app.MapControllers();
 

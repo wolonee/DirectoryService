@@ -4,33 +4,33 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository layout
 
-Three independent units, each with its own toolchain:
+`backend/` holds two **independent** .NET solutions, plus `frontend/` is a third unit with its own toolchain:
 
-- `backend/` — .NET 9 Web API (`DirectoryService.sln`), Clean Architecture + CQRS.
+- `backend/DirectoryService/` — the API service (`DirectoryService.sln`), .NET 9 Web API, Clean Architecture + CQRS. All backend commands below run from here.
+- `backend/Shared/` — a *separate* .NET solution (`Shared.sln`: `Core`, `Framework`, `Shared.SharedKernel` projects) holding the cross-cutting kernel (CQRS abstractions, validation helpers, base HTTP client). **Not a project reference** — it's published as versioned NuGet packages (`DirectoryService.Core`, `DirectoryService.Framework`, `DirectoryService.SharedKernel`) to a private GitHub Packages feed, and `DirectoryService` consumes them via `PackageReference` (see `backend/DirectoryService/nuget.config`, which is gitignored because it carries a feed credential — never commit it). Bumping shared code means: change here, bump the `<Version>`, publish, then bump the `PackageReference` version in `DirectoryService`.
 - `frontend/` — Next.js 16 / React 19 app (Feature-Sliced Design). **Has its own `frontend/AGENTS.md` — read it before writing frontend code; Next.js 16 has breaking changes and that file points to the bundled docs.**
-- `Shared/` — a *separate* .NET solution (`Shared.sln`) holding the cross-cutting kernel (CQRS abstractions, validation helpers, base HTTP client) under namespace `DirectoryService.Application.Abstractions` / `DirectoryService.Shared.*`. The backend projects reference these.
 
 There are `node_modules` + `package.json` at **both** the repo root and `frontend/`. Always install frontend packages from inside `frontend/` (a dependency installed at the root will not resolve in the Next.js build).
 
 ## Commands
 
-### Backend (run from `backend/`)
-- Start dependencies: `docker compose up -d` — Postgres on `localhost:5434`, Seq (logs) on `http://localhost:8081`.
+### Backend (run from `backend/DirectoryService/`)
+- Start dependencies: `docker compose up -d` (compose file at repo root) — Postgres on `localhost:5434`, Seq (logs) on `http://localhost:8081`.
 - Build: `dotnet build`
-- Run API: `dotnet run --project src/DirectoryService.Presentation` — serves on `http://localhost:5057`, Swagger at `/swagger`, all routes under `/api`.
+- Run API: `dotnet run --project src/DirectoryService.Presentation` — serves on `http://localhost:5057`, Swagger UI at the root path `/`. Controller routes have no `/api` prefix (e.g. `/locations`, `/departments`, `/positions`) — `/api` is added externally by the nginx gateway in the Docker Compose stack (`nginx.conf`), which strips it before proxying to the backend.
 - All tests: `dotnet test tests/DirectoryService.IntegrationTests` — **requires Docker** (Testcontainers spins up a throwaway Postgres).
 - Single test / class: `dotnet test tests/DirectoryService.IntegrationTests --filter "FullyQualifiedName~GetDepartmentsTests"`
-- Migrations: `dotnet ef migrations add <Name> --project src/DirectoryService.Infrastructure.Postgres --startup-project src/DirectoryService.Presentation` (and `database update`). Migrations are **not** auto-applied at startup.
+- Migrations: `dotnet ef migrations add <Name> --project src/DirectoryService.Infrastructure.Postgres --startup-project src/DirectoryService.Presentation` (and `database update`). Migrations are applied automatically on startup (`Program.cs` calls `Database.Migrate()` before the app starts serving; a failed migration logs fatally and exits).
 
 StyleCop analyzers are enabled repo-wide (`Directory.Build.Props`); the build emits many style warnings — that is the existing baseline, not something to fix wholesale.
 
 ### Frontend (run from `frontend/`)
-- Dev server: `npm run dev` (expects the API at `http://localhost:5057/api`)
+- Dev server: `npm run dev` — talks to the API through the nginx gateway at `http://localhost/api` (root `docker-compose.yml` + `nginx.conf`), not directly to the backend's own port/routes.
 - Build: `npm run build` · Lint: `npm run lint` · Typecheck: `npx tsc --noEmit`
 
 ## Backend architecture
 
-**CQRS, no MediatR.** Commands/queries implement marker interfaces `ICommand`/`IQuery`; handlers implement `ICommandHandler<TResp,TCmd>` / `ICommandHandler<TCmd>` / `IQueryHandler<TResp,TQuery>` (defined in `Shared/Core/Abstractions`). Handlers are auto-registered by Scrutor assembly scan via `services.AddHandlers(assembly)` in `Application/DependencyInjection.cs` — **never register a handler manually**. Controllers receive the handler through `[FromServices] IQueryHandler<...>` and call `handler.Handle(query, ct)`.
+**CQRS, no MediatR.** Commands/queries implement marker interfaces `ICommand`/`IQuery`; handlers implement `ICommandHandler<TResp,TCmd>` / `ICommandHandler<TCmd>` / `IQueryHandler<TResp,TQuery>` (defined in `backend/Shared/Core/Abstractions`, consumed as the `DirectoryService.Core` NuGet package — see Repository layout above). Handlers are auto-registered by Scrutor assembly scan via `services.AddHandlers(assembly)` in `Application/DependencyInjection.cs` — **never register a handler manually**. Controllers receive the handler through `[FromServices] IQueryHandler<...>` and call `handler.Handle(query, ct)`.
 
 **Result-based error flow, no exceptions for control.** Handlers return `Result<T, Errors>` / `UnitResult<Errors>` (CSharpFunctionalExtensions). `Errors` is a custom aggregate; `.ToErrors()` / `.ToValidationErrors()` convert domain errors and FluentValidation results. The API serializes everything into an `Envelope<T>` (`{ result, errors }`); `ExceptionMiddleware` + `ErrorsJsonConverter` handle the wire format. FluentValidation validators are also auto-registered and run at the top of each handler.
 
