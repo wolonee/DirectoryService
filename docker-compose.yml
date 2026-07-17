@@ -7,8 +7,8 @@ services:
       args:
         NUGET_USERNAME: ${NUGET_USERNAME}
         NUGET_TOKEN: ${NUGET_TOKEN}
-    expose:
-      - "8002"
+    ports:
+      - "8002:8002"
     environment:
       - ASPNETCORE_ENVIRONMENT=Docker
       - ASPNETCORE_HTTP_PORTS=8002
@@ -105,7 +105,7 @@ services:
     env_file:
       - ./frontend/.env
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000/"]
       interval: 5s
       timeout: 5s
       retries: 10
