@@ -12,7 +12,7 @@
 
     <PropertyGroup>
       <PackageId>DirectoryService.Framework</PackageId>
-      <Version>0.0.1</Version>
+      <Version>0.0.2</Version>
       <Authors>DirectoryService</Authors>
       <Company>DirectoryService</Company>
       <PackageDescription>Framework</PackageDescription>
