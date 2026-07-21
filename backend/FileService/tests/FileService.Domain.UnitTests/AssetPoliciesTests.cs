@@ -42,7 +42,7 @@ public class AssetPoliciesTests
         Assert.True(result.IsSuccess);
         Assert.Equal(AssetType.PREVIEW, result.Value.AssetType);
         Assert.Equal(MediaStatus.UPLOADING, result.Value.Status);
-        Assert.Equal("preview", result.Value.RawKey.Location);
+        Assert.Equal("preview", result.Value.RawKey.Bucket);
     }
 
     [Fact]

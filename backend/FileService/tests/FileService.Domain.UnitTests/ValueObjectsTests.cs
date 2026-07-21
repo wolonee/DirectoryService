@@ -63,7 +63,7 @@ public class ValueObjectsTests
         var result = StorageKey.Create(" videos ", " raw//lessons ", " file-1 ");
 
         Assert.True(result.IsSuccess);
-        Assert.Equal("videos", result.Value.Location);
+        Assert.Equal("videos", result.Value.Bucket);
         Assert.Equal("raw/lessons", result.Value.Prefix);
         Assert.Equal("file-1", result.Value.Key);
         Assert.Equal("videos/raw/lessons/file-1", result.Value.FullPath);

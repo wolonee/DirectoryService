@@ -20,8 +20,6 @@ public abstract class MediaAsset
     public StorageKey RawKey { get; protected init; } = null!;
     
     public StorageKey FinalKey { get; protected set; } = null!;
-
-    public StorageKey HlsRootKey { get; protected set; } = StorageKey.None;
     
     public MediaOwner Owner { get; protected init; } = null!;
     

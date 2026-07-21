@@ -30,6 +30,35 @@ public class PreviewAsset : MediaAsset
     {
     }
 
+    public static Result<PreviewAsset, Error> CreateForUpload(
+        Guid id,
+        MediaData mediaData,
+        MediaUsage usage,
+        MediaOwner owner)
+    {
+        if (id == Guid.Empty)
+            return GeneralErrors.ValueIsInvalid(nameof(id));
+
+        UnitResult<Error> validationResult = ValidateForUpload(mediaData);
+        if (validationResult.IsFailure)
+            return validationResult.Error;
+
+        Result<StorageKey, Error> keyResult = StorageKey.Create(
+            BUCKET,
+            $"{RAW_PREFIX}/{id}",
+            mediaData.FileName.Name);
+        if (keyResult.IsFailure)
+            return keyResult.Error;
+
+        return new PreviewAsset(
+            id,
+            mediaData,
+            usage,
+            MediaStatus.UPLOADING,
+            owner,
+            keyResult.Value);
+    }
+
     public static UnitResult<Error> ValidateForUpload(MediaData mediaData)
     {
         if (!AllowedExtensions.Contains(mediaData.FileName.Extension))

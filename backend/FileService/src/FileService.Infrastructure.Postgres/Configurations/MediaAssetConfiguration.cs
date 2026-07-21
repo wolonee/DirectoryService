@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using FileService.Domain;
+﻿using FileService.Domain;
 using FileService.Domain.Assets;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -43,24 +42,13 @@ public class MediaAssetConfiguration : IEntityTypeConfiguration<MediaAsset>
         });
 
         builder.Property(x => x.RawKey)
-            .HasConversion(
-                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                v => JsonSerializer.Deserialize<StorageKey>(v, (JsonSerializerOptions?)null)!)
+            .HasConversion<StorageKeyConverter>()
             .HasColumnName("raw_key")
             .HasColumnType("jsonb");
 
         builder.Property(x => x.FinalKey)
-            .HasConversion(
-                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                v => JsonSerializer.Deserialize<StorageKey>(v, (JsonSerializerOptions?)null)!)
+            .HasConversion<StorageKeyConverter>()
             .HasColumnName("final_key")
-            .HasColumnType("jsonb");
-
-        builder.Property(x => x.HlsRootKey)
-            .HasConversion(
-                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                v => JsonSerializer.Deserialize<StorageKey>(v, (JsonSerializerOptions?)null)!)
-            .HasColumnName("hls_root_key")
             .HasColumnType("jsonb");
 
         builder.Property(x => x.AssetType)
@@ -92,18 +80,5 @@ public class MediaAssetConfiguration : IEntityTypeConfiguration<MediaAsset>
         builder.HasIndex(x => new { x.Usage, x.Status });
         builder.HasIndex(x => x.RawKey);
         builder.HasIndex(x => x.FinalKey);
-        builder.HasIndex(x => x.HlsRootKey);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
