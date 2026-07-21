@@ -6,19 +6,21 @@ namespace FileService.Domain;
 
 public sealed record StorageKey
 {
+    public static StorageKey None { get; } = new(string.Empty, string.Empty, string.Empty);
+
     public string Key { get; }
 
     public string Prefix { get; }
 
-    public string Location { get; }
+    public string Bucket { get; }
 
     public string Value { get; }
 
     public string FullPath { get; }
 
-    private StorageKey(string location, string prefix, string key)
+    private StorageKey(string bucket, string prefix, string key)
     {
-        Location = location;
+        Bucket = bucket;
         Prefix = prefix;
         Key = key;
 
@@ -26,28 +28,36 @@ public sealed record StorageKey
             ? Key
             : $"{Prefix}/{Key}";
 
-        FullPath = $"{Location}/{Value}";
+        FullPath = string.IsNullOrEmpty(Bucket)
+            ? string.Empty
+            : $"{Bucket}/{Value}";
     }
     
-    public static Result<StorageKey, Error> Create(string location, string? prefix, string key)
+    public static Result<StorageKey, Error> Create(string bucket, string? prefix, string key)
     { 
-        if (string.IsNullOrWhiteSpace(location))
-            return GeneralErrors.ValueIsInvalid("location");
+        if (string.IsNullOrWhiteSpace(bucket))
+            return GeneralErrors.ValueIsInvalid("bucket");
 
         Result<string, Error> normalizedKeyResult = NormalizeSegment(key);
-
         if (normalizedKeyResult.IsFailure)
             return normalizedKeyResult.Error;
 
         Result<string, Error> normalizedPrefixResult = NormalizePrefix(prefix);
-
         if (normalizedPrefixResult.IsFailure)
             return normalizedPrefixResult.Error;
 
         return new StorageKey(
-            location.Trim(),
+            bucket.Trim(),
             normalizedPrefixResult.Value,
             normalizedKeyResult.Value);
+    }
+
+    public Result<StorageKey, Error> AppendSegment(string segment)
+    {
+        if (string.IsNullOrEmpty(Bucket))
+            return GeneralErrors.ValueIsInvalid("bucket");
+
+        return Create(Bucket, Value, segment);
     }
     
     private static Result<string, Error> NormalizePrefix(string? prefix)
@@ -86,7 +96,8 @@ public sealed record StorageKey
 
         string trimmed = value.Trim();
 
-        if (trimmed.Contains('/', StringComparison.Ordinal) ||
+        if (trimmed is "." or ".." ||
+            trimmed.Contains('/', StringComparison.Ordinal) ||
             trimmed.Contains('\\', StringComparison.Ordinal))
         {
             return GeneralErrors.ValueIsInvalid("key");

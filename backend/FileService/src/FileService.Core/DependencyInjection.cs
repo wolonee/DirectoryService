@@ -1,47 +1,15 @@
-using DirectoryService.Application;
-using DirectoryService.Infrastructure;
-using Microsoft.AspNetCore.Mvc;
-using Serilog;
-using Serilog.Exceptions;
+using FileService.Web.EndpointsExtensions;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace DirectoryService.Presentation;
+namespace FileService.Core;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddProgramDependencies(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddCoreDependencies(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddCors();
-
-        services.AddApplication();
-        services.AddInfrastructure();
-        services.AddWebDependencies();
-
-        services.AddSerilogLogging(configuration);
+        services.AddScoped<IS3Provider>();
         
-        return services;
-    }
-    
-    private static IServiceCollection AddWebDependencies(this IServiceCollection services)
-    {
-        services.AddControllers();
-
-        services.Configure<ApiBehaviorOptions>(options =>
-        {
-            options.SuppressModelStateInvalidFilter = true;
-        });
-        
-        return services;
-    }
-    
-    private static IServiceCollection AddSerilogLogging(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddSerilog((sp, lc) => lc
-            .ReadFrom.Configuration(configuration)
-            .ReadFrom.Services(sp)
-            .Enrich.FromLogContext()
-            .Enrich.WithExceptionDetails()
-            .Enrich.WithProperty("ServiceName", "LessonService"));
-
         return services;
     }
 }

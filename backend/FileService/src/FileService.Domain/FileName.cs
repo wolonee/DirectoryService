@@ -6,25 +6,31 @@ namespace FileService.Domain;
 
 public sealed record FileName
 {
-    public string Name { get; }
-    public string Extention { get; }
+    public const int MAX_LENGTH = 255;
 
-    private FileName(string name, string extention)
+    public string Name { get; private init; } = null!;
+    public string Extension { get; private init; } = null!;
+
+    private FileName()
+    {
+    }
+
+    private FileName(string name, string extension)
     {
         Name = name;
-        Extention = extention;
+        Extension = extension;
     }
 
     public static Result<FileName, Error> Create(string fileName)
     {
-        if (string.IsNullOrWhiteSpace(fileName))
+        if (string.IsNullOrWhiteSpace(fileName) || fileName.Length > MAX_LENGTH)
             return GeneralErrors.ValueIsInvalid(nameof(fileName));
         
         int lastDot = fileName.LastIndexOf('.');
         if (lastDot == -1 || lastDot == fileName.Length - 1)
-            return GeneralErrors.ValueIsInvalid("File must have extention");
+            return GeneralErrors.ValueIsInvalid("File must have extension");
         
-        string extention = fileName[(lastDot + 1)..].ToLowerInvariant();
-        return new FileName(fileName, extention);
+        string extension = fileName[(lastDot + 1)..].ToLowerInvariant();
+        return new FileName(fileName, extension);
     }
 }

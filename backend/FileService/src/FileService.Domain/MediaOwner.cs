@@ -6,16 +6,22 @@ namespace FileService.Domain;
 
 public sealed record MediaOwner
 {
-    private static readonly HashSet<string> AllowedContexts =
+    private static readonly HashSet<string> _allowedContexts =
     [
         "lesson",
         "module",
         "user",
+        "course",
+        "department",
     ];
 
-    public string Context { get; }
+    public string Context { get; private init; } = null!;
 
-    public Guid EntityId { get; }
+    public Guid EntityId { get; private init; }
+
+    private MediaOwner()
+    {
+    }
 
     private MediaOwner(string context, Guid entityId)
     {
@@ -30,7 +36,7 @@ public sealed record MediaOwner
 
         string normalizedContext = context.Trim().ToLowerInvariant();
 
-        if (!AllowedContexts.Contains(normalizedContext))
+        if (!_allowedContexts.Contains(normalizedContext))
             return GeneralErrors.ValueIsInvalid(nameof(context));
 
         if (entityId == Guid.Empty)
@@ -43,11 +49,15 @@ public sealed record MediaOwner
         Create("lesson", lessonId);
 
     public static Result<MediaOwner, Error> ForModule(Guid courseId) =>
-        Create("course", courseId);
+        Create("module", courseId);
 
     public static Result<MediaOwner, Error> ForUser(Guid userId) =>
         Create("user", userId);
 
     public static Result<MediaOwner, Error> ForDepartment(Guid departmentId) =>
         Create("department", departmentId);
+    
+    public static Result<MediaOwner, Error> ForCourse(Guid departmentId) =>
+        Create("course", departmentId);
+    
 }

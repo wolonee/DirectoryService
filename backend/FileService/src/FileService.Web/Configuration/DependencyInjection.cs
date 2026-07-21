@@ -1,19 +1,18 @@
-using DirectoryService.Application;
-using DirectoryService.Infrastructure;
-using Microsoft.AspNetCore.Mvc;
+using FileService.Infrastructure.Postgres;
+using FileService.Infrastructure.S3;
+using FileService.Web.EndpointsExtensions;
 using Serilog;
 using Serilog.Exceptions;
 
-namespace DirectoryService.Presentation;
+namespace FileService.Web.Configuration;
 
 public static class DependencyInjection
 {
     public static IServiceCollection AddProgramDependencies(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddCors();
-
-        services.AddApplication();
-        services.AddInfrastructure();
+        services.AddPostgresDependencies(configuration);
+        services.AddS3(configuration);
+        
         services.AddWebDependencies();
 
         services.AddSerilogLogging(configuration);
@@ -24,11 +23,8 @@ public static class DependencyInjection
     private static IServiceCollection AddWebDependencies(this IServiceCollection services)
     {
         services.AddControllers();
-
-        services.Configure<ApiBehaviorOptions>(options =>
-        {
-            options.SuppressModelStateInvalidFilter = true;
-        });
+        services.AddEndpointsApiExplorer();
+        services.AddSwaggerGen();
         
         return services;
     }

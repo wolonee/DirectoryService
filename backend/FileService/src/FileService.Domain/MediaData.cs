@@ -6,13 +6,17 @@ namespace FileService.Domain;
 
 public sealed record MediaData
 {
-    public FileName FileName { get; }
+    public FileName FileName { get; private init; } = null!;
     
-    public ContentType ContentType { get; }
+    public ContentType ContentType { get; private init; } = null!;
     
-    public long Size { get; }
+    public long Size { get; private init; }
     
-    public int ExpectedChunksCount { get; }
+    public int ExpectedChunksCount { get; private init; }
+
+    private MediaData()
+    {
+    }
 
     private MediaData(FileName fileName, ContentType contentType, long size, int expectedChunksCount)
     {

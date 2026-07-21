@@ -1,4 +1,5 @@
-﻿using CSharpFunctionalExtensions;
+﻿using System.Text.RegularExpressions;
+using CSharpFunctionalExtensions;
 using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
 
@@ -6,19 +7,27 @@ namespace FileService.Domain;
 
 public sealed record ContentType
 {
-    public string Value { get; }
+    private static readonly Regex MimeTypeRegex = new(
+        "^[a-zA-Z0-9!#$&^_.+-]+/[a-zA-Z0-9!#$&^_.+-]+$",
+        RegexOptions.CultureInvariant);
+
+    public string Value { get; private init; } = null!;
     
-    public MediaType MediaType { get; }
-    
-    private ContentType(string value, MediaType mediaType)
+    public MediaType Category { get; private init; }
+
+    private ContentType()
+    {
+    }
+
+    private ContentType(string value, MediaType category)
     {
         Value = value;
-        MediaType = mediaType;
+        Category = category;
     }
 
     public static Result<ContentType, Error> Create(string contentType)
     {
-        if (string.IsNullOrWhiteSpace(contentType))
+        if (string.IsNullOrWhiteSpace(contentType) || !MimeTypeRegex.IsMatch(contentType))
             return GeneralErrors.ValueIsInvalid(nameof(contentType));
 
         MediaType category = contentType switch
