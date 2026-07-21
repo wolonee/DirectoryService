@@ -1,53 +1,77 @@
 services:
-  directory-service:
-    container_name: directory-service
+  file-service:
+    container_name: file-service
     build:
       context: ./backend
-      dockerfile: DirectoryService/Dockerfile
+      dockerfile: FileService/Dockerfile
       args:
         NUGET_USERNAME: ${NUGET_USERNAME}
         NUGET_TOKEN: ${NUGET_TOKEN}
-    expose:
-      - "8002"
+    ports:
+      - "8003:8003"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Docker
-      - ASPNETCORE_HTTP_PORTS=8002
-      - ConnectionStrings__DirectoryServiceDb=${DB_CONNECTION_STRING}
-      - Seq__ServerUrl=http://seq:5341
+      ASPNETCORE_ENVIRONMENT: Docker
+      ASPNETCORE_HTTP_PORTS: 8003
     depends_on:
-      postgres:
-        condition: service_healthy
-      directory-service-migrations:
+      postgres-init:
         condition: service_completed_successfully
+      minio:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      test: ["CMD-SHELL", "curl --fail http://localhost:8003/health || exit 1"]
       interval: 5s
       timeout: 5s
       retries: 10
-      start_period: 10s
+      start_period: 15s
     restart: always
 
+  # directory-service:
+  #   container_name: directory-service
+  #   build:
+  #     context: ./backend
+  #     dockerfile: DirectoryService/Dockerfile
+  #     args:
+  #       NUGET_USERNAME: ${NUGET_USERNAME}
+  #       NUGET_TOKEN: ${NUGET_TOKEN}
+  #   ports:
+  #     - "8002:8002"
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=Docker
+  #     - ASPNETCORE_HTTP_PORTS=8002
+  #     - ConnectionStrings__DirectoryServiceDb=${DB_CONNECTION_STRING}
+  #     - Seq__ServerUrl=http://seq:5341
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     directory-service-migrations:
+  #       condition: service_completed_successfully
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 10
+  #     start_period: 10s
+  #   restart: always
 
 
-
-  directory-service-migrations:
-    container_name: directory-service-migrations
-    build:
-      context: ./backend
-      dockerfile: DirectoryService/Dockerfile
-      args:
-        NUGET_USERNAME: ${NUGET_USERNAME}
-        NUGET_TOKEN: ${NUGET_TOKEN}
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: "no"
-    entrypoint:
-      [
-        "/bin/sh",
-        "-c",
-        './efbundle --connection "${DB_CONNECTION_STRING}"',
-      ]
+  # directory-service-migrations:
+  #   container_name: directory-service-migrations
+  #   build:
+  #     context: ./backend
+  #     dockerfile: DirectoryService/Dockerfile
+  #     args:
+  #       NUGET_USERNAME: ${NUGET_USERNAME}
+  #       NUGET_TOKEN: ${NUGET_TOKEN}
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   restart: "no"
+  #   entrypoint:
+  #     [
+  #       "/bin/sh",
+  #       "-c",
+  #       './efbundle --connection "${DB_CONNECTION_STRING}"',
+  #     ]
 
   postgres:
     container_name: postgres
@@ -67,45 +91,81 @@ services:
       timeout: 5s
       retries: 10
 
-  seq:
-    container_name: seq
-    image: datalust/seq:latest
+  postgres-init:
+    container_name: postgres-init
+    image: postgres:15
     environment:
-      ACCEPT_EULA: "Y"
-      SEQ_FIRSTRUN_NOAUTHENTICATION: "true"
-    ports:
-      - "8081:80"
-      - "5341:5341"
-    restart: always
-
-  nginx:
-    container_name: nginx
-    image: nginx:alpine
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
     depends_on:
-      directory-service:
+      postgres:
         condition: service_healthy
-      frontend:
-        condition: service_healthy
-    restart: always
+    entrypoint:
+      - /bin/sh
+      - -ec
+      - |
+        psql -h postgres -U "$$POSTGRES_USER" -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname = 'file_service_db'" | grep -q 1 || \
+        psql -h postgres -U "$$POSTGRES_USER" -d postgres -c "CREATE DATABASE file_service_db"
+    restart: "no"
+
+  # seq:
+  #   container_name: seq
+  #   image: datalust/seq:latest
+  #   environment:
+  #     ACCEPT_EULA: "Y"
+  #     SEQ_FIRSTRUN_NOAUTHENTICATION: "true"
+  #   ports:
+  #     - "8081:80"
+  #     - "5341:5341"
+  #   restart: always
+
+  # nginx:
+  #   container_name: nginx
+  #   image: nginx:alpine
+  #   ports:
+  #     - "80:80"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  #   depends_on:
+  #     directory-service:
+  #       condition: service_healthy
+  #     frontend:
+  #       condition: service_healthy
+  #   restart: always
 
 
-  frontend:
-    container_name: frontend
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-    expose:
-      - "3000"
-    env_file:
-      - ./frontend/.env
+  # frontend:
+  #   container_name: frontend
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #     args:
+  #       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+  #   expose:
+  #     - "3000"
+  #   env_file:
+  #     - ./frontend/.env
+  #   healthcheck:
+  #     test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000/"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 10
+  #     start_period: 10s
+  #   restart: always
+
+
+  minio:
+    container_name: minio
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server --console-address ":9001" /data
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      test: ["CMD-SHELL", "curl --fail http://localhost:9000/minio/health/live || exit 1"]
       interval: 5s
       timeout: 5s
       retries: 10

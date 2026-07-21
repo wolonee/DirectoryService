@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup>
+    <ProjectReference Include="..\FileService.Core\FileService.Core.csproj" />
+    <ProjectReference Include="..\FileService.Domain\FileService.Domain.csproj" />
+    <ProjectReference Include="..\FileService.Infrastructure.Postgres\FileService.Infrastructure.Postgres.csproj" />
+    <ProjectReference Include="..\FileService.Infrastructure.S3\FileService.Infrastructure.S3.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="DirectoryService.Framework" Version="0.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.18">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
+  </ItemGroup>
+</Project>

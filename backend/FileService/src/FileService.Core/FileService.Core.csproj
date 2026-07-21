@@ -1,0 +1,8 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\FileService.Domain\FileService.Domain.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="DirectoryService.Framework" Version="0.0.2" />
+  </ItemGroup>
+</Project>
