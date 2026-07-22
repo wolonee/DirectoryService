@@ -26,6 +26,12 @@ public static class DependencyInjectionS3Extentions
 
         services.AddScoped<IS3Provider, S3Provider>();
         
+        services
+            .AddHealthChecks()
+            .AddCheck<S3HealthCheck>(
+                "object-storage",
+                timeout: TimeSpan.FromSeconds(5));
+        
         services.AddHostedService<S3BucketInitializationService>();
 
         return services;

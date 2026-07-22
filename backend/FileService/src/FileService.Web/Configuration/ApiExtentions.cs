@@ -21,7 +21,7 @@ public static class AppExtensions
             });
         }
 
-        app.MapGet("/health", () => Results.Ok());
+        app.MapHealthChecks("/health");
         app.MapEndpoints();
 
         return app;

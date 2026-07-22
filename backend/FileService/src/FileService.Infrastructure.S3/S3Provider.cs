@@ -153,7 +153,10 @@ public class S3Provider : IS3Provider, IDisposable
         _requestsSemaphore.Dispose();
     }
 
-    public async Task<Result<string, Error>> GenerateUploadUrlAsync(StorageKey storageKey, ContentType contentType, CancellationToken cancellationToken)
+    public async Task<Result<string, Error>> GenerateUploadUrlAsync(
+        StorageKey storageKey, 
+        ContentType contentType, 
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -214,7 +217,9 @@ public class S3Provider : IS3Provider, IDisposable
         }
     }
 
-    public async Task<Result<ObjectMetadataDto, Error>> GetObjectMetadataAsync(StorageKey storageKey, CancellationToken cancellationToken)
+    public async Task<Result<ObjectMetadataDto, Error>> GetObjectMetadataAsync(
+        StorageKey storageKey, 
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -247,7 +252,9 @@ public class S3Provider : IS3Provider, IDisposable
         }
     }
 
-    public async Task<Result<DeleteObjectResponseDto, Error>> DeleteObjectAsync(StorageKey storageKey, CancellationToken cancellationToken)
+    public async Task<Result<DeleteObjectResponseDto, Error>> DeleteObjectAsync(
+        StorageKey storageKey, 
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -282,7 +289,9 @@ public class S3Provider : IS3Provider, IDisposable
         }
     }
 
-    public async Task<UnitResult<Error>> EnsureBucketExistsAsync(string bucketName, CancellationToken cancellationToken)
+    public async Task<UnitResult<Error>> EnsureBucketExistsAsync(
+        string bucketName, 
+        CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(bucketName))
             return FileErrors.ValidationFailed("Имя bucket-а не должно быть пустым");
