@@ -50,8 +50,8 @@ public class S3BucketInitializationService : BackgroundService
         }
         catch (Exception ex)
         {
-            _logger.LogCritical(ex, "Critical error during S3 bucket initialization");
-            throw;
+            var result = S3ErrorMapper.ToError(ex);
+            _logger.LogCritical(ex, "Critical error during S3 bucket initialization: {res}", result);
         }
     }
     

@@ -7,23 +7,23 @@ using Microsoft.AspNetCore.Routing;
 
 namespace FileService.Core.Features;
 
-public class StartMultipartUpload : IEndpoint
-{
-    public void MapEndpoint(IEndpointRouteBuilder app)
-    {
-        app.MapPost("/files", async Task (
-            IFormFile formFile,
-            [FromServices] IS3Provider s3Provider,
-            CancellationToken cancellationToken) =>
-        {
-            string key = $"raw/{Guid.NewGuid()}";
-
-            await s3Provider.UploadFileAsync(
-                formFile.OpenReadStream(),
-                PreviewAsset.BUCKET,
-                key,
-                formFile.ContentType,
-                cancellationToken);
-        }).DisableAntiforgery();
-    }
-}
+// public class StartMultipartUpload : IEndpoint
+// {
+//     public void MapEndpoint(IEndpointRouteBuilder app)
+//     {
+//         app.MapPost("/files", async Task (
+//             IFormFile formFile,
+//             [FromServices] IS3Provider s3Provider,
+//             CancellationToken cancellationToken) =>
+//         {
+//             string key = $"raw/{Guid.NewGuid()}";
+//
+//             await s3Provider.UploadFileAsync(
+//                 formFile.OpenReadStream(),
+//                 PreviewAsset.BUCKET,
+//                 key,
+//                 formFile.ContentType,
+//                 cancellationToken);
+//         }).DisableAntiforgery();
+//     }
+// }
