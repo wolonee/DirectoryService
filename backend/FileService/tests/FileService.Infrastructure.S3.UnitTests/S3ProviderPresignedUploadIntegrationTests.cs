@@ -97,6 +97,48 @@ public class S3ProviderPresignedUploadIntegrationTests : IAsyncLifetime
         }
     }
 
+    [Fact]
+    public async Task PresignedPutUrl_WhenContentTypeDoesNotMatch_ShouldBeRejectedByMinio()
+    {
+        // Arrange
+        using var provider = CreateProvider();
+        using var httpClient = new HttpClient();
+
+        StorageKey storageKey = StorageKey.Create(
+            BucketName,
+            "tests",
+            $"{Guid.NewGuid():N}.txt").Value;
+        ContentType signedContentType = ContentType.Create("text/plain").Value;
+
+        var ensureBucketResult = await provider.EnsureBucketExistsAsync(BucketName, CancellationToken.None);
+        Assert.True(ensureBucketResult.IsSuccess);
+
+        try
+        {
+            var uploadUrlResult = await provider.GenerateUploadUrlAsync(
+                storageKey,
+                signedContentType,
+                CancellationToken.None);
+            Assert.True(uploadUrlResult.IsSuccess);
+
+            using var uploadContent = new ByteArrayContent(Encoding.UTF8.GetBytes("wrong content type"));
+            uploadContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            // Act
+            using HttpResponseMessage uploadResponse = await httpClient.PutAsync(
+                uploadUrlResult.Value,
+                uploadContent,
+                CancellationToken.None);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Forbidden, uploadResponse.StatusCode);
+        }
+        finally
+        {
+            await provider.DeleteObjectAsync(storageKey, CancellationToken.None);
+        }
+    }
+
     private S3Provider CreateProvider()
     {
         var client = new AmazonS3Client(

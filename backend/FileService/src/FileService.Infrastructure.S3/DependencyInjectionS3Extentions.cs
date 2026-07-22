@@ -10,7 +10,11 @@ public static class DependencyInjectionS3Extentions
 {
     public static IServiceCollection AddS3(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<S3Options>(configuration.GetSection(nameof(S3Options)));
+        services
+            .AddOptions<S3Options>()
+            .Bind(configuration.GetSection(nameof(S3Options)))
+            .ValidateOnStart();
+        services.AddSingleton<IValidateOptions<S3Options>, S3OptionsValidator>();
 
         services.AddSingleton<IAmazonS3>(sp =>
         {

@@ -1,0 +1,52 @@
+using Microsoft.Extensions.Options;
+
+namespace FileService.Infrastructure.S3;
+
+public sealed class S3OptionsValidator : IValidateOptions<S3Options>
+{
+    public ValidateOptionsResult Validate(string? name, S3Options options)
+    {
+        List<string> failures = [];
+
+        if (!Uri.TryCreate(options.Endpoint, UriKind.Absolute, out Uri? endpoint)
+            || (endpoint.Scheme != Uri.UriSchemeHttp && endpoint.Scheme != Uri.UriSchemeHttps))
+        {
+            failures.Add("S3Options:Endpoint must be an absolute HTTP or HTTPS URL.");
+        }
+
+        if (string.IsNullOrWhiteSpace(options.AccessKey))
+            failures.Add("S3Options:AccessKey must not be empty.");
+
+        if (string.IsNullOrWhiteSpace(options.SecretKey))
+            failures.Add("S3Options:SecretKey must not be empty.");
+
+        if (options.UploadUrlExpirationHours <= 0)
+            failures.Add("S3Options:UploadUrlExpirationHours must be greater than zero.");
+
+        if (options.DownloadUrlExpirationHours <= 0)
+            failures.Add("S3Options:DownloadUrlExpirationHours must be greater than zero.");
+
+        if (options.MaxConcurrentRequests <= 0)
+            failures.Add("S3Options:MaxConcurrentRequests must be greater than zero.");
+
+        if (options.RequiredBuckets.Count == 0)
+        {
+            failures.Add("S3Options:RequiredBuckets must contain at least one bucket.");
+        }
+        else
+        {
+            if (options.RequiredBuckets.Any(string.IsNullOrWhiteSpace))
+                failures.Add("S3Options:RequiredBuckets must not contain empty names.");
+
+            if (options.RequiredBuckets.Distinct(StringComparer.OrdinalIgnoreCase).Count()
+                != options.RequiredBuckets.Count)
+            {
+                failures.Add("S3Options:RequiredBuckets must not contain duplicate names.");
+            }
+        }
+
+        return failures.Count == 0
+            ? ValidateOptionsResult.Success
+            : ValidateOptionsResult.Fail(failures);
+    }
+}
