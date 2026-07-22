@@ -153,10 +153,7 @@ public class S3Provider : IS3Provider, IDisposable
         _requestsSemaphore.Dispose();
     }
 
-    public async Task<Result<string, Error>> GenerateUploadUrlAsync(
-        StorageKey storageKey,
-        ContentType contentType,
-        CancellationToken cancellationToken)
+    public async Task<Result<string, Error>> GenerateUploadUrlAsync(StorageKey storageKey, ContentType contentType, CancellationToken cancellationToken)
     {
         try
         {
@@ -178,6 +175,12 @@ public class S3Provider : IS3Provider, IDisposable
         }
         catch (Exception ex)
         {
+            _logger.LogError(
+                ex,
+                "Could not generate upload URL for S3 object {BucketName}/{ObjectKey}",
+                storageKey.Bucket,
+                storageKey.Value);
+
             return S3ErrorMapper.ToError(ex);
         }
     }
@@ -201,13 +204,17 @@ public class S3Provider : IS3Provider, IDisposable
         }
         catch (Exception ex)
         {
+            _logger.LogError(
+                ex,
+                "Could not generate download URL for S3 object {BucketName}/{ObjectKey}",
+                storageKey.Bucket,
+                storageKey.Value);
+
             return S3ErrorMapper.ToError(ex);
         }
     }
 
-    public async Task<Result<ObjectMetadataDto, Error>> GetObjectMetadataAsync(
-        StorageKey storageKey,
-        CancellationToken cancellationToken)
+    public async Task<Result<ObjectMetadataDto, Error>> GetObjectMetadataAsync(StorageKey storageKey, CancellationToken cancellationToken)
     {
         try
         {
@@ -230,13 +237,17 @@ public class S3Provider : IS3Provider, IDisposable
         }
         catch (Exception ex)
         {
+            _logger.LogError(
+                ex,
+                "Could not get metadata for S3 object {BucketName}/{ObjectKey}",
+                storageKey.Bucket,
+                storageKey.Value);
+
             return S3ErrorMapper.ToError(ex);
         }
     }
 
-    public async Task<Result<DeleteObjectResponseDto, Error>> DeleteObjectAsync(
-        StorageKey storageKey,
-        CancellationToken cancellationToken)
+    public async Task<Result<DeleteObjectResponseDto, Error>> DeleteObjectAsync(StorageKey storageKey, CancellationToken cancellationToken)
     {
         try
         {
@@ -250,8 +261,23 @@ public class S3Provider : IS3Provider, IDisposable
 
             return new DeleteObjectResponseDto(response.DeleteMarker, response.VersionId);
         }
+        catch (AmazonS3Exception ex) when (ex.ErrorCode == "NoSuchKey")
+        {
+            _logger.LogInformation(
+                "S3 object {BucketName}/{ObjectKey} is already absent",
+                storageKey.Bucket,
+                storageKey.Value);
+
+            return new DeleteObjectResponseDto(null, null);
+        }
         catch (Exception ex)
         {
+            _logger.LogError(
+                ex,
+                "Could not delete S3 object {BucketName}/{ObjectKey}",
+                storageKey.Bucket,
+                storageKey.Value);
+
             return S3ErrorMapper.ToError(ex);
         }
     }
