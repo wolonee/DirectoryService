@@ -9,14 +9,14 @@ ARG NUGET_USERNAME
 ARG NUGET_TOKEN
 WORKDIR /src
 
-COPY ["NuGet.Config", "."]
+COPY ["nuget.config", "."]
 COPY ["FileService/", "FileService/"]
 
 RUN dotnet nuget update source github \
     --username $NUGET_USERNAME \
     --password $NUGET_TOKEN \
     --store-password-in-clear-text \
-    --configfile /src/NuGet.Config
+    --configfile /src/nuget.config
 
 RUN dotnet restore "FileService/src/FileService.Web/FileService.Web.csproj"
 
