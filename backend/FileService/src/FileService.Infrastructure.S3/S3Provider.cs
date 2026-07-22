@@ -18,7 +18,7 @@ public class S3Provider : IS3Provider, IDisposable
     private readonly IAmazonS3 _s3Client;
     private readonly ILogger<S3Provider> _logger;
     private readonly S3Options _s3Options;
-    
+
     private readonly SemaphoreSlim _requestsSemaphore;
 
     public S3Provider(
@@ -32,7 +32,7 @@ public class S3Provider : IS3Provider, IDisposable
         _requestsSemaphore = new SemaphoreSlim(_s3Options.MaxConcurrentRequests);
     }
 
-    public async Task UploadFileAsync(Stream stream, string bucketName, string key, string contentType, CancellationToken cancellationToken )
+    public async Task UploadFileAsync(Stream stream, string bucketName, string key, string contentType, CancellationToken cancellationToken)
     {
         var request = new PutObjectRequest
         {
@@ -48,16 +48,18 @@ public class S3Provider : IS3Provider, IDisposable
     public async Task<Result<string, Error>> StartMultipartUploadAsync(
         string bucketName,
         string key,
-        string contentType, 
+        string contentType,
         CancellationToken cancellationToken)
     {
         try
         {
             var request = new InitiateMultipartUploadRequest()
             {
-                BucketName = bucketName, Key = key, ContentType = contentType,
+                BucketName = bucketName,
+                Key = key,
+                ContentType = contentType,
             };
-            
+
             var response = await _s3Client.InitiateMultipartUploadAsync(request, cancellationToken);
 
             return response.UploadId;
@@ -104,7 +106,7 @@ public class S3Provider : IS3Provider, IDisposable
                         _requestsSemaphore.Release();
                     }
                 });
-        
+
             return await Task.WhenAll(tasks);
         }
         catch (Exception e)
@@ -113,7 +115,7 @@ public class S3Provider : IS3Provider, IDisposable
             return S3ErrorMapper.ToError(e);
         }
     }
-    
+
     public async Task<Result<string, Error>> CompleteMultipartUploadAsync(
         string bucketName,
         string key,
@@ -134,7 +136,7 @@ public class S3Provider : IS3Provider, IDisposable
                     PartNumber = p.PartNumber,
                 }).ToList(),
             };
-            
+
             CompleteMultipartUploadResponse response = await _s3Client.CompleteMultipartUploadAsync(request, cancellationToken);
 
             return response.Key;
@@ -150,18 +152,24 @@ public class S3Provider : IS3Provider, IDisposable
     {
         _requestsSemaphore.Dispose();
     }
-    
-    public async Task<Result<string, Error>> GenerateUploadUrlAsync(StorageKey storageKey)
+
+    public async Task<Result<string, Error>> GenerateUploadUrlAsync(
+        StorageKey storageKey,
+        ContentType contentType,
+        CancellationToken cancellationToken)
     {
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var request = new GetPreSignedUrlRequest
             {
                 BucketName = storageKey.Bucket,
                 Key = storageKey.Value,
                 Verb = HttpVerb.PUT,
-                Expires = DateTime.UtcNow.AddHours(6),
+                Expires = DateTime.UtcNow.AddHours(_s3Options.UploadUrlExpirationHours),
                 Protocol = _s3Options.WithSsl ? Protocol.HTTPS : Protocol.HTTP,
+                ContentType = contentType.Value,
             };
 
             string? response = await _s3Client.GetPreSignedURLAsync(request);
@@ -173,7 +181,7 @@ public class S3Provider : IS3Provider, IDisposable
             return S3ErrorMapper.ToError(ex);
         }
     }
-    
+
     public async Task<Result<string, Error>> GenerateDownloadUrlAsync(StorageKey storageKey)
     {
         try
@@ -205,10 +213,10 @@ public class S3Provider : IS3Provider, IDisposable
         {
             var request = new GetObjectMetadataRequest
             {
-                BucketName = storageKey.Bucket, 
+                BucketName = storageKey.Bucket,
                 Key = storageKey.Value,
             };
-            
+
             GetObjectMetadataResponse response = await _s3Client.GetObjectMetadataAsync(
                 request,
                 cancellationToken);
@@ -237,14 +245,10 @@ public class S3Provider : IS3Provider, IDisposable
                 BucketName = storageKey.Bucket,
                 Key = storageKey.Value,
             };
-        
-            DeleteObjectResponse response = await _s3Client.DeleteObjectAsync(
-                request,
-                cancellationToken);
 
-            return new DeleteObjectResponseDto(
-                response.DeleteMarker,
-                response.VersionId);
+            DeleteObjectResponse response = await _s3Client.DeleteObjectAsync(request, cancellationToken);
+
+            return new DeleteObjectResponseDto(response.DeleteMarker, response.VersionId);
         }
         catch (Exception ex)
         {
@@ -259,9 +263,7 @@ public class S3Provider : IS3Provider, IDisposable
 
         try
         {
-            bool bucketExists = await AmazonS3Util.DoesS3BucketExistV2Async(
-                _s3Client,
-                bucketName);
+            bool bucketExists = await AmazonS3Util.DoesS3BucketExistV2Async(_s3Client, bucketName);
 
             if (bucketExists)
                 return UnitResult.Success<Error>();
@@ -285,5 +287,5 @@ public class S3Provider : IS3Provider, IDisposable
             return S3ErrorMapper.ToError(ex);
         }
     }
-    
+
 }

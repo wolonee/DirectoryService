@@ -7,12 +7,12 @@ namespace FileService.Core;
 
 public interface IS3Provider
 {
-    Task UploadFileAsync(Stream stream, string bucketName, string key, string contentType, CancellationToken cancellationToken );
+    Task UploadFileAsync(Stream stream, string bucketName, string key, string contentType, CancellationToken cancellationToken);
 
     Task<Result<string, Error>> StartMultipartUploadAsync(
         string bucketName,
         string key,
-        string contentType, 
+        string contentType,
         CancellationToken cancellationToken);
 
     Task<Result<IReadOnlyList<string>, Error>> GenerateAllChunksUploadUrlsAsync(
@@ -30,18 +30,21 @@ public interface IS3Provider
         CancellationToken cancellationToken);
 
     void Dispose();
-    
-    Task<Result<string, Error>> GenerateUploadUrlAsync(StorageKey storageKey);
-    
+
+    Task<Result<string, Error>> GenerateUploadUrlAsync(
+        StorageKey storageKey,
+        ContentType contentType,
+        CancellationToken cancellationToken);
+
     Task<Result<string, Error>> GenerateDownloadUrlAsync(StorageKey storageKey);
-    
+
     Task<Result<ObjectMetadataDto, Error>> GetObjectMetadataAsync(
         StorageKey storageKey,
         CancellationToken cancellationToken);
-    
+
     Task<Result<DeleteObjectResponseDto, Error>> DeleteObjectAsync(
         StorageKey storageKey,
         CancellationToken cancellationToken);
-    
+
     Task<UnitResult<Error>> EnsureBucketExistsAsync(string bucketName, CancellationToken cancellationToken);
 }
