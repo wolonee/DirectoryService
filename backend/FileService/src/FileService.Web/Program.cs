@@ -1,6 +1,5 @@
 using System.Globalization;
 using FileService.Infrastructure.Postgres.Database;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using FileService.Infrastructure.S3;
 using FileService.Web.Configuration;
 using Microsoft.AspNetCore.Mvc;

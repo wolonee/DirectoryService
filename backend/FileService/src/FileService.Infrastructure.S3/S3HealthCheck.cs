@@ -26,26 +26,37 @@ public class S3HealthCheck : IHealthCheck
         HealthCheckContext context,
         CancellationToken cancellationToken)
     {
-        var firstBucket = _s3Options.RequiredBuckets
-            .Select(async bucket =>
-            {
-                bool result = await AmazonS3Util.DoesS3BucketExistV2Async(_s3Client, bucket);
-                if (!result)
-                {
-                    _logger.LogError("Bucket not found");
-                    return false;
-                }
-                
-                return true;
-            });
-
-        if (!firstBucket.Any())
+        if (_s3Options.RequiredBuckets.Count == 0)
         {
-            _logger.LogError("Bucket not found");
-            return HealthCheckResult.Unhealthy();
+            _logger.LogError("Required S3 buckets are not configured");
+            return HealthCheckResult.Unhealthy("Required S3 buckets are not configured");
         }
-                
-        _logger.LogInformation("Health check completed");
-        return HealthCheckResult.Healthy();
+
+        try
+        {
+            foreach (string bucketName in _s3Options.RequiredBuckets)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                bool bucketExists = await AmazonS3Util.DoesS3BucketExistV2Async(
+                    _s3Client,
+                    bucketName);
+
+                if (!bucketExists)
+                {
+                    _logger.LogError("Required S3 bucket {BucketName} was not found", bucketName);
+                    return HealthCheckResult.Unhealthy(
+                        $"Required S3 bucket '{bucketName}' was not found");
+                }
+            }
+
+            _logger.LogDebug("S3 health check completed successfully");
+            return HealthCheckResult.Healthy();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "S3 health check failed");
+            return HealthCheckResult.Unhealthy("Object storage is unavailable", ex);
+        }
     }
 }
