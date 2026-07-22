@@ -1,5 +1,3 @@
-using Amazon.Extensions.NETCore.Setup;
-using Amazon.Runtime;
 using Amazon.S3;
 using FileService.Core;
 using Microsoft.Extensions.Configuration;

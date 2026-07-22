@@ -1,6 +1,4 @@
-﻿using Amazon.S3;
-using Amazon.S3.Model;
-using Amazon.S3.Util;
+using FileService.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -11,16 +9,16 @@ namespace FileService.Infrastructure.S3;
 public class S3BucketInitializationService : BackgroundService
 {
     private readonly S3Options _s3Options;
-    private readonly IAmazonS3 _s3Client;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<S3BucketInitializationService> _logger;
 
     public S3BucketInitializationService(
         IOptions<S3Options> s3Options,
-        IAmazonS3 s3Client,
+        IServiceScopeFactory scopeFactory,
         ILogger<S3BucketInitializationService> logger)
     {
         _s3Options = s3Options.Value;
-        _s3Client = s3Client;
+        _scopeFactory = scopeFactory;
         _logger = logger;
     }
 
@@ -38,11 +36,13 @@ public class S3BucketInitializationService : BackgroundService
                 "Starting S3 buckets initialization. Required buckets: {Buckets}",
                 string.Join(", ", _s3Options.RequiredBuckets));
 
-            Task[] tasks = _s3Options.RequiredBuckets
-                .Select(bucketName => InitializeBucketAsync(bucketName, stoppingToken))
-                .ToArray();
+            using IServiceScope scope = _scopeFactory.CreateScope();
+            IS3Provider s3Provider = scope.ServiceProvider.GetRequiredService<IS3Provider>();
 
-            await Task.WhenAll(tasks);
+            foreach (string bucketName in _s3Options.RequiredBuckets)
+            {
+                await InitializeBucketAsync(s3Provider, bucketName, stoppingToken);
+            }
         }
         catch (OperationCanceledException)
         {
@@ -55,56 +55,19 @@ public class S3BucketInitializationService : BackgroundService
         }
     }
     
-    private async Task InitializeBucketAsync(string bucketName, CancellationToken cancellationToken)
+    private async Task InitializeBucketAsync(
+        IS3Provider s3Provider,
+        string bucketName,
+        CancellationToken cancellationToken)
     {
-        try
+        var result = await s3Provider.EnsureBucketExistsAsync(bucketName, cancellationToken);
+
+        if (result.IsFailure)
         {
-            bool bucketExists = await AmazonS3Util.DoesS3BucketExistV2Async(_s3Client, bucketName);
-
-            if (bucketExists)
-            {
-                _logger.LogInformation("Bucket {Bucket} already exists", bucketName);
-                return;
-            }
-
-            _logger.LogInformation("Creating bucket '{BucketName}'", bucketName);
-
-            var putBucketRequest = new PutBucketRequest
-            {
-                BucketName = bucketName,
-            };
-
-            await _s3Client.PutBucketAsync(putBucketRequest, cancellationToken);
-            
-            string policy = $$"""
-                              {
-                                  "Version": "2012-10-17",
-                                  "Statement": [
-                                      {
-                                          "Effect": "Allow",
-                                          "Principal": {
-                                              "AWS": ["*"]
-                                          },
-                                          "Action": ["s3:GetObject"],
-                                          "Resource": ["arn:aws:s3:::{{bucketName}}/*"]
-                                      }
-                                  ]
-                              }
-                              """;
-
-            var putPolicyRequest = new PutBucketPolicyRequest
-            {
-                BucketName = bucketName, Policy = policy,
-            };
-
-            await _s3Client.PutBucketPolicyAsync(putPolicyRequest, cancellationToken);
-            
-            _logger.LogInformation("Bucket '{BucketName}' created successfully", bucketName);
+            throw new InvalidOperationException(
+                $"Could not initialize S3 bucket '{bucketName}': {result.Error.Message}");
         }
-        catch (Exception e)
-        {
-            _logger.LogError("Error initialize buckets in BackgroundService: {e}", e);
-            throw;
-        }
+
+        _logger.LogInformation("Bucket {BucketName} is ready", bucketName);
     }
 }

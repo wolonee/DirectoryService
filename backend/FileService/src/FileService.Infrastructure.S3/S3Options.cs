@@ -11,6 +11,11 @@ public record S3Options
     public bool WithSsl { get; init; }
     
     public int DownloadUrlExpirationHours { get; init; }
+    
+    public int UploadUrlExpirationHours { get; init; }
+    
+    public int MaxConcurrentRequests { get; init; }
 
     public IReadOnlyList<string> RequiredBuckets { get; init; } = [];
+    
 }

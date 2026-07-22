@@ -1,3 +1,4 @@
+using FileService.Domain.Assets;
 using FileService.Web.EndpointsExtensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -6,7 +7,7 @@ using Microsoft.AspNetCore.Routing;
 
 namespace FileService.Core.Features;
 
-public class UploadFile : IEndpoint
+public class StartMultipartUpload : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
@@ -19,7 +20,7 @@ public class UploadFile : IEndpoint
 
             await s3Provider.UploadFileAsync(
                 formFile.OpenReadStream(),
-                "pictures",
+                PreviewAsset.BUCKET,
                 key,
                 formFile.ContentType,
                 cancellationToken);
