@@ -108,10 +108,6 @@ namespace FileService.Infrastructure.Postgres.Migrations
                             b1.Property<Guid>("MediaAssetId")
                                 .HasColumnType("uuid");
 
-                            b1.Property<int>("ExpectedChunksCount")
-                                .HasColumnType("integer")
-                                .HasColumnName("expected_chunks_count");
-
                             b1.Property<long>("Size")
                                 .HasColumnType("bigint")
                                 .HasColumnName("size");
@@ -194,9 +190,52 @@ namespace FileService.Infrastructure.Postgres.Migrations
                                 .HasColumnType("uuid")
                                 .HasColumnName("owner_entity_id");
 
+                            b1.Property<Guid>("UploaderId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("owner_uploader_id");
+
                             b1.HasKey("MediaAssetId");
 
                             b1.HasIndex("Context", "EntityId");
+
+                            b1.ToTable("media_asset", "files");
+
+                            b1.WithOwner()
+                                .HasForeignKey("MediaAssetId");
+                        });
+
+                    b.OwnsOne("FileService.Domain.StorageReference", "StorageReference", b1 =>
+                        {
+                            b1.Property<Guid>("MediaAssetId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Checksum")
+                                .HasColumnType("text")
+                                .HasColumnName("storage_reference_checksum");
+
+                            b1.Property<string>("ContentType")
+                                .IsRequired()
+                                .HasColumnType("text")
+                                .HasColumnName("storage_reference_content_type");
+
+                            b1.Property<string>("ETag")
+                                .HasColumnType("text")
+                                .HasColumnName("storage_reference_etag");
+
+                            b1.Property<string>("Key")
+                                .IsRequired()
+                                .HasColumnType("jsonb")
+                                .HasColumnName("storage_reference_key");
+
+                            b1.Property<DateTime?>("LastModified")
+                                .HasColumnType("timestamp with time zone")
+                                .HasColumnName("storage_reference_last_modified");
+
+                            b1.Property<long>("Size")
+                                .HasColumnType("bigint")
+                                .HasColumnName("storage_reference_size");
+
+                            b1.HasKey("MediaAssetId");
 
                             b1.ToTable("media_asset", "files");
 
@@ -209,6 +248,8 @@ namespace FileService.Infrastructure.Postgres.Migrations
 
                     b.Navigation("Owner")
                         .IsRequired();
+
+                    b.Navigation("StorageReference");
                 });
 #pragma warning restore 612, 618
         }

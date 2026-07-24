@@ -84,7 +84,7 @@ public class VideoAsset : MediaAsset
         return UnitResult.Success<Error>();
     }
 
-    public UnitResult<Error> CompleteProcessing(DateTime timestamp)
+    public UnitResult<Error> CompleteProcessing(StorageReference storageReference, DateTime timestamp)
     {
         Result<StorageKey, Error> hlsRootKeyResult = HlsRootKey.AppendSegment(MASTER_PLAYLIST_NAME);
         if (hlsRootKeyResult.IsFailure)
@@ -92,7 +92,7 @@ public class VideoAsset : MediaAsset
             return hlsRootKeyResult.Error;
         }
 
-        UnitResult<Error> readyStatusResult = MarkReady(hlsRootKeyResult.Value, timestamp);
+        UnitResult<Error> readyStatusResult = MarkReady(hlsRootKeyResult.Value, storageReference, timestamp);
         if (readyStatusResult.IsFailure)
         {
             return readyStatusResult.Error;

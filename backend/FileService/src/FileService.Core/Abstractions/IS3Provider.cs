@@ -31,7 +31,7 @@ public interface IS3Provider
 
     void Dispose();
 
-    Task<Result<string, Error>> GenerateUploadUrlAsync(
+    Task<Result<PresignedUploadDto, Error>> GenerateUploadUrlAsync(
         StorageKey storageKey,
         ContentType contentType,
         CancellationToken cancellationToken);

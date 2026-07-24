@@ -18,18 +18,21 @@ public sealed record MediaOwner
     public string Context { get; private init; } = null!;
 
     public Guid EntityId { get; private init; }
+    
+    public Guid UploaderId { get; private init; }
 
     private MediaOwner()
     {
     }
 
-    private MediaOwner(string context, Guid entityId)
+    private MediaOwner(string context, Guid entityId, Guid uploaderId)
     {
         Context = context;
         EntityId = entityId;
+        UploaderId = uploaderId;
     }
     
-    public static Result<MediaOwner, Error> Create(string context, Guid entityId)
+    public static Result<MediaOwner, Error> Create(string context, Guid entityId, Guid uploaderId)
     {
         if (string.IsNullOrWhiteSpace(context) || context.Length > 50)
             return GeneralErrors.ValueIsInvalid(nameof(context));
@@ -41,23 +44,26 @@ public sealed record MediaOwner
 
         if (entityId == Guid.Empty)
             return GeneralErrors.ValueIsInvalid(nameof(entityId));
+        
+        if (uploaderId == Guid.Empty)
+            return GeneralErrors.ValueIsInvalid(nameof(uploaderId));
 
-        return new MediaOwner(normalizedContext, entityId);
+        return new MediaOwner(normalizedContext, entityId, uploaderId);
     }
     
-    public static Result<MediaOwner, Error> ForLesson(Guid lessonId) =>
-        Create("lesson", lessonId);
+    public static Result<MediaOwner, Error> ForLesson(Guid lessonId, Guid uploaderId) =>
+        Create("lesson", lessonId, uploaderId);
 
-    public static Result<MediaOwner, Error> ForModule(Guid courseId) =>
-        Create("module", courseId);
+    public static Result<MediaOwner, Error> ForModule(Guid courseId, Guid uploaderId) =>
+        Create("module", courseId, uploaderId);
 
-    public static Result<MediaOwner, Error> ForUser(Guid userId) =>
-        Create("user", userId);
+    public static Result<MediaOwner, Error> ForUser(Guid userId, Guid uploaderId) =>
+        Create("user", userId, uploaderId);
 
-    public static Result<MediaOwner, Error> ForDepartment(Guid departmentId) =>
-        Create("department", departmentId);
+    public static Result<MediaOwner, Error> ForDepartment(Guid departmentId, Guid uploaderId) =>
+        Create("department", departmentId, uploaderId);
     
-    public static Result<MediaOwner, Error> ForCourse(Guid departmentId) =>
-        Create("course", departmentId);
+    public static Result<MediaOwner, Error> ForCourse(Guid departmentId, Guid uploaderId) =>
+        Create("course", departmentId, uploaderId);
     
 }

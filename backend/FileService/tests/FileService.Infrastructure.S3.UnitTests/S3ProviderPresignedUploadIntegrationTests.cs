@@ -62,12 +62,14 @@ public class S3ProviderPresignedUploadIntegrationTests : IAsyncLifetime
 
             // Assert: browser/client uploads bytes directly to MinIO, not through File Service.
             Assert.True(uploadUrlResult.IsSuccess);
+            Assert.Equal("PUT", uploadUrlResult.Value.Method);
+            Assert.Equal(contentType.Value, uploadUrlResult.Value.RequiredHeaders["Content-Type"]);
 
             using var uploadContent = new ByteArrayContent(expectedContent);
             uploadContent.Headers.ContentType = new MediaTypeHeaderValue(contentType.Value);
 
             using HttpResponseMessage uploadResponse = await httpClient.PutAsync(
-                uploadUrlResult.Value,
+                uploadUrlResult.Value.Url,
                 uploadContent,
                 CancellationToken.None);
 
@@ -126,7 +128,7 @@ public class S3ProviderPresignedUploadIntegrationTests : IAsyncLifetime
 
             // Act
             using HttpResponseMessage uploadResponse = await httpClient.PutAsync(
-                uploadUrlResult.Value,
+                uploadUrlResult.Value.Url,
                 uploadContent,
                 CancellationToken.None);
 

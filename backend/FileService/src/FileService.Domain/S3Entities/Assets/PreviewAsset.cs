@@ -73,13 +73,13 @@ public class PreviewAsset : MediaAsset
         return UnitResult.Success<Error>();
     }
 
-    public UnitResult<Error> CompleteUpload(DateTime timestamp)
+    public UnitResult<Error> CompleteUpload(StorageReference storageReference, DateTime timestamp)
     {
         var uploadedResult = MarkUploaded(timestamp);
         if (uploadedResult.IsFailure)
             return uploadedResult.Error;
 
-        var readyResult = MarkReady(RawKey, timestamp);
+        var readyResult = MarkReady(RawKey, storageReference, timestamp);
         if (readyResult.IsFailure)
             return readyResult.Error;
         

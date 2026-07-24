@@ -18,7 +18,7 @@ namespace FileService.Core.Features;
 //         {
 //             string key = $"raw/{Guid.NewGuid()}";
 //
-//             await s3Provider.UploadFileAsync(
+//              await s3Provider.UploadFileAsync(
 //                 formFile.OpenReadStream(),
 //                 PreviewAsset.BUCKET,
 //                 key,

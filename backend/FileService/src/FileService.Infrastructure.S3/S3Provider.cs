@@ -153,28 +153,37 @@ public class S3Provider : IS3Provider, IDisposable
         _requestsSemaphore.Dispose();
     }
 
-    public async Task<Result<string, Error>> GenerateUploadUrlAsync(
+    public async Task<Result<PresignedUploadDto, Error>> GenerateUploadUrlAsync(
         StorageKey storageKey, 
         ContentType contentType, 
         CancellationToken cancellationToken)
     {
         try
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            DateTime expiresAt = DateTime.UtcNow.AddHours(_s3Options.UploadUrlExpirationHours);
 
             var request = new GetPreSignedUrlRequest
             {
                 BucketName = storageKey.Bucket,
                 Key = storageKey.Value,
                 Verb = HttpVerb.PUT,
-                Expires = DateTime.UtcNow.AddHours(_s3Options.UploadUrlExpirationHours),
+                Expires = expiresAt,
                 Protocol = _s3Options.WithSsl ? Protocol.HTTPS : Protocol.HTTP,
                 ContentType = contentType.Value,
             };
 
-            string? response = await _s3Client.GetPreSignedURLAsync(request);
+            string response = await _s3Client.GetPreSignedURLAsync(request);
 
-            return response;
+            return new PresignedUploadDto
+            {
+                Url = response,
+                Method = "PUT",
+                ExpiresAt = expiresAt,
+                RequiredHeaders = new Dictionary<string, string>
+                {
+                    ["Content-Type"] = contentType.Value,
+                },
+            };
         }
         catch (Exception ex)
         {

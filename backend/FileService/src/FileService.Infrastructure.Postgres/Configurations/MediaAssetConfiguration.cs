@@ -38,7 +38,6 @@ public class MediaAssetConfiguration : IEntityTypeConfiguration<MediaAsset>
             });
 
             mb.Property(x => x.Size).HasColumnName("size");
-            mb.Property(x => x.ExpectedChunksCount).HasColumnName("expected_chunks_count");
         });
 
         builder.Property(x => x.RawKey)
@@ -64,6 +63,10 @@ public class MediaAssetConfiguration : IEntityTypeConfiguration<MediaAsset>
             owner.Property(x => x.EntityId)
                 .HasColumnName("owner_entity_id")
                 .IsRequired();
+            
+            owner.Property(x => x.UploaderId)
+                .HasColumnName("owner_uploader_id")
+                .IsRequired();
 
             owner.HasIndex(x => new { x.Context, x.EntityId });
         });
@@ -75,6 +78,31 @@ public class MediaAssetConfiguration : IEntityTypeConfiguration<MediaAsset>
         builder.Property(x => x.CreatedAt).HasColumnName("created_at");
         
         builder.Property(x => x.UpdatedAt).HasColumnName("updated_at");
+
+        builder.OwnsOne(x => x.StorageReference, rb =>
+        {
+            rb.Property(x => x.Key)
+                .HasConversion<StorageKeyConverter>()
+                .HasColumnName("storage_reference_key")
+                .HasColumnType("jsonb");
+
+            rb.Property(x => x.ContentType)
+                .HasColumnName("storage_reference_content_type");
+            
+            rb.Property(x => x.Size)
+                .HasColumnName("storage_reference_size");
+            
+            rb.Property(x => x.ETag)
+                .HasColumnName("storage_reference_etag");
+            
+            rb.Property(x => x.Checksum)
+                .HasColumnName("storage_reference_checksum");
+            
+            rb.Property(x => x.LastModified)
+                .HasColumnName("storage_reference_last_modified");
+        });
+
+        builder.Navigation(x => x.StorageReference).IsRequired(false);
 
         builder.HasIndex(x => new { x.Status, x.CreatedAt });
         builder.HasIndex(x => new { x.Usage, x.Status });
