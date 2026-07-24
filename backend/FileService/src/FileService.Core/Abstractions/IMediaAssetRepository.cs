@@ -1,12 +1,14 @@
-﻿using FileService.Domain.Assets;
+﻿using CSharpFunctionalExtensions;
+using DirectoryService.Shared.Errors;
+using FileService.Domain.Assets;
 
 namespace FileService.Core.Abstractions;
 
 public interface IMediaAssetRepository
 {
-    Task AddAsync(MediaAsset asset, CancellationToken cancellationToken);
+    Task<Result<Guid, Error>> AddAsync(MediaAsset asset, CancellationToken cancellationToken);
     
-    Task<MediaAsset?> GetByIdAsync(Guid fileId, CancellationToken cancellationToken);
+    Task<Result<MediaAsset, Error>> GetByIdAsync(Guid fileId, CancellationToken cancellationToken);
     
-    Task SaveChangesAsync(CancellationToken cancellationToken);
+    Task<UnitResult<Error>> SaveChangesAsync(CancellationToken cancellationToken);
 }
