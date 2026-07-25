@@ -1,5 +1,3 @@
-using Amazon.Extensions.NETCore.Setup;
-using Amazon.Runtime;
 using Amazon.S3;
 using FileService.Core;
 using Microsoft.Extensions.Configuration;
@@ -12,7 +10,11 @@ public static class DependencyInjectionS3Extentions
 {
     public static IServiceCollection AddS3(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<S3Options>(configuration.GetSection(nameof(S3Options)));
+        services
+            .AddOptions<S3Options>()
+            .Bind(configuration.GetSection(nameof(S3Options)))
+            .ValidateOnStart();
+        services.AddSingleton<IValidateOptions<S3Options>, S3OptionsValidator>();
 
         services.AddSingleton<IAmazonS3>(sp =>
         {
@@ -27,6 +29,12 @@ public static class DependencyInjectionS3Extentions
         });
 
         services.AddScoped<IS3Provider, S3Provider>();
+        
+        services
+            .AddHealthChecks()
+            .AddCheck<S3HealthCheck>(
+                "object-storage",
+                timeout: TimeSpan.FromSeconds(5));
         
         services.AddHostedService<S3BucketInitializationService>();
 

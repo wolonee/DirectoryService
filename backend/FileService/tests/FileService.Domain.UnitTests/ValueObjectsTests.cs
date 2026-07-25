@@ -57,6 +57,28 @@ public class ValueObjectsTests
         Assert.True(result.IsFailure);
     }
 
+    [Theory]
+    [InlineData("lesson_video", MediaUsage.LESSON_VIDEO)]
+    [InlineData("COURSE_COVER", MediaUsage.COURSE_COVER)]
+    [InlineData("company_presentation", MediaUsage.COMPANY_PRESENTATION)]
+    public void MediaUsage_ToMediaUsage_WithValidValue_ReturnsEnum(string value, MediaUsage expected)
+    {
+        var result = value.ToMediaUsage();
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(expected, result.Value);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("unknown_usage")]
+    public void MediaUsage_ToMediaUsage_WithInvalidValue_ReturnsFailure(string value)
+    {
+        var result = value.ToMediaUsage();
+
+        Assert.True(result.IsFailure);
+    }
+
     [Fact]
     public void StorageKey_Create_NormalizesSafeKey()
     {
@@ -115,7 +137,7 @@ public class ValueObjectsTests
     {
         Guid entityId = Guid.CreateVersion7();
 
-        var result = MediaOwner.Create(" LESSON ", entityId);
+        var result = MediaOwner.Create(" LESSON ", entityId, Guid.CreateVersion7());
 
         Assert.True(result.IsSuccess);
         Assert.Equal("lesson", result.Value.Context);
@@ -127,7 +149,7 @@ public class ValueObjectsTests
     [InlineData("unknown")]
     public void MediaOwner_Create_WithInvalidContext_ReturnsFailure(string context)
     {
-        var result = MediaOwner.Create(context, Guid.CreateVersion7());
+        var result = MediaOwner.Create(context, Guid.CreateVersion7(), Guid.CreateVersion7());
 
         Assert.True(result.IsFailure);
     }
@@ -135,20 +157,20 @@ public class ValueObjectsTests
     [Fact]
     public void MediaOwner_Create_WithEmptyEntityId_ReturnsFailure()
     {
-        var result = MediaOwner.Create("lesson", Guid.Empty);
+        var result = MediaOwner.Create("lesson", Guid.Empty, Guid.CreateVersion7());
 
         Assert.True(result.IsFailure);
     }
 
     [Theory]
-    [InlineData(0, 1)]
-    [InlineData(1, 0)]
-    public void MediaData_Create_WithInvalidSizeOrChunkCount_ReturnsFailure(long size, int chunksCount)
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void MediaData_Create_WithInvalidSize_ReturnsFailure(long size)
     {
         FileName fileName = FileName.Create("lesson.mp4").Value;
         ContentType contentType = ContentType.Create("video/mp4").Value;
 
-        var result = MediaData.Create(fileName, contentType, size, chunksCount);
+        var result = MediaData.Create(fileName, contentType, size);
 
         Assert.True(result.IsFailure);
     }

@@ -66,7 +66,15 @@ public class AssetPoliciesTests
             CreateOwner()).Value;
         DateTime timestamp = new(2026, 7, 20, 13, 0, 0, DateTimeKind.Utc);
 
-        var result = asset.CompleteUpload(timestamp);
+        StorageReference storageReference = StorageReference.Create(
+            asset.RawKey,
+            1_024,
+            "image/webp",
+            null,
+            null,
+            timestamp).Value;
+
+        var result = asset.CompleteUpload(storageReference, timestamp);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(MediaStatus.READY, asset.Status);
@@ -88,8 +96,9 @@ public class AssetPoliciesTests
     {
         FileName name = FileName.Create(fileName).Value;
         ContentType type = ContentType.Create(contentType).Value;
-        return MediaData.Create(name, type, size, 1).Value;
+        return MediaData.Create(name, type, size).Value;
     }
 
-    private static MediaOwner CreateOwner() => MediaOwner.ForLesson(Guid.CreateVersion7()).Value;
+    private static MediaOwner CreateOwner() =>
+        MediaOwner.ForLesson(Guid.CreateVersion7(), Guid.CreateVersion7()).Value;
 }

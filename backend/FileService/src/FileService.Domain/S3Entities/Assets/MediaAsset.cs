@@ -5,7 +5,7 @@ namespace FileService.Domain.Assets;
 
 public abstract class MediaAsset
 {
-    public Guid Id { get; protected set; }
+    public Guid Id { get; protected init; }
     
     public MediaData MediaData { get; protected init; } = null!;
 
@@ -24,6 +24,8 @@ public abstract class MediaAsset
     public MediaOwner Owner { get; protected init; } = null!;
     
     public MediaStatus Status { get; protected set; }
+    
+    public StorageReference? StorageReference { get; protected set; }
 
     protected MediaAsset()
     {
@@ -68,14 +70,17 @@ public abstract class MediaAsset
     public UnitResult<Error> MarkUploaded(DateTime changedAt) =>
         ChangeStatus(MediaStatus.UPLOADED, changedAt);
 
-    public UnitResult<Error> MarkReady(StorageKey finalKey, DateTime changedAt)
+    public UnitResult<Error> MarkReady(StorageKey finalKey, StorageReference storageReference, DateTime changedAt)
     {
         if (string.IsNullOrEmpty(finalKey.FullPath))
             return Error.Validation("media.final-key.required", "Final storage key is required");
-
+        
         UnitResult<Error> result = ChangeStatus(MediaStatus.READY, changedAt);
-        if (result.IsSuccess)
-            FinalKey = finalKey;
+        if (result.IsFailure)
+            return result;
+
+        FinalKey = finalKey;
+        StorageReference = storageReference;
 
         return result;
     }

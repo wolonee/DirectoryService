@@ -1,4 +1,6 @@
+using FileService.Core.Abstractions;
 using FileService.Infrastructure.Postgres.Database;
+using FileService.Infrastructure.Postgres.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,6 +14,7 @@ public static class DependencyInjection
             ?? throw new InvalidOperationException("Connection string 'FileServiceDb' is not configured.");
 
         services.AddScoped<FileServiceDbContext>(_ => new FileServiceDbContext(connectionString));
+        services.AddScoped<IMediaAssetRepository, MediaAssetRepository>();
 
         return services;
     }

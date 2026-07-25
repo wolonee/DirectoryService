@@ -12,9 +12,10 @@ public class MediaAssetStateTests
         DateTime uploadedAt = new(2026, 7, 20, 10, 0, 0, DateTimeKind.Utc);
         DateTime readyAt = uploadedAt.AddMinutes(5);
         StorageKey finalKey = StorageKey.Create("videos", "hls", "master.m3u8").Value;
+        StorageReference storageReference = CreateStorageReference(finalKey);
 
         var uploadedResult = asset.MarkUploaded(uploadedAt);
-        var readyResult = asset.MarkReady(finalKey, readyAt);
+        var readyResult = asset.MarkReady(finalKey, storageReference, readyAt);
 
         Assert.True(uploadedResult.IsSuccess);
         Assert.True(readyResult.IsSuccess);
@@ -29,8 +30,9 @@ public class MediaAssetStateTests
         VideoAsset asset = CreateAsset();
         DateTime timestamp = new(2026, 7, 20, 12, 0, 0, DateTimeKind.Utc);
         asset.MarkUploaded(timestamp.AddMinutes(-1));
+        StorageKey finalKey = asset.HlsRootKey.AppendSegment(VideoAsset.MASTER_PLAYLIST_NAME).Value;
 
-        var result = asset.CompleteProcessing(timestamp);
+        var result = asset.CompleteProcessing(CreateStorageReference(finalKey), timestamp);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(MediaStatus.READY, asset.Status);
@@ -47,6 +49,7 @@ public class MediaAssetStateTests
 
         var result = asset.MarkReady(
             StorageKey.Create("videos", "hls", "master.m3u8").Value,
+            CreateStorageReference(StorageKey.Create("videos", "hls", "master.m3u8").Value),
             DateTime.UtcNow);
 
         Assert.True(result.IsFailure);
@@ -60,6 +63,7 @@ public class MediaAssetStateTests
         asset.MarkUploaded(DateTime.UtcNow);
         asset.MarkReady(
             StorageKey.Create("videos", "hls", "master.m3u8").Value,
+            CreateStorageReference(StorageKey.Create("videos", "hls", "master.m3u8").Value),
             DateTime.UtcNow);
 
         DateTime deletedAt = new(2026, 7, 20, 11, 0, 0, DateTimeKind.Utc);
@@ -86,10 +90,13 @@ public class MediaAssetStateTests
     {
         FileName fileName = FileName.Create("lesson.mp4").Value;
         ContentType contentType = ContentType.Create("video/mp4").Value;
-        MediaData mediaData = MediaData.Create(fileName, contentType, 1_024, 1).Value;
-        MediaOwner owner = MediaOwner.ForLesson(Guid.CreateVersion7()).Value;
+        MediaData mediaData = MediaData.Create(fileName, contentType, 1_024).Value;
+        MediaOwner owner = MediaOwner.ForLesson(Guid.CreateVersion7(), Guid.CreateVersion7()).Value;
 
         return VideoAsset.CreateForUpload(
             Guid.CreateVersion7(), mediaData, MediaUsage.LESSON_VIDEO, owner).Value;
     }
+
+    private static StorageReference CreateStorageReference(StorageKey key) =>
+        StorageReference.Create(key, 1_024, "video/mp4", null, null, DateTime.UtcNow).Value;
 }

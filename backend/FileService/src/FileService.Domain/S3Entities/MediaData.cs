@@ -12,28 +12,22 @@ public sealed record MediaData
     
     public long Size { get; private init; }
     
-    public int ExpectedChunksCount { get; private init; }
-
     private MediaData()
     {
     }
 
-    private MediaData(FileName fileName, ContentType contentType, long size, int expectedChunksCount)
+    private MediaData(FileName fileName, ContentType contentType, long size)
     {
         FileName = fileName;
         ContentType = contentType;
         Size = size;
-        ExpectedChunksCount = expectedChunksCount;
     }
 
-    public static Result<MediaData, Error> Create(FileName fileName, ContentType contentType, long size, int expectedChunksCount)
+    public static Result<MediaData, Error> Create(FileName fileName, ContentType contentType, long size)
     {
         if (size <= 0)
             return GeneralErrors.ValueIsInvalid("size");
         
-        if (expectedChunksCount <= 0)
-            return GeneralErrors.ValueIsInvalid("expectedChunksCount");
-
-        return new MediaData(fileName, contentType, size, expectedChunksCount);
+        return new MediaData(fileName, contentType, size);
     }
 }

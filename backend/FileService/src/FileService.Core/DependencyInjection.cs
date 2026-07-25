@@ -1,4 +1,6 @@
+using FileService.Domain;
 using FileService.Web.EndpointsExtensions;
+using FileService.Core.Features.SimpleUpload;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -8,6 +10,12 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddCoreDependencies(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddEndpoints(typeof(InitiateUploadEndpoint).Assembly);
+        services.AddScoped<IMediaAssetFactory, MediaAssetFactory>();
+        services.AddScoped<InitiateUploadHandler>();
+        services.AddScoped<GetFileHandler>();
+        services.AddScoped<CompleteUploadHandler>();
+        
         return services;
     }
 }

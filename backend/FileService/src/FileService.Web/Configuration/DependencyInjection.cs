@@ -1,5 +1,8 @@
+using FileService.Core;
 using FileService.Infrastructure.Postgres;
 using FileService.Infrastructure.S3;
+using FileService.Core.Abstractions;
+using FileService.Web.Auth;
 using FileService.Web.EndpointsExtensions;
 using Serilog;
 using Serilog.Exceptions;
@@ -11,9 +14,11 @@ public static class DependencyInjection
     public static IServiceCollection AddProgramDependencies(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddPostgresDependencies(configuration);
+        services.AddCoreDependencies(configuration);
         services.AddS3(configuration);
-        
         services.AddWebDependencies();
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUser, HttpCurrentUser>();
 
         services.AddSerilogLogging(configuration);
         
