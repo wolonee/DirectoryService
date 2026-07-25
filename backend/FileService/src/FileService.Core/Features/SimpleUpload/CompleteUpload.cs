@@ -82,6 +82,10 @@ public sealed class CompleteUploadHandler
         if (asset.Status != MediaStatus.UPLOADING)
             return MediaAssetErrors.InvalidStatus(fileId, asset.Status);
 
+        // FS-3 завершает только простой preview upload. Видео completion относится к следующему flow.
+        if (asset.AssetType != AssetType.PREVIEW)
+            return GeneralErrors.ValueIsInvalid(nameof(asset.AssetType));
+
         var metadataResult = await _s3Provider.GetObjectMetadataAsync(asset.RawKey, cancellationToken);
         if (metadataResult.IsFailure)
             return metadataResult.Error;
@@ -112,13 +116,10 @@ public sealed class CompleteUploadHandler
             return storageReferenceResult.Error;
         }
 
-        if (asset.AssetType == AssetType.PREVIEW)
-        {
-            PreviewAsset preview = (PreviewAsset)asset;
-            UnitResult<Error> completeResult = preview.CompleteUpload(storageReferenceResult.Value, DateTime.UtcNow);
-            if (completeResult.IsFailure)
-                return completeResult.Error;
-        }
+        PreviewAsset preview = (PreviewAsset)asset;
+        UnitResult<Error> completeResult = preview.CompleteUpload(storageReferenceResult.Value, DateTime.UtcNow);
+        if (completeResult.IsFailure)
+            return completeResult.Error;
 
         var saveChangesResult = await _mediaAssetRepository.SaveChangesAsync(cancellationToken);
         if (saveChangesResult.IsFailure)
@@ -129,7 +130,6 @@ public sealed class CompleteUploadHandler
         return response;
     }
 }
-
 
 
 
