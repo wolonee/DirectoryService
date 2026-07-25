@@ -1,4 +1,5 @@
 using DirectoryService.Shared.Errors;
+using FileService.Domain.Assets;
 
 namespace FileService.Domain;
 
@@ -12,20 +13,25 @@ public static class MediaAssetErrors
             "media-asset.not-found",
             $"Media asset '{fileId}' was not found.");
 
-    public static Error WrongUploader() =>
+    public static Error WrongUploader(Guid fileId) =>
         Error.Failure(
             "media-asset.wrong-uploader",
-            "The current user is not the uploader of this media asset.");
+            $"The current user is not the uploader of media asset '{fileId}'.");
 
-    public static Error InvalidStatus(string status) =>
+    public static Error InvalidStatus(Guid fileId, MediaStatus status) =>
         Error.Conflict(
             "media-asset.invalid-status",
-            $"Media asset cannot be completed from status '{status}'.");
+            $"Media asset '{fileId}' cannot be completed from status '{status}'.");
 
-    public static Error AlreadyCompleted() =>
+    public static Error AlreadyCompleted(Guid fileId) =>
         Error.Conflict(
             "media-asset.already-completed",
-            "Media asset has already been completed.");
+            $"Media asset '{fileId}' has already been completed.");
+
+    public static Error StorageObjectMissing(Guid fileId) =>
+        Error.NotFound(
+            "media-asset.storage-object-missing",
+            $"Storage object for media asset '{fileId}' was not found.");
 
     public static Error SizeMismatch(long expected, long actual) =>
         Error.Validation(

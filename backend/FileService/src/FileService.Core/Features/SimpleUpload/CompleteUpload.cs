@@ -74,13 +74,13 @@ public sealed class CompleteUploadHandler
         var asset = assetResult.Value;
 
         if (asset.Owner.UploaderId != _currentUser.UserId)
-            return MediaAssetErrors.WrongUploader();
+            return MediaAssetErrors.WrongUploader(fileId);
 
         if (asset.Status == MediaStatus.READY)
-            return MediaAssetErrors.AlreadyCompleted();
+            return MediaAssetErrors.AlreadyCompleted(fileId);
 
         if (asset.Status != MediaStatus.UPLOADING)
-            return MediaAssetErrors.InvalidStatus(asset.Status.ToString());
+            return MediaAssetErrors.InvalidStatus(fileId, asset.Status);
 
         var metadataResult = await _s3Provider.GetObjectMetadataAsync(asset.RawKey, cancellationToken);
         if (metadataResult.IsFailure)
@@ -129,7 +129,6 @@ public sealed class CompleteUploadHandler
         return response;
     }
 }
-
 
 
 
