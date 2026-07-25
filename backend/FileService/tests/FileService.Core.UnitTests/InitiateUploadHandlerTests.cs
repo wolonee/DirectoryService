@@ -1,4 +1,5 @@
 using CSharpFunctionalExtensions;
+using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
 using FileService.Contracts;
 using FileService.Core.Abstractions;
@@ -86,16 +87,20 @@ public sealed class InitiateUploadHandlerTests
     {
         public MediaAsset? Asset { get; private set; }
 
-        public Task AddAsync(MediaAsset asset, CancellationToken cancellationToken)
+        public Task<Result<Guid, Error>> AddAsync(MediaAsset asset, CancellationToken cancellationToken)
         {
             Asset = asset;
-            return Task.CompletedTask;
+            return Task.FromResult<Result<Guid, Error>>(asset.Id);
         }
 
-        public Task<MediaAsset?> GetByIdAsync(Guid fileId, CancellationToken cancellationToken) =>
-            Task.FromResult(Asset?.Id == fileId ? Asset : null);
+        public Task<Result<MediaAsset, Error>> GetByIdAsync(Guid fileId, CancellationToken cancellationToken) =>
+            Task.FromResult<Result<MediaAsset, Error>>(
+                Asset?.Id == fileId
+                    ? Asset
+                    : GeneralErrors.NotFound(fileId, "Asset"));
 
-        public Task SaveChangesAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+        public Task<UnitResult<Error>> SaveChangesAsync(CancellationToken cancellationToken) =>
+            Task.FromResult(UnitResult.Success<Error>());
     }
 
     private sealed class FakeS3Provider : IS3Provider
