@@ -13,35 +13,35 @@ using Microsoft.AspNetCore.Routing;
 
 namespace FileService.Core.Features.SimpleUpload;
 
-public sealed record GetFileQuery(Guid FileId);
+public sealed record GetMediaAssetQuery(Guid FileId);
 
-public sealed class GetFileEndpoint : IEndpoint
+public sealed class GetMediaAssetEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapGet("/files/{fileId:guid}", async Task<EndpointResult<GetMediaAssetResponse>> (
             [FromRoute] Guid fileId,
-            [FromServices] GetFileHandler handler,
+            [FromServices] GetMediaAssetHandler handler,
             CancellationToken cancellationToken) =>
         {
-            return await handler.Handle(new GetFileQuery(fileId), cancellationToken);
+            return await handler.Handle(new GetMediaAssetQuery(fileId), cancellationToken);
         });
     }
 }
 
-public sealed class GetFileHandler
+public sealed class GetMediaAssetHandler
 {
     private readonly IMediaAssetRepository _repository;
     private readonly IS3Provider _s3Provider;
 
-    public GetFileHandler(IMediaAssetRepository repository, IS3Provider s3Provider)
+    public GetMediaAssetHandler(IMediaAssetRepository repository, IS3Provider s3Provider)
     {
         _repository = repository;
         _s3Provider = s3Provider;
     }
 
     public async Task<Result<GetMediaAssetResponse, Error>> Handle(
-        GetFileQuery query,
+        GetMediaAssetQuery query,
         CancellationToken cancellationToken)
     {
         if (query.FileId == Guid.Empty)
