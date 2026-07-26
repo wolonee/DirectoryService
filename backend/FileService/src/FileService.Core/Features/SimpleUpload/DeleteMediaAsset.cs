@@ -72,12 +72,21 @@ public sealed class DeleteMediaAssetHandler
                 asset.Status);
             return MediaAssetErrors.InvalidStatus(asset.Id, asset.Status);
         }
-
-        var deleteResult = await _s3Provider.DeleteObjectAsync(asset.FinalKey, cancellationToken);
-        if (deleteResult.IsFailure)
+        
+        var keysToDelete = new HashSet<StorageKey>
         {
-            _logger.LogError("Media was not deleted");
-            return deleteResult.Error;
+            asset.FinalKey,
+            asset.RawKey,
+        };
+
+        foreach (var key in keysToDelete)
+        {
+            var deleteResult = await _s3Provider.DeleteObjectAsync(key, cancellationToken);
+            if (deleteResult.IsFailure)
+            {
+                _logger.LogError("Media was not deleted");
+                return deleteResult.Error;
+            }
         }
         
         var markDeleted = asset.MarkDeleted(DateTime.UtcNow);
