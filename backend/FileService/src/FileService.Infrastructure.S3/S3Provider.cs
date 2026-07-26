@@ -95,7 +95,7 @@ public class S3Provider : IS3Provider, IDisposable
                             Verb = HttpVerb.PUT,
                             UploadId = uploadId,
                             PartNumber = partNumber,
-                            Expires = DateTime.UtcNow.AddHours(_s3Options.UploadUrlExpirationHours),
+                            Expires = DateTime.UtcNow.Add(_s3Options.UploadUrlExpiration),
                             Protocol = _s3Options.WithSsl ? Protocol.HTTPS : Protocol.HTTP,
                         };
 
@@ -162,7 +162,7 @@ public class S3Provider : IS3Provider, IDisposable
     {
         try
         {
-            DateTime expiresAt = DateTime.UtcNow.AddHours(_s3Options.UploadUrlExpirationHours);
+            DateTime expiresAt = DateTime.UtcNow.Add(_s3Options.UploadUrlExpiration);
 
             var request = new GetPreSignedUrlRequest
             {
@@ -208,7 +208,7 @@ public class S3Provider : IS3Provider, IDisposable
                 BucketName = storageKey.Bucket,
                 Key = storageKey.Value,
                 Verb = HttpVerb.GET,
-                Expires = DateTime.Now.AddHours(_s3Options.DownloadUrlExpirationHours),
+                Expires = DateTime.UtcNow.Add(_s3Options.DownloadUrlExpiration),
                 Protocol = _s3Options.WithSsl ? Protocol.HTTPS : Protocol.HTTP,
             };
 
@@ -243,7 +243,7 @@ public class S3Provider : IS3Provider, IDisposable
                         BucketName = storageKey.Bucket,
                         Key = storageKey.Value,
                         Verb = HttpVerb.GET,
-                        Expires = DateTime.Now.AddHours(_s3Options.DownloadUrlExpirationHours),
+                        Expires = DateTime.UtcNow.Add(_s3Options.DownloadUrlExpiration),
                         Protocol = _s3Options.WithSsl ? Protocol.HTTPS : Protocol.HTTP,
                     };
 

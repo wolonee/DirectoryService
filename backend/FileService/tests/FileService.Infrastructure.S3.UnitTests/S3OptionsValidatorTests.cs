@@ -24,7 +24,7 @@ public class S3OptionsValidatorTests
         // Arrange
         S3Options options = CreateValidOptions() with
         {
-            UploadUrlExpirationHours = expirationHours,
+            UploadUrlExpiration = TimeSpan.FromHours(expirationHours),
         };
 
         // Act
@@ -33,7 +33,7 @@ public class S3OptionsValidatorTests
         // Assert
         Assert.False(result.Succeeded);
         Assert.NotNull(result.Failures);
-        Assert.Contains("S3Options:UploadUrlExpirationHours must be greater than zero.", result.Failures);
+        Assert.Contains("S3Options:UploadUrlExpiration must be greater than zero.", result.Failures);
     }
 
     [Fact]
@@ -59,8 +59,8 @@ public class S3OptionsValidatorTests
         Endpoint = "http://minio:9000",
         AccessKey = "test-access-key",
         SecretKey = "test-secret-key",
-        UploadUrlExpirationHours = 1,
-        DownloadUrlExpirationHours = 1,
+        UploadUrlExpiration = TimeSpan.FromHours(1),
+        DownloadUrlExpiration = TimeSpan.FromHours(1),
         MaxConcurrentRequests = 1,
         RequiredBuckets = ["preview"],
     };
