@@ -3,7 +3,7 @@ namespace FileService.Contracts;
 /// <summary>
 /// Параметры поиска активных файлов, прикреплённых к внешней сущности.
 /// </summary>
-public sealed record GetFilesByTargetRequest
+public sealed record GetMediaAssetsByTargetRequest
 {
     public string TargetType { get; init; } = string.Empty;
 

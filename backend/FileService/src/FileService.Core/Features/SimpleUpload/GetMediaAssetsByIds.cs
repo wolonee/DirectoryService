@@ -73,7 +73,7 @@ public sealed class GetMediaAssetsHandler
             var res = new GetMediaAssetDto(
                 mediaAsset.Id,
                 mediaAsset.Status.ToString().ToLowerInvariant(),
-                mediaAsset.MediaData.ContentType.ToString().ToLowerInvariant(),
+                mediaAsset.MediaData.ContentType.Value.ToLowerInvariant(),
                 url);
             
             response.Add(res);
