@@ -81,10 +81,11 @@ public class S3Provider : IS3Provider, IDisposable
     {
         try
         {
-            await _requestsSemaphore.WaitAsync(cancellationToken);
             IEnumerable<Task<string>> tasks = Enumerable.Range(1, totalChunks)
                 .Select(async partNumber =>
                 {
+                    await _requestsSemaphore.WaitAsync(cancellationToken);
+
                     try
                     {
                         var request = new GetPreSignedUrlRequest
@@ -231,9 +232,10 @@ public class S3Provider : IS3Provider, IDisposable
     {
         try
         {
-            await _requestsSemaphore.WaitAsync(cancellationToken);
             var tasks = storageKeys.Select(async storageKey =>
             {
+                await _requestsSemaphore.WaitAsync(cancellationToken);
+
                 try
                 {
                     var request = new GetPreSignedUrlRequest
