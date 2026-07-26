@@ -95,7 +95,7 @@ public sealed class InitiateUploadHandler
             return mediaDataResult.Error;
 
         Guid mediaAssetId = Guid.CreateVersion7();
-        Result<Domain.Assets.MediaAsset, Error> mediaAssetResult =
+        Result<MediaAsset, Error> mediaAssetResult =
             _mediaAssetFactory.CreateForUpload(
                 mediaAssetId,
                 assetTypeResult.Value,

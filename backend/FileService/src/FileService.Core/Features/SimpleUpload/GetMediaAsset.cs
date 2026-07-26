@@ -19,7 +19,7 @@ public sealed class GetFileEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapGet("/files/{fileId:guid}", async Task<EndpointResult<FileResponse>> (
+        app.MapGet("/files/{fileId:guid}", async Task<EndpointResult<GetMediaAssetResponse>> (
             [FromRoute] Guid fileId,
             [FromServices] GetFileHandler handler,
             CancellationToken cancellationToken) =>
@@ -40,21 +40,19 @@ public sealed class GetFileHandler
         _s3Provider = s3Provider;
     }
 
-    public async Task<Result<FileResponse, Error>> Handle(
+    public async Task<Result<GetMediaAssetResponse, Error>> Handle(
         GetFileQuery query,
         CancellationToken cancellationToken)
     {
         if (query.FileId == Guid.Empty)
             return GeneralErrors.ValueIsInvalid(nameof(query.FileId));
 
-        Result<MediaAsset, Error> assetResult =
-            await _repository.GetByIdAsync(query.FileId, cancellationToken);
-
+        Result<MediaAsset, Error> assetResult = await _repository.GetByIdAsync(query.FileId, cancellationToken);
         if (assetResult.IsFailure)
             return assetResult.Error;
 
         MediaAsset asset = assetResult.Value;
-
+        
         if (asset.Status == MediaStatus.DELETED)
             return GeneralErrors.NotFound(query.FileId, "File");
 
@@ -69,11 +67,14 @@ public sealed class GetFileHandler
 
         if (asset.Status != MediaStatus.READY)
         {
-            return new FileResponse(
+            return new GetMediaAssetResponse(
                 asset.Id,
-                asset.Status.ToString(),
+                asset.Owner.EntityId,
+                asset.Owner.Context,
+                asset.Status.ToString().ToLowerInvariant(),
                 asset.MediaData.FileName.Name,
                 asset.MediaData.ContentType.Value,
+                asset.Usage.ToString().ToLowerInvariant(),
                 asset.MediaData.Size,
                 storage,
                 null);
@@ -82,17 +83,18 @@ public sealed class GetFileHandler
         if (asset.StorageReference is null || asset.FinalKey == StorageKey.None)
             return Error.Conflict("media-asset.storage-reference-missing", "Ready file has no storage reference.");
 
-        Result<string, Error> urlResult =
-            await _s3Provider.GenerateDownloadUrlAsync(asset.FinalKey);
-
+        Result<string, Error> urlResult = await _s3Provider.GenerateDownloadUrlAsync(asset.FinalKey);
         if (urlResult.IsFailure)
             return urlResult.Error;
 
-        return new FileResponse(
+        return new GetMediaAssetResponse(
             asset.Id,
-            asset.Status.ToString(),
+            asset.Owner.EntityId,
+            asset.Owner.Context,
+            asset.Status.ToString().ToLowerInvariant(),
             asset.MediaData.FileName.Name,
             asset.MediaData.ContentType.Value,
+            asset.Usage.ToString().ToLowerInvariant(),
             asset.MediaData.Size,
             storage,
             urlResult.Value);

@@ -5,6 +5,7 @@ using CSharpFunctionalExtensions;
 using DirectoryService.Shared.Errors;
 using FileService.Contracts;
 using FileService.Core;
+using FileService.Core.Models;
 using FileService.Domain;
 using FileService.Domain.Assets;
 using Microsoft.Extensions.Logging;
@@ -224,6 +225,45 @@ public class S3Provider : IS3Provider, IDisposable
 
             return S3ErrorMapper.ToError(ex);
         }
+    }
+    
+    public async Task<Result<MediaUrl[], Error>> GenerateDownloadUrlsAsync(IEnumerable<StorageKey> storageKeys, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _requestsSemaphore.WaitAsync(cancellationToken);
+            var tasks = storageKeys.Select(async storageKey =>
+            {
+                try
+                {
+                    var request = new GetPreSignedUrlRequest
+                    {
+                        BucketName = storageKey.Bucket,
+                        Key = storageKey.Value,
+                        Verb = HttpVerb.GET,
+                        Expires = DateTime.Now.AddHours(_s3Options.DownloadUrlExpirationHours),
+                        Protocol = _s3Options.WithSsl ? Protocol.HTTPS : Protocol.HTTP,
+                    };
+
+                    string? response = await _s3Client.GetPreSignedURLAsync(request);
+
+                    return new MediaUrl(storageKey, response);
+                }
+                finally
+                {
+                    _requestsSemaphore.Release();
+                }
+            });
+            
+            MediaUrl[] response = await Task.WhenAll(tasks);
+
+            return response;
+        }
+        catch (Exception ex)
+        {
+            return S3ErrorMapper.ToError(ex);
+        }
+    
     }
 
     public async Task<Result<ObjectMetadataDto, Error>> GetObjectMetadataAsync(
