@@ -35,6 +35,23 @@ public sealed class Fs4HandlersTests
     }
 
     [Fact]
+    public async Task CancelUpload_MissingStorageObject_StillMarksAssetDeleted()
+    {
+        PreviewAsset asset = CreatePreview();
+        var repository = new FakeRepository(asset);
+        var handler = new CancelUploadHandler(
+            repository,
+            new FakeS3Provider(),
+            NullLogger<CancelUploadHandler>.Instance);
+
+        Result<CancelUploadResponse, Error> result = await handler.Handle(new CancelUploadCommand(asset.Id), CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(MediaStatus.DELETED, asset.Status);
+        Assert.True(repository.SaveChangesCalled);
+    }
+
+    [Fact]
     public async Task CancelUpload_FailedAsset_ReturnsInvalidStatus()
     {
         PreviewAsset asset = CreatePreview();
@@ -51,7 +68,7 @@ public sealed class Fs4HandlersTests
     }
 
     [Fact]
-    public async Task Delete_ReadyAsset_DeletesFinalObjectAndMarksAssetDeleted()
+    public async Task Delete_ReadyPreview_DeletesSharedRawAndFinalKeyOnce()
     {
         PreviewAsset asset = CreateReadyPreview();
         var repository = new FakeRepository(asset);
@@ -63,6 +80,41 @@ public sealed class Fs4HandlersTests
         Assert.True(result.IsSuccess);
         Assert.Equal(MediaStatus.DELETED, asset.Status);
         Assert.Equal(asset.FinalKey, Assert.Single(provider.DeletedKeys));
+        Assert.True(repository.SaveChangesCalled);
+    }
+
+    [Fact]
+    public async Task Delete_ReadyVideo_DeletesBothDistinctRawAndFinalKeys()
+    {
+        VideoAsset asset = CreateReadyVideo();
+        var repository = new FakeRepository(asset);
+        var provider = new FakeS3Provider();
+        var handler = new DeleteMediaAssetHandler(repository, provider, NullLogger<DeleteMediaAssetHandler>.Instance);
+
+        Result<DeleteMediaAssetResponse, Error> result = await handler.Handle(new DeleteFileCommand(asset.Id), CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(MediaStatus.DELETED, asset.Status);
+        Assert.Contains(asset.RawKey, provider.DeletedKeys);
+        Assert.Contains(asset.FinalKey, provider.DeletedKeys);
+        Assert.Equal(2, provider.DeletedKeys.Count);
+        Assert.True(repository.SaveChangesCalled);
+    }
+
+    [Fact]
+    public async Task Delete_MissingStorageObject_StillMarksAssetDeleted()
+    {
+        PreviewAsset asset = CreateReadyPreview();
+        var repository = new FakeRepository(asset);
+        var handler = new DeleteMediaAssetHandler(
+            repository,
+            new FakeS3Provider(),
+            NullLogger<DeleteMediaAssetHandler>.Instance);
+
+        Result<DeleteMediaAssetResponse, Error> result = await handler.Handle(new DeleteFileCommand(asset.Id), CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(MediaStatus.DELETED, asset.Status);
         Assert.True(repository.SaveChangesCalled);
     }
 
@@ -126,6 +178,27 @@ public sealed class Fs4HandlersTests
             null,
             DateTime.UtcNow).Value;
         asset.CompleteUpload(reference, DateTime.UtcNow);
+        return asset;
+    }
+
+    private static VideoAsset CreateReadyVideo()
+    {
+        VideoAsset asset = VideoAsset.CreateForUpload(
+            Guid.CreateVersion7(),
+            MediaData.Create(FileName.Create("lesson.mp4").Value, ContentType.Create("video/mp4").Value, 1024).Value,
+            MediaUsage.LESSON_VIDEO,
+            MediaOwner.ForLesson(Guid.CreateVersion7(), Guid.CreateVersion7()).Value).Value;
+        StorageReference reference = StorageReference.Create(
+            asset.RawKey,
+            1024,
+            "video/mp4",
+            "etag",
+            null,
+            DateTime.UtcNow).Value;
+
+        asset.MarkUploaded(DateTime.UtcNow);
+        asset.CompleteProcessing(reference, DateTime.UtcNow);
+
         return asset;
     }
 
