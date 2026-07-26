@@ -15,6 +15,10 @@ public static class DependencyInjection
         services.AddScoped<InitiateUploadHandler>();
         services.AddScoped<CancelUploadHandler>();
         services.AddScoped<CompleteUploadHandler>();
+        services.AddScoped<DeleteMediaAssetHandler>();
+        services.AddScoped<GetMediaAssetHandler>();
+        services.AddScoped<GetMediaAssetsByTargetHandler>();
+        services.AddScoped<GetMediaAssetsHandler>();
         
         return services;
     }

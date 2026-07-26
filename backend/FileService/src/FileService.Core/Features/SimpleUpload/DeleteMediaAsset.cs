@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Presentation.EndpointResults;
 using DirectoryService.Shared.Errors;
+using FileService.Contracts;
 using FileService.Core;
 using FileService.Core.Abstractions;
 using FileService.Domain;
@@ -10,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
-namespace FileService.Contracts;
+namespace FileService.Core.Features.SimpleUpload;
 
 public record DeleteFileCommand(Guid FileId);
 
@@ -63,10 +64,13 @@ public sealed class DeleteMediaAssetHandler
         
         var asset = assetResult.Value;
         
-        if (asset.Status != MediaStatus.DELETED)
+        if (asset.Status != MediaStatus.READY)
         {
-            _logger.LogError("Media asset not found");
-            return MediaAssetErrors.AlreadyCompleted(asset.Id);
+            _logger.LogWarning(
+                "Cannot delete media asset {FileId} from status {Status}",
+                asset.Id,
+                asset.Status);
+            return MediaAssetErrors.InvalidStatus(asset.Id, asset.Status);
         }
 
         var deleteResult = await _s3Provider.DeleteObjectAsync(asset.FinalKey, cancellationToken);

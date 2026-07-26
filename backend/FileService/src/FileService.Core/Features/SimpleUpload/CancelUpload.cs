@@ -18,7 +18,7 @@ public sealed class CancelUploadEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPost("/files/{fileId:guid}", async Task<EndpointResult<CancelUploadResponse>> (
+        app.MapPost("/files/{fileId:guid}/cancel", async Task<EndpointResult<CancelUploadResponse>> (
             [FromRoute] Guid fileId,
             [FromServices] CancelUploadHandler handler,
             CancellationToken cancellationToken) =>
@@ -63,8 +63,11 @@ public sealed class CancelUploadHandler
         
         if (asset.Status != MediaStatus.UPLOADING)
         {
-            _logger.LogError("Media asset not found");
-            return MediaAssetErrors.AlreadyCompleted(asset.Id);
+            _logger.LogWarning(
+                "Cannot cancel media asset {FileId} from status {Status}",
+                asset.Id,
+                asset.Status);
+            return MediaAssetErrors.InvalidStatus(asset.Id, asset.Status);
         }
 
         var deleteResult = await _s3Provider.DeleteObjectAsync(asset.RawKey, cancellationToken);

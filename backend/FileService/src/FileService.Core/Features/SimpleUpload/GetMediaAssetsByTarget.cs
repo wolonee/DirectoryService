@@ -8,6 +8,7 @@ using FileService.Domain;
 using FileService.Domain.Assets;
 using FileService.Web.EndpointsExtensions;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
@@ -20,8 +21,8 @@ public sealed class GetMediaAssetsByTargetEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapGet("/files?targetType={type}&targetId={id}", async Task<EndpointResult<GetMediaAssetsByTargetResponse>>(
-            [FromRoute] GetMediaAssetsByTargetRequest request,
+        app.MapGet("/files", async Task<EndpointResult<GetMediaAssetsByTargetResponse>>(
+            [AsParameters] GetMediaAssetsByTargetRequest request,
             [FromServices] GetMediaAssetsByTargetHandler handler,
             CancellationToken cancellationToken) => 
         {
