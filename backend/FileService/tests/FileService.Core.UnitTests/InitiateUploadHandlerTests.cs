@@ -4,6 +4,7 @@ using DirectoryService.Shared.Errors;
 using FileService.Contracts;
 using FileService.Core.Abstractions;
 using FileService.Core.Features.SimpleUpload;
+using FileService.Core.Models;
 using FileService.Domain;
 using FileService.Domain.Assets;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -140,6 +141,11 @@ public sealed class InitiateUploadHandlerTests
 
         public Task<Result<string, Error>> GenerateDownloadUrlAsync(StorageKey storageKey) =>
             Task.FromResult<Result<string, Error>>("http://minio.test/download");
+
+        public Task<Result<MediaUrl[], Error>> GenerateDownloadUrlsAsync(
+            IEnumerable<StorageKey> storageKeys,
+            CancellationToken cancellationToken) =>
+            Task.FromResult<Result<MediaUrl[], Error>>(Array.Empty<MediaUrl>());
 
         public Task<Result<ObjectMetadataDto, Error>> GetObjectMetadataAsync(StorageKey storageKey, CancellationToken cancellationToken) =>
             Task.FromResult<Result<ObjectMetadataDto, Error>>(new ObjectMetadataDto(1, "image/webp", "etag", null, DateTime.UtcNow));

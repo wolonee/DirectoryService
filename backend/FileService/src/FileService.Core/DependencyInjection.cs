@@ -13,8 +13,12 @@ public static class DependencyInjection
         services.AddEndpoints(typeof(InitiateUploadEndpoint).Assembly);
         services.AddScoped<IMediaAssetFactory, MediaAssetFactory>();
         services.AddScoped<InitiateUploadHandler>();
-        services.AddScoped<GetFileHandler>();
+        services.AddScoped<CancelUploadHandler>();
         services.AddScoped<CompleteUploadHandler>();
+        services.AddScoped<DeleteMediaAssetHandler>();
+        services.AddScoped<GetMediaAssetHandler>();
+        services.AddScoped<GetMediaAssetsByTargetHandler>();
+        services.AddScoped<GetMediaAssetsHandler>();
         
         return services;
     }

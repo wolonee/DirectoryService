@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Shared.Errors;
 using FileService.Contracts;
+using FileService.Core.Models;
 using FileService.Domain;
 
 namespace FileService.Core;
@@ -34,6 +35,10 @@ public interface IS3Provider
     Task<Result<PresignedUploadDto, Error>> GenerateUploadUrlAsync(
         StorageKey storageKey,
         ContentType contentType,
+        CancellationToken cancellationToken);
+
+    Task<Result<MediaUrl[], Error>> GenerateDownloadUrlsAsync(
+        IEnumerable<StorageKey> storageKeys,
         CancellationToken cancellationToken);
 
     Task<Result<string, Error>> GenerateDownloadUrlAsync(StorageKey storageKey);

@@ -14,6 +14,7 @@ public static class DependencyInjection
             ?? throw new InvalidOperationException("Connection string 'FileServiceDb' is not configured.");
 
         services.AddScoped<FileServiceDbContext>(_ => new FileServiceDbContext(connectionString));
+        services.AddScoped<IReadDbContext>(sp => sp.GetRequiredService<FileServiceDbContext>());
         services.AddScoped<IMediaAssetRepository, MediaAssetRepository>();
 
         return services;

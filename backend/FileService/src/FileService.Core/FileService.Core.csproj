@@ -5,5 +5,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="DirectoryService.Framework" Version="0.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.18" />
   </ItemGroup>
 </Project>
