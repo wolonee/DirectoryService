@@ -130,14 +130,17 @@ public sealed class InitiateUploadHandlerTests
         public Task UploadFileAsync(Stream stream, string bucketName, string key, string contentType, CancellationToken cancellationToken) =>
             Task.CompletedTask;
 
-        public Task<Result<string, Error>> StartMultipartUploadAsync(string bucketName, string key, string contentType, CancellationToken cancellationToken) =>
+        public Task<Result<string, Error>> StartMultipartUploadAsync(StorageKey storageKey, ContentType contentType, CancellationToken cancellationToken) =>
             Task.FromResult<Result<string, Error>>("upload-id");
 
-        public Task<Result<IReadOnlyList<string>, Error>> GenerateAllChunksUploadUrlsAsync(string bucketName, string key, string uploadId, int totalChunks, CancellationToken cancellationToken) =>
-            Task.FromResult<Result<IReadOnlyList<string>, Error>>(Array.Empty<string>());
+        public Task<Result<IReadOnlyList<MultipartPartUploadDto>, Error>> GenerateAllChunksUploadUrlsAsync(StorageKey storageKey, string uploadId, int totalChunks, CancellationToken cancellationToken) =>
+            Task.FromResult<Result<IReadOnlyList<MultipartPartUploadDto>, Error>>(Array.Empty<MultipartPartUploadDto>());
 
-        public Task<Result<string, Error>> CompleteMultipartUploadAsync(string bucketName, string key, string uploadId, IReadOnlyList<PartETagDto> partETags, CancellationToken cancellationToken) =>
-            Task.FromResult<Result<string, Error>>(key);
+        public Task<Result<string, Error>> CompleteMultipartUploadAsync(StorageKey storageKey, string uploadId, IReadOnlyList<PartETagDto> partETags, CancellationToken cancellationToken) =>
+            Task.FromResult<Result<string, Error>>(storageKey.Value);
+
+        public Task<UnitResult<Error>> AbortMultipartUploadAsync(StorageKey storageKey, string uploadId, CancellationToken cancellationToken) =>
+            Task.FromResult(UnitResult.Success<Error>());
 
         public Task<Result<string, Error>> GenerateDownloadUrlAsync(StorageKey storageKey) =>
             Task.FromResult<Result<string, Error>>("http://minio.test/download");

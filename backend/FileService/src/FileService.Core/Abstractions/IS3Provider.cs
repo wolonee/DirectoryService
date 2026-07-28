@@ -11,23 +11,25 @@ public interface IS3Provider
     Task UploadFileAsync(Stream stream, string bucketName, string key, string contentType, CancellationToken cancellationToken);
 
     Task<Result<string, Error>> StartMultipartUploadAsync(
-        string bucketName,
-        string key,
-        string contentType,
+        StorageKey storageKey,
+        ContentType contentType,
         CancellationToken cancellationToken);
 
-    Task<Result<IReadOnlyList<string>, Error>> GenerateAllChunksUploadUrlsAsync(
-        string bucketName,
-        string key,
+    Task<Result<IReadOnlyList<MultipartPartUploadDto>, Error>> GenerateAllChunksUploadUrlsAsync(
+        StorageKey storageKey,
         string uploadId,
         int totalChunks,
         CancellationToken cancellationToken);
 
     Task<Result<string, Error>> CompleteMultipartUploadAsync(
-        string bucketName,
-        string key,
+        StorageKey storageKey,
         string uploadId,
         IReadOnlyList<PartETagDto> partETags,
+        CancellationToken cancellationToken);
+
+    Task<UnitResult<Error>> AbortMultipartUploadAsync(
+        StorageKey storageKey,
+        string uploadId,
         CancellationToken cancellationToken);
 
     void Dispose();

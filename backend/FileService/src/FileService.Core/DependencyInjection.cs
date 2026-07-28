@@ -1,3 +1,4 @@
+using FileService.Core.Features;
 using FileService.Domain;
 using FileService.Web.EndpointsExtensions;
 using FileService.Core.Features.SimpleUpload;
@@ -19,6 +20,15 @@ public static class DependencyInjection
         services.AddScoped<GetMediaAssetHandler>();
         services.AddScoped<GetMediaAssetsByTargetHandler>();
         services.AddScoped<GetMediaAssetsHandler>();
+        services.AddScoped<StartMultipartUploadHandler>();
+        services.AddScoped<CompleteMultipartUploadHandler>();
+        services.AddScoped<AbortMultipartUploadHandler>();
+        
+        // services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
+        
+        // var assembly = typeof(StartMultipartUploadHandler).Assembly;
+        //
+        // services.AddHandlers(assembly);
         
         return services;
     }

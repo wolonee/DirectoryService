@@ -29,6 +29,15 @@ public sealed class S3OptionsValidator : IValidateOptions<S3Options>
         if (options.MaxConcurrentRequests <= 0)
             failures.Add("S3Options:MaxConcurrentRequests must be greater than zero.");
 
+        if (options.MinimumChunkSizeBytes < S3Options.S3MinimumPartSizeBytes)
+            failures.Add($"S3Options:MinimumChunkSizeBytes must be at least {S3Options.S3MinimumPartSizeBytes} bytes.");
+
+        if (options.RecommendedChunkSizeBytes < options.MinimumChunkSizeBytes)
+            failures.Add("S3Options:RecommendedChunkSizeBytes must be greater than or equal to MinimumChunkSizeBytes.");
+
+        if (options.MaxChunks is <= 0 or > S3Options.S3MaximumPartsCount)
+            failures.Add($"S3Options:MaxChunks must be between 1 and {S3Options.S3MaximumPartsCount}.");
+
         if (options.RequiredBuckets.Count == 0)
         {
             failures.Add("S3Options:RequiredBuckets must contain at least one bucket.");

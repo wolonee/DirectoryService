@@ -29,6 +29,7 @@ public static class DependencyInjectionS3Extentions
         });
 
         services.AddScoped<IS3Provider, S3Provider>();
+        services.AddScoped<IChunkSizeCalculator, ChunkSizeCalculator>();
         
         services
             .AddHealthChecks()

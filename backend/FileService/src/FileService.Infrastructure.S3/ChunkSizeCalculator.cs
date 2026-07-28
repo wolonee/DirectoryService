@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace FileService.Infrastructure.S3;
 
-public class ChunkSizeCalculator
+public class ChunkSizeCalculator : IChunkSizeCalculator
 {
     private readonly S3Options _options;
 
@@ -16,10 +16,14 @@ public class ChunkSizeCalculator
     
     public Result<(long ChunkSize, int TotalChunks), Error> CalculateChunkSize(long fileSize)
     {
-        int maxChunks = _options.MaxChucks;
+        int maxChunks = _options.MaxChunks;
+        long minimumChunkSizeBytes = _options.MinimumChunkSizeBytes;
         long recommendedChunkSizeBytes = _options.RecommendedChunkSizeBytes;
         
-        if (recommendedChunkSizeBytes <= 0 || maxChunks <= 0)
+        if (fileSize <= 0
+            || minimumChunkSizeBytes < S3Options.S3MinimumPartSizeBytes
+            || recommendedChunkSizeBytes < minimumChunkSizeBytes
+            || maxChunks is <= 0 or > S3Options.S3MaximumPartsCount)
             return GeneralErrors.ValueIsInvalid("chunks setting");
         
         if (fileSize <= recommendedChunkSizeBytes)
@@ -29,7 +33,9 @@ public class ChunkSizeCalculator
 
         int actualChunks = Math.Min(calculatedChunks, maxChunks);
         
-        long chunkSize = fileSize / actualChunks;
+        long chunkSize = Math.Max(
+            (fileSize + actualChunks - 1) / actualChunks,
+            minimumChunkSizeBytes);
         
         return (chunkSize, actualChunks);
     }
