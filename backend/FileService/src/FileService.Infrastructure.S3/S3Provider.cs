@@ -47,18 +47,17 @@ public class S3Provider : IS3Provider, IDisposable
     }
 
     public async Task<Result<string, Error>> StartMultipartUploadAsync(
-        string bucketName,
-        string key,
-        string contentType,
+        StorageKey storageKey,
+        ContentType contentType,
         CancellationToken cancellationToken)
     {
         try
         {
             var request = new InitiateMultipartUploadRequest()
             {
-                BucketName = bucketName,
-                Key = key,
-                ContentType = contentType,
+                BucketName = storageKey.Bucket,
+                Key = storageKey.Value,
+                ContentType = contentType.Value,
             };
 
             var response = await _s3Client.InitiateMultipartUploadAsync(request, cancellationToken);
@@ -72,16 +71,15 @@ public class S3Provider : IS3Provider, IDisposable
         }
     }
 
-    public async Task<Result<IReadOnlyList<string>, Error>> GenerateAllChunksUploadUrlsAsync(
-        string bucketName,
-        string key,
+    public async Task<Result<IReadOnlyList<MultipartPartUploadDto>, Error>> GenerateAllChunksUploadUrlsAsync(
+        StorageKey storageKey,
         string uploadId,
         int totalChunks,
         CancellationToken cancellationToken)
     {
         try
         {
-            IEnumerable<Task<string>> tasks = Enumerable.Range(1, totalChunks)
+            IEnumerable<Task<MultipartPartUploadDto>> tasks = Enumerable.Range(1, totalChunks)
                 .Select(async partNumber =>
                 {
                     await _requestsSemaphore.WaitAsync(cancellationToken);
@@ -90,18 +88,19 @@ public class S3Provider : IS3Provider, IDisposable
                     {
                         var request = new GetPreSignedUrlRequest
                         {
-                            BucketName = bucketName,
-                            Key = key,
+                            BucketName = storageKey.Bucket,
+                            Key = storageKey.Value,
                             Verb = HttpVerb.PUT,
                             UploadId = uploadId,
                             PartNumber = partNumber,
-                            Expires = DateTime.UtcNow.AddHours(_s3Options.UploadUrlExpirationHours),
+                            Expires = DateTime.UtcNow.Add(_s3Options.UploadUrlExpiration),
                             Protocol = _s3Options.WithSsl ? Protocol.HTTPS : Protocol.HTTP,
                         };
 
-                        string? url = await _s3Client.GetPreSignedURLAsync(request);
+                        string url = await _s3Client.GetPreSignedURLAsync(request)
+                            ?? throw new InvalidOperationException("S3 did not return a presigned URL for a multipart part.");
 
-                        return url;
+                        return new MultipartPartUploadDto(partNumber, url);
                     }
                     finally
                     {
@@ -119,18 +118,17 @@ public class S3Provider : IS3Provider, IDisposable
     }
 
     public async Task<Result<string, Error>> CompleteMultipartUploadAsync(
-        string bucketName,
-        string key,
+        StorageKey storageKey,
         string uploadId,
         IReadOnlyList<PartETagDto> partETags,
         CancellationToken cancellationToken)
     {
         try
         {
-            var request = new CompleteMultipartUploadRequest
+            var request = new Amazon.S3.Model.CompleteMultipartUploadRequest
             {
-                BucketName = bucketName,
-                Key = key,
+                BucketName = storageKey.Bucket,
+                Key = storageKey.Value,
                 UploadId = uploadId,
                 PartETags = partETags.Select(p => new PartETag
                 {
@@ -139,13 +137,39 @@ public class S3Provider : IS3Provider, IDisposable
                 }).ToList(),
             };
 
-            CompleteMultipartUploadResponse response = await _s3Client.CompleteMultipartUploadAsync(request, cancellationToken);
+            Amazon.S3.Model.CompleteMultipartUploadResponse response =
+                await _s3Client.CompleteMultipartUploadAsync(request, cancellationToken);
 
             return response.Key;
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Error complete multipart upload");
+            return S3ErrorMapper.ToError(e);
+        }
+    }
+    
+    public async Task<UnitResult<Error>> AbortMultipartUploadAsync(
+        StorageKey storageKey,
+        string uploadId,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var request = new Amazon.S3.Model.AbortMultipartUploadRequest
+            {
+                BucketName = storageKey.Bucket,
+                Key = storageKey.Value,
+                UploadId = uploadId,
+            };
+            
+            await _s3Client.AbortMultipartUploadAsync(request, cancellationToken);
+
+            return UnitResult.Success<Error>();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error aborting multipart upload");
             return S3ErrorMapper.ToError(e);
         }
     }
@@ -162,7 +186,7 @@ public class S3Provider : IS3Provider, IDisposable
     {
         try
         {
-            DateTime expiresAt = DateTime.UtcNow.AddHours(_s3Options.UploadUrlExpirationHours);
+            DateTime expiresAt = DateTime.UtcNow.Add(_s3Options.UploadUrlExpiration);
 
             var request = new GetPreSignedUrlRequest
             {
@@ -208,7 +232,7 @@ public class S3Provider : IS3Provider, IDisposable
                 BucketName = storageKey.Bucket,
                 Key = storageKey.Value,
                 Verb = HttpVerb.GET,
-                Expires = DateTime.Now.AddHours(_s3Options.DownloadUrlExpirationHours),
+                Expires = DateTime.UtcNow.Add(_s3Options.DownloadUrlExpiration),
                 Protocol = _s3Options.WithSsl ? Protocol.HTTPS : Protocol.HTTP,
             };
 
@@ -243,7 +267,7 @@ public class S3Provider : IS3Provider, IDisposable
                         BucketName = storageKey.Bucket,
                         Key = storageKey.Value,
                         Verb = HttpVerb.GET,
-                        Expires = DateTime.Now.AddHours(_s3Options.DownloadUrlExpirationHours),
+                        Expires = DateTime.UtcNow.Add(_s3Options.DownloadUrlExpiration),
                         Protocol = _s3Options.WithSsl ? Protocol.HTTPS : Protocol.HTTP,
                     };
 

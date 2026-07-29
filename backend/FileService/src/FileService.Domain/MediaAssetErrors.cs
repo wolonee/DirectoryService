@@ -27,6 +27,16 @@ public static class MediaAssetErrors
         Error.Conflict(
             "media-asset.already-completed",
             $"Media asset '{fileId}' has already been completed.");
+    
+    public static Error AlreadyDeleted(Guid fileId) =>
+        Error.Conflict(
+            "media-asset.already-deleted",
+            $"Media asset '{fileId}' has already been deleted.");
+
+    public static Error InvalidMultipartUploadId(Guid fileId) =>
+        Error.Conflict(
+            "media-asset.invalid-multipart-upload-id",
+            $"Multipart upload id does not belong to media asset '{fileId}'.");
 
     public static Error StorageObjectMissing(Guid fileId) =>
         Error.NotFound(

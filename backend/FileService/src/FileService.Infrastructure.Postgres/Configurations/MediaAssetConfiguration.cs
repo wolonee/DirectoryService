@@ -50,6 +50,9 @@ public class MediaAssetConfiguration : IEntityTypeConfiguration<MediaAsset>
             .HasColumnName("final_key")
             .HasColumnType("jsonb");
 
+        builder.Property(x => x.MultipartUploadId)
+            .HasColumnName("multipart_upload_id");
+
         builder.Property(x => x.AssetType)
             .HasColumnName("asset_type")
             .HasConversion<string>();

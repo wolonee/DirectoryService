@@ -20,14 +20,23 @@ public sealed class S3OptionsValidator : IValidateOptions<S3Options>
         if (string.IsNullOrWhiteSpace(options.SecretKey))
             failures.Add("S3Options:SecretKey must not be empty.");
 
-        if (options.UploadUrlExpirationHours <= 0)
-            failures.Add("S3Options:UploadUrlExpirationHours must be greater than zero.");
+        if (options.UploadUrlExpiration <= TimeSpan.Zero)
+            failures.Add("S3Options:UploadUrlExpiration must be greater than zero.");
 
-        if (options.DownloadUrlExpirationHours <= 0)
-            failures.Add("S3Options:DownloadUrlExpirationHours must be greater than zero.");
+        if (options.DownloadUrlExpiration <= TimeSpan.Zero)
+            failures.Add("S3Options:DownloadUrlExpiration must be greater than zero.");
 
         if (options.MaxConcurrentRequests <= 0)
             failures.Add("S3Options:MaxConcurrentRequests must be greater than zero.");
+
+        if (options.MinimumChunkSizeBytes < S3Options.S3MinimumPartSizeBytes)
+            failures.Add($"S3Options:MinimumChunkSizeBytes must be at least {S3Options.S3MinimumPartSizeBytes} bytes.");
+
+        if (options.RecommendedChunkSizeBytes < options.MinimumChunkSizeBytes)
+            failures.Add("S3Options:RecommendedChunkSizeBytes must be greater than or equal to MinimumChunkSizeBytes.");
+
+        if (options.MaxChunks is <= 0 or > S3Options.S3MaximumPartsCount)
+            failures.Add($"S3Options:MaxChunks must be between 1 and {S3Options.S3MaximumPartsCount}.");
 
         if (options.RequiredBuckets.Count == 0)
         {

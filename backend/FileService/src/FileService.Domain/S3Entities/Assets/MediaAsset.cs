@@ -20,6 +20,8 @@ public abstract class MediaAsset
     public StorageKey RawKey { get; protected init; } = null!;
     
     public StorageKey FinalKey { get; protected set; } = null!;
+
+    public string? MultipartUploadId { get; protected set; }
     
     public MediaOwner Owner { get; protected init; } = null!;
     
@@ -70,16 +72,26 @@ public abstract class MediaAsset
     public UnitResult<Error> MarkUploaded(DateTime changedAt) =>
         ChangeStatus(MediaStatus.UPLOADED, changedAt);
 
-    public UnitResult<Error> MarkReady(StorageKey finalKey, StorageReference storageReference, DateTime changedAt)
+    public UnitResult<Error> SetMultipartUploadId(string uploadId)
     {
-        if (string.IsNullOrEmpty(finalKey.FullPath))
+        if (Status != MediaStatus.UPLOADING || string.IsNullOrWhiteSpace(uploadId))
+            return Error.Validation("media.multipart-upload-id.invalid", "Multipart upload id is invalid.");
+
+        MultipartUploadId = uploadId;
+
+        return UnitResult.Success<Error>();
+    }
+
+    public UnitResult<Error> MarkReady(StorageKey rawKey, StorageReference storageReference, DateTime changedAt)
+    {
+        if (string.IsNullOrEmpty(rawKey.FullPath))
             return Error.Validation("media.final-key.required", "Final storage key is required");
         
         UnitResult<Error> result = ChangeStatus(MediaStatus.READY, changedAt);
         if (result.IsFailure)
             return result;
 
-        FinalKey = finalKey;
+        FinalKey = rawKey;
         StorageReference = storageReference;
 
         return result;

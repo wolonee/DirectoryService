@@ -258,11 +258,13 @@ public sealed class Fs4HandlersTests
 
         public Task UploadFileAsync(Stream stream, string bucketName, string key, string contentType, CancellationToken cancellationToken) => throw new NotSupportedException();
 
-        public Task<Result<string, Error>> StartMultipartUploadAsync(string bucketName, string key, string contentType, CancellationToken cancellationToken) => throw new NotSupportedException();
+        public Task<Result<string, Error>> StartMultipartUploadAsync(StorageKey storageKey, ContentType contentType, CancellationToken cancellationToken) => throw new NotSupportedException();
 
-        public Task<Result<IReadOnlyList<string>, Error>> GenerateAllChunksUploadUrlsAsync(string bucketName, string key, string uploadId, int totalChunks, CancellationToken cancellationToken) => throw new NotSupportedException();
+        public Task<Result<IReadOnlyList<MultipartPartUploadDto>, Error>> GenerateAllChunksUploadUrlsAsync(StorageKey storageKey, string uploadId, int totalChunks, CancellationToken cancellationToken) => throw new NotSupportedException();
 
-        public Task<Result<string, Error>> CompleteMultipartUploadAsync(string bucketName, string key, string uploadId, IReadOnlyList<PartETagDto> partETags, CancellationToken cancellationToken) => throw new NotSupportedException();
+        public Task<Result<string, Error>> CompleteMultipartUploadAsync(StorageKey storageKey, string uploadId, IReadOnlyList<PartETagDto> partETags, CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task<UnitResult<Error>> AbortMultipartUploadAsync(StorageKey storageKey, string uploadId, CancellationToken cancellationToken) => throw new NotSupportedException();
 
         public Task<UnitResult<Error>> EnsureBucketExistsAsync(string bucketName, CancellationToken cancellationToken) => throw new NotSupportedException();
 

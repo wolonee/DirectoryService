@@ -156,8 +156,8 @@ public class S3ProviderPresignedUploadIntegrationTests : IAsyncLifetime
             client,
             Options.Create(new S3Options
             {
-                UploadUrlExpirationHours = 1,
-                DownloadUrlExpirationHours = 1,
+                UploadUrlExpiration = TimeSpan.FromHours(1),
+                DownloadUrlExpiration = TimeSpan.FromHours(1),
                 MaxConcurrentRequests = 1,
             }),
             NullLogger<S3Provider>.Instance);

@@ -6,6 +6,7 @@ using FileService.Domain.Assets;
 using FileService.Infrastructure.Postgres.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Npgsql;
 
 namespace FileService.Infrastructure.Postgres.Repositories;
 
@@ -32,9 +33,19 @@ public class MediaAssetRepository : IMediaAssetRepository
 
             return asset.Id;
         }
-        catch (Exception e)
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException)
         {
-            _logger.LogError(e, "Error adding asset");
+            _logger.LogError(ex, "Postgres error while adding media asset {MediaAssetId}", asset.Id);
+            return GeneralErrors.DatabaseError();
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogInformation(ex, "Adding media asset {MediaAssetId} was cancelled", asset.Id);
+            return GeneralErrors.DatabaseError();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while adding media asset {MediaAssetId}", asset.Id);
             return GeneralErrors.DatabaseError();
         }
     }
@@ -66,9 +77,19 @@ public class MediaAssetRepository : IMediaAssetRepository
             await _dbContext.SaveChangesAsync(cancellationToken);
             return UnitResult.Success<Error>();
         }
-        catch (Exception e)
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException)
         {
-            _logger.LogError(e, "Error saving asset");
+            _logger.LogError(ex, "Postgres error while saving media assets");
+            return GeneralErrors.DatabaseError();
+        }
+        catch (OperationCanceledException ex)
+        {
+            _logger.LogInformation(ex, "Saving media assets was cancelled");
+            return GeneralErrors.DatabaseError();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while saving media assets");
             return GeneralErrors.DatabaseError();
         }
     }
