@@ -1,4 +1,6 @@
 using CSharpFunctionalExtensions;
+using DirectoryService.Application.Abstractions;
+using DirectoryService.Application.Validation;
 using DirectoryService.Presentation.EndpointResults;
 using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
@@ -7,6 +9,7 @@ using FileService.Core.Abstractions;
 using FileService.Domain;
 using FileService.Domain.Assets;
 using FileService.Web.EndpointsExtensions;
+using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +18,42 @@ using Microsoft.Extensions.Logging;
 
 namespace FileService.Core.Features.SimpleUpload;
 
-public sealed record InitiateUploadCommand(InitiateUploadRequest Request);
+public sealed class InitiateUploadValidator : AbstractValidator<InitiateUploadCommand>
+{
+    public InitiateUploadValidator()
+    {
+        RuleFor(command => command.Request)
+            .NotNull()
+            .WithError(GeneralErrors.ValueIsRequired(nameof(InitiateUploadCommand.Request)));
+
+        When(command => command.Request is not null, () =>
+        {
+            RuleFor(command => command.Request.FileName)
+                .MustBeValueObject(FileName.Create);
+
+            RuleFor(command => command.Request.ContentType)
+                .MustBeValueObject(ContentType.Create);
+
+            RuleFor(command => command.Request.Size)
+                .GreaterThan(0)
+                .WithError(GeneralErrors.ValueIsInvalid(nameof(InitiateUploadRequest.Size)));
+
+            RuleFor(command => command.Request.AssetType)
+                .MustBeValueObject(assetType => assetType.ToAssetType());
+
+            RuleFor(command => command.Request.Usage)
+                .MustBeValueObject(usage => usage.ToMediaUsage());
+
+            RuleFor(command => command.Request.TargetType)
+                .NotEmpty()
+                .WithError(GeneralErrors.ValueIsRequired(nameof(InitiateUploadRequest.TargetType)));
+
+            RuleFor(command => command.Request.TargetId)
+                .NotEmpty()
+                .WithError(GeneralErrors.ValueIsRequired(nameof(InitiateUploadRequest.TargetId)));
+        });
+    }
+}
 
 public sealed class InitiateUploadEndpoint : IEndpoint
 {
@@ -34,10 +72,12 @@ public sealed class InitiateUploadEndpoint : IEndpoint
 
 
 public sealed class InitiateUploadHandler
+    : ICommandHandler<InitiateUploadResponse, InitiateUploadCommand>
 {
     private readonly IMediaAssetRepository _mediaAssetRepository;
     private readonly IMediaAssetFactory _mediaAssetFactory;
     private readonly IS3Provider _s3Provider;
+    private readonly IValidator<InitiateUploadCommand> _validator;
     private readonly ICurrentUser _currentUser;
     private readonly ILogger<InitiateUploadHandler> _logger;
 
@@ -45,65 +85,60 @@ public sealed class InitiateUploadHandler
         IMediaAssetRepository mediaAssetRepository,
         IMediaAssetFactory mediaAssetFactory,
         IS3Provider s3Provider,
+        IValidator<InitiateUploadCommand> validator,
         ICurrentUser currentUser,
         ILogger<InitiateUploadHandler> logger)
     {
         _mediaAssetRepository = mediaAssetRepository;
         _mediaAssetFactory = mediaAssetFactory;
         _s3Provider = s3Provider;
+        _validator = validator;
         _currentUser = currentUser;
         _logger = logger;
     }
 
-    public async Task<Result<InitiateUploadResponse, Error>> Handle(
+    public async Task<Result<InitiateUploadResponse, Errors>> Handle(
         InitiateUploadCommand command,
         CancellationToken cancellationToken)
     {
+        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
+        if (!validationResult.IsValid)
+            return validationResult.ToValidationErrors();
+
         InitiateUploadRequest request = command.Request;
 
-        Result<FileName, Error> fileNameResult = FileName.Create(request.FileName);
-        if (fileNameResult.IsFailure)
-            return fileNameResult.Error;
-
-        Result<ContentType, Error> contentTypeResult = ContentType.Create(request.ContentType);
-        if (contentTypeResult.IsFailure)
-            return contentTypeResult.Error;
-
-        Result<AssetType, Error> assetTypeResult = request.AssetType.ToAssetType();
-        if (assetTypeResult.IsFailure)
-            return assetTypeResult.Error;
-
-        Result<MediaUsage, Error> usageResult = request.Usage.ToMediaUsage();
-        if (usageResult.IsFailure)
-            return usageResult.Error;
+        var fileName = FileName.Create(request.FileName).Value;
+        var contentType = ContentType.Create(request.ContentType).Value;
+        var assetType = request.AssetType.ToAssetType().Value;
+        var usage = request.Usage.ToMediaUsage().Value;
 
         if (_currentUser.UserId == Guid.Empty)
-            return GeneralErrors.ValueIsInvalid("UploaderId");
+            return GeneralErrors.ValueIsInvalid("UploaderId").ToErrors();
 
         Result<MediaOwner, Error> mediaOwnerResult = MediaOwner.Create(
             request.TargetType,
             request.TargetId,
             _currentUser.UserId);
         if (mediaOwnerResult.IsFailure)
-            return mediaOwnerResult.Error;
+            return mediaOwnerResult.Error.ToErrors();
 
         Result<MediaData, Error> mediaDataResult = MediaData.Create(
-            fileNameResult.Value,
-            contentTypeResult.Value,
+            fileName,
+            contentType,
             request.Size);
         if (mediaDataResult.IsFailure)
-            return mediaDataResult.Error;
+            return mediaDataResult.Error.ToErrors();
 
         Guid mediaAssetId = Guid.CreateVersion7();
         Result<MediaAsset, Error> mediaAssetResult =
             _mediaAssetFactory.CreateForUpload(
                 mediaAssetId,
-                assetTypeResult.Value,
+                assetType,
                 mediaDataResult.Value,
-                usageResult.Value,
+                usage,
                 mediaOwnerResult.Value);
         if (mediaAssetResult.IsFailure)
-            return mediaAssetResult.Error;
+            return mediaAssetResult.Error.ToErrors();
 
         Result<PresignedUploadDto, Error> uploadUrlResult =
             await _s3Provider.GenerateUploadUrlAsync(
@@ -111,7 +146,7 @@ public sealed class InitiateUploadHandler
                 mediaAssetResult.Value.MediaData.ContentType,
                 cancellationToken);
         if (uploadUrlResult.IsFailure)
-            return uploadUrlResult.Error;
+            return uploadUrlResult.Error.ToErrors();
 
         await _mediaAssetRepository.AddAsync(mediaAssetResult.Value, cancellationToken);
 
@@ -123,4 +158,5 @@ public sealed class InitiateUploadHandler
             Upload = uploadUrlResult.Value,
         };
     }
+
 }

@@ -24,9 +24,13 @@ public sealed class Fs4HandlersTests
         PreviewAsset asset = CreatePreview();
         var repository = new FakeRepository(asset);
         var provider = new FakeS3Provider();
-        var handler = new CancelUploadHandler(repository, provider, NullLogger<CancelUploadHandler>.Instance);
+        var handler = new CancelUploadHandler(
+            repository,
+            provider,
+            new CancelUploadValidator(),
+            NullLogger<CancelUploadHandler>.Instance);
 
-        Result<CancelUploadResponse, Error> result = await handler.Handle(new CancelUploadCommand(asset.Id), CancellationToken.None);
+        Result<CancelUploadResponse, Errors> result = await handler.Handle(new CancelUploadCommand(asset.Id), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(MediaStatus.DELETED, asset.Status);
@@ -42,9 +46,10 @@ public sealed class Fs4HandlersTests
         var handler = new CancelUploadHandler(
             repository,
             new FakeS3Provider(),
+            new CancelUploadValidator(),
             NullLogger<CancelUploadHandler>.Instance);
 
-        Result<CancelUploadResponse, Error> result = await handler.Handle(new CancelUploadCommand(asset.Id), CancellationToken.None);
+        Result<CancelUploadResponse, Errors> result = await handler.Handle(new CancelUploadCommand(asset.Id), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(MediaStatus.DELETED, asset.Status);
@@ -59,12 +64,13 @@ public sealed class Fs4HandlersTests
         var handler = new CancelUploadHandler(
             new FakeRepository(asset),
             new FakeS3Provider(),
+            new CancelUploadValidator(),
             NullLogger<CancelUploadHandler>.Instance);
 
-        Result<CancelUploadResponse, Error> result = await handler.Handle(new CancelUploadCommand(asset.Id), CancellationToken.None);
+        Result<CancelUploadResponse, Errors> result = await handler.Handle(new CancelUploadCommand(asset.Id), CancellationToken.None);
 
         Assert.True(result.IsFailure);
-        Assert.Equal("media-asset.invalid-status", result.Error.Code);
+        Assert.Equal("media-asset.invalid-status", result.Error.Single().Code);
     }
 
     [Fact]
@@ -73,9 +79,13 @@ public sealed class Fs4HandlersTests
         PreviewAsset asset = CreateReadyPreview();
         var repository = new FakeRepository(asset);
         var provider = new FakeS3Provider();
-        var handler = new DeleteMediaAssetHandler(repository, provider, NullLogger<DeleteMediaAssetHandler>.Instance);
+        var handler = new DeleteMediaAssetHandler(
+            repository,
+            provider,
+            new DeleteMediaAssetValidator(),
+            NullLogger<DeleteMediaAssetHandler>.Instance);
 
-        Result<DeleteMediaAssetResponse, Error> result = await handler.Handle(new DeleteFileCommand(asset.Id), CancellationToken.None);
+        Result<DeleteMediaAssetResponse, Errors> result = await handler.Handle(new DeleteFileCommand(asset.Id), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(MediaStatus.DELETED, asset.Status);
@@ -89,9 +99,13 @@ public sealed class Fs4HandlersTests
         VideoAsset asset = CreateReadyVideo();
         var repository = new FakeRepository(asset);
         var provider = new FakeS3Provider();
-        var handler = new DeleteMediaAssetHandler(repository, provider, NullLogger<DeleteMediaAssetHandler>.Instance);
+        var handler = new DeleteMediaAssetHandler(
+            repository,
+            provider,
+            new DeleteMediaAssetValidator(),
+            NullLogger<DeleteMediaAssetHandler>.Instance);
 
-        Result<DeleteMediaAssetResponse, Error> result = await handler.Handle(new DeleteFileCommand(asset.Id), CancellationToken.None);
+        Result<DeleteMediaAssetResponse, Errors> result = await handler.Handle(new DeleteFileCommand(asset.Id), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(MediaStatus.DELETED, asset.Status);
@@ -109,9 +123,10 @@ public sealed class Fs4HandlersTests
         var handler = new DeleteMediaAssetHandler(
             repository,
             new FakeS3Provider(),
+            new DeleteMediaAssetValidator(),
             NullLogger<DeleteMediaAssetHandler>.Instance);
 
-        Result<DeleteMediaAssetResponse, Error> result = await handler.Handle(new DeleteFileCommand(asset.Id), CancellationToken.None);
+        Result<DeleteMediaAssetResponse, Errors> result = await handler.Handle(new DeleteFileCommand(asset.Id), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(MediaStatus.DELETED, asset.Status);
@@ -123,9 +138,12 @@ public sealed class Fs4HandlersTests
     {
         PreviewAsset ready = CreateReadyPreview();
         var provider = new FakeS3Provider();
-        var handler = new GetMediaAssetHandler(new FakeRepository(ready), provider);
+        var handler = new GetMediaAssetHandler(
+            new FakeRepository(ready),
+            provider,
+            new GetMediaAssetValidator());
 
-        Result<GetMediaAssetResponse, Error> result = await handler.Handle(new GetMediaAssetQuery(ready.Id), CancellationToken.None);
+        Result<GetMediaAssetResponse, Errors> result = await handler.Handle(new GetMediaAssetQuery(ready.Id), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         Assert.Equal("http://minio.test/download", result.Value.ContentUrl);
@@ -143,9 +161,10 @@ public sealed class Fs4HandlersTests
         var provider = new FakeS3Provider();
         var handler = new GetMediaAssetsByTargetHandler(
             provider,
-            new FakeReadDbContext([ready, uploading, deleted]));
+            new FakeReadDbContext([ready, uploading, deleted]),
+            new GetMediaAssetsByTargetValidator());
 
-        Result<GetMediaAssetsByTargetResponse, Error> result = await handler.Handle(
+        Result<GetMediaAssetsByTargetResponse, Errors> result = await handler.Handle(
             new GetMediaAssetsByTargetQuery(new GetMediaAssetsByTargetRequest
             {
                 TargetId = targetId,

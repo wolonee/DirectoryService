@@ -1,4 +1,6 @@
 using CSharpFunctionalExtensions;
+using DirectoryService.Application.Abstractions;
+using DirectoryService.Application.Validation;
 using DirectoryService.Presentation.EndpointResults;
 using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
@@ -6,8 +8,8 @@ using FileService.Contracts;
 using FileService.Core.Abstractions;
 using FileService.Domain;
 using FileService.Domain.Assets;
-using FileService.Infrastructure.S3;
 using FileService.Web.EndpointsExtensions;
+using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +18,42 @@ using Microsoft.Extensions.Logging;
 
 namespace FileService.Core.Features;
 
-public record StartMultipartUploadCommand(StartMultipartUploadRequest Request);
+public sealed class StartMultipartUploadValidator : AbstractValidator<StartMultipartUploadCommand>
+{
+    public StartMultipartUploadValidator()
+    {
+        RuleFor(command => command.Request)
+            .NotNull()
+            .WithError(GeneralErrors.ValueIsRequired(nameof(StartMultipartUploadCommand.Request)));
+
+        When(command => command.Request is not null, () =>
+        {
+            RuleFor(command => command.Request.FileName)
+                .MustBeValueObject(FileName.Create);
+
+            RuleFor(command => command.Request.ContentType)
+                .MustBeValueObject(ContentType.Create);
+
+            RuleFor(command => command.Request.Size)
+                .GreaterThan(0)
+                .WithError(GeneralErrors.ValueIsInvalid(nameof(StartMultipartUploadRequest.Size)));
+
+            RuleFor(command => command.Request.AssetType)
+                .MustBeValueObject(assetType => assetType.ToAssetType());
+
+            RuleFor(command => command.Request.Usage)
+                .MustBeValueObject(usage => usage.ToMediaUsage());
+
+            RuleFor(command => command.Request.TargetType)
+                .NotEmpty()
+                .WithError(GeneralErrors.ValueIsRequired(nameof(StartMultipartUploadRequest.TargetType)));
+
+            RuleFor(command => command.Request.TargetId)
+                .NotEmpty()
+                .WithError(GeneralErrors.ValueIsRequired(nameof(StartMultipartUploadRequest.TargetId)));
+        });
+    }
+}
 
 public sealed class StartMultipartUploadEndpoint : IEndpoint
 {
@@ -35,11 +72,13 @@ public sealed class StartMultipartUploadEndpoint : IEndpoint
 }
 
 public sealed class StartMultipartUploadHandler
+    : ICommandHandler<StartMultipartUploadResponse, StartMultipartUploadCommand>
 {
     private readonly IS3Provider _s3Provider;
     private readonly IMediaAssetRepository _mediaAssetRepository;
     private readonly IMediaAssetFactory _mediaAssetFactory;
     private readonly IChunkSizeCalculator _chunkSizeCalculator;
+    private readonly IValidator<StartMultipartUploadCommand> _validator;
     private readonly ICurrentUser _currentUser;
     private readonly ILogger<StartMultipartUploadHandler> _logger;
 
@@ -48,6 +87,7 @@ public sealed class StartMultipartUploadHandler
         IMediaAssetRepository mediaAssetRepository,
         IMediaAssetFactory mediaAssetFactory,
         IChunkSizeCalculator chunkSizeCalculator,
+        IValidator<StartMultipartUploadCommand> validator,
         ICurrentUser currentUser,
         ILogger<StartMultipartUploadHandler> logger)
     {
@@ -55,55 +95,45 @@ public sealed class StartMultipartUploadHandler
         _mediaAssetRepository = mediaAssetRepository;
         _mediaAssetFactory = mediaAssetFactory;
         _chunkSizeCalculator = chunkSizeCalculator;
+        _validator = validator;
         _currentUser = currentUser;
         _logger = logger;
     }
 
-    public async Task<Result<StartMultipartUploadResponse, Error>> Handle(StartMultipartUploadCommand command, CancellationToken cancellationToken)
+    public async Task<Result<StartMultipartUploadResponse, Errors>> Handle(StartMultipartUploadCommand command, CancellationToken cancellationToken)
     {
+        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
+        if (!validationResult.IsValid)
+            return validationResult.ToValidationErrors();
+        
         var request = command.Request;
         
-        var fileNameResult = FileName.Create(request.FileName);
-        if (fileNameResult.IsFailure)
-            return fileNameResult.Error;
-        
-        var contentTypeResult = ContentType.Create(request.ContentType);
-        if (contentTypeResult.IsFailure)
-            return contentTypeResult.Error;
+        var fileName = FileName.Create(request.FileName).Value;
+        var contentType = ContentType.Create(request.ContentType).Value;
         
         Result<(long ChunkSize, int TotalChunks), Error> chunksDataResult = _chunkSizeCalculator.CalculateChunkSize(request.Size);
         if (chunksDataResult.IsFailure)
-            return chunksDataResult.Error;
+            return chunksDataResult.Error.ToErrors();
         
         (long chunkSize, int totalChunks) = chunksDataResult.Value;
-        var fileName = fileNameResult.Value;
-        var contentType = contentTypeResult.Value;
 
         var mediaDataResult = MediaData.Create(fileName, contentType, request.Size, totalChunks);
         if (mediaDataResult.IsFailure)
-            return mediaDataResult.Error;
+            return mediaDataResult.Error.ToErrors();
 
         var ownerResult = MediaOwner.Create(request.TargetType, request.TargetId, _currentUser.UserId);
         if (ownerResult.IsFailure)
-            return ownerResult.Error;
-        
-        var assetTypeResult = request.AssetType.ToAssetType();
-        if (assetTypeResult.IsFailure)
-            return assetTypeResult.Error;
-
-        var usageResult = request.Usage.ToMediaUsage();
-        if (usageResult.IsFailure)
-            return usageResult.Error;
+            return ownerResult.Error.ToErrors();
         
         var mediaData = mediaDataResult.Value;
         var owner = ownerResult.Value;
-        var assetType = assetTypeResult.Value;
-        var usage = usageResult.Value;
+        var assetType = request.AssetType.ToAssetType().Value;
+        var usage = request.Usage.ToMediaUsage().Value;
 
         Guid id = Guid.CreateVersion7();
         var mediaAssetResult = _mediaAssetFactory.CreateForUpload(id, assetType, mediaData, usage, owner);
         if (mediaAssetResult.IsFailure)
-            return mediaAssetResult.Error;
+            return mediaAssetResult.Error.ToErrors();
         
         var mediaAsset = mediaAssetResult.Value;
 
@@ -111,29 +141,29 @@ public sealed class StartMultipartUploadHandler
         if (addResult.IsFailure)
         {
             _logger.LogError("Saving multipart media asset {MediaAssetId} failed", mediaAsset.Id);
-            return addResult.Error;
+            return addResult.Error.ToErrors();
         }
 
         Result<string, Error> uploadIdResult = await _s3Provider.StartMultipartUploadAsync(mediaAsset.RawKey, contentType, cancellationToken);
         if (uploadIdResult.IsFailure)
         {
             _logger.LogError("Starting multipart upload failed for media asset {MediaAssetId}", mediaAsset.Id);
-            return uploadIdResult.Error;
+            return uploadIdResult.Error.ToErrors();
         }
 
         var setUploadIdResult = mediaAsset.SetMultipartUploadId(uploadIdResult.Value);
         if (setUploadIdResult.IsFailure)
-            return setUploadIdResult.Error;
+            return setUploadIdResult.Error.ToErrors();
 
         var saveUploadIdResult = await _mediaAssetRepository.SaveChangesAsync(cancellationToken);
         if (saveUploadIdResult.IsFailure)
-            return saveUploadIdResult.Error;
+            return saveUploadIdResult.Error.ToErrors();
         
         Result<IReadOnlyList<MultipartPartUploadDto>, Error> generateAllChunksResult = await _s3Provider.GenerateAllChunksUploadUrlsAsync(mediaAsset.RawKey, uploadIdResult.Value, totalChunks, cancellationToken);
         if (generateAllChunksResult.IsFailure)
         {
             _logger.LogError("Generating multipart part URLs failed for media asset {MediaAssetId}", mediaAsset.Id);
-            return generateAllChunksResult.Error;
+            return generateAllChunksResult.Error.ToErrors();
         }
 
         _logger.LogInformation(
@@ -152,4 +182,5 @@ public sealed class StartMultipartUploadHandler
         
         return response;
     }
+
 }

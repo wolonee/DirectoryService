@@ -76,6 +76,7 @@ public sealed class InitiateUploadHandlerTests
             repository,
             new MediaAssetFactory(),
             provider,
+            new InitiateUploadValidator(),
             new FakeCurrentUser(userId),
             NullLogger<InitiateUploadHandler>.Instance);
 

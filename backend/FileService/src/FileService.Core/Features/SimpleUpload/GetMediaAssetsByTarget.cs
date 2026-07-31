@@ -1,5 +1,8 @@
 ﻿using CSharpFunctionalExtensions;
+using DirectoryService.Application.Abstractions;
+using DirectoryService.Application.Validation;
 using DirectoryService.Presentation.EndpointResults;
+using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
 using FileService.Contracts;
 using FileService.Core.Abstractions;
@@ -7,6 +10,7 @@ using FileService.Core.Models;
 using FileService.Domain;
 using FileService.Domain.Assets;
 using FileService.Web.EndpointsExtensions;
+using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +19,22 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FileService.Core.Features.SimpleUpload;
 
-public record GetMediaAssetsByTargetQuery(GetMediaAssetsByTargetRequest request);
+public sealed class GetMediaAssetsByTargetValidator : AbstractValidator<GetMediaAssetsByTargetQuery>
+{
+    public GetMediaAssetsByTargetValidator()
+    {
+        RuleFor(query => query.Request)
+            .NotNull()
+            .WithError(GeneralErrors.ValueIsRequired(nameof(GetMediaAssetsByTargetQuery.Request)));
+
+        When(query => query.Request is not null, () =>
+        {
+            RuleFor(query => query.Request.TargetId)
+                .NotEmpty()
+                .WithError(GeneralErrors.ValueIsRequired(nameof(GetMediaAssetsByTargetRequest.TargetId)));
+        });
+    }
+}
 
 public sealed class GetMediaAssetsByTargetEndpoint : IEndpoint
 {
@@ -34,23 +53,31 @@ public sealed class GetMediaAssetsByTargetEndpoint : IEndpoint
 }
 
 public sealed class GetMediaAssetsByTargetHandler
+    : IQueryHandler<GetMediaAssetsByTargetResponse, GetMediaAssetsByTargetQuery>
 {
     private readonly IS3Provider _s3Provider;
     private readonly IReadDbContext _readDbContext;
+    private readonly IValidator<GetMediaAssetsByTargetQuery> _validator;
 
     public GetMediaAssetsByTargetHandler(
         IS3Provider s3Provider,
-        IReadDbContext readDbContext)
+        IReadDbContext readDbContext,
+        IValidator<GetMediaAssetsByTargetQuery> validator)
     {
         _s3Provider = s3Provider;
         _readDbContext = readDbContext;
+        _validator = validator;
     }
 
-    public async Task<Result<GetMediaAssetsByTargetResponse, Error>> Handle(
+    public async Task<Result<GetMediaAssetsByTargetResponse, Errors>> Handle(
         GetMediaAssetsByTargetQuery query,
         CancellationToken cancellationToken)
     {
-        var request = query.request;
+        var validationResult = await _validator.ValidateAsync(query, cancellationToken);
+        if (!validationResult.IsValid)
+            return validationResult.ToValidationErrors();
+
+        var request = query.Request;
 
         IQueryable<MediaAsset> mediaAssetsQuery = _readDbContext.MediaAssetsQuery
             .Where(asset => 
@@ -68,7 +95,7 @@ public sealed class GetMediaAssetsByTargetHandler
 
         var urlsResult = await _s3Provider.GenerateDownloadUrlsAsync(keys, cancellationToken);
         if (urlsResult.IsFailure)
-            return urlsResult.Error;
+            return urlsResult.Error.ToErrors();
         
         var urls = urlsResult.Value;
         
@@ -99,6 +126,7 @@ public sealed class GetMediaAssetsByTargetHandler
 
         return response;
     }
+
 }
 
 
