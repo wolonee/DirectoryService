@@ -49,7 +49,7 @@ public interface IS3Provider
         StorageKey storageKey,
         CancellationToken cancellationToken);
 
-    Task<Result<DeleteObjectResponseDto, Error>> DeleteObjectAsync(
+    Task<Result<DeleteObjectResult, Error>> DeleteObjectAsync(
         StorageKey storageKey,
         CancellationToken cancellationToken);
 

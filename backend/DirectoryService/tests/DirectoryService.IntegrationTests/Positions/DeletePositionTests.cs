@@ -19,7 +19,7 @@ public class DeletePositionTests : DirectoryBaseTests
         var department = await CreateParentDepartment();
         var positionId = await CreatePositionViaApi(department.Id, "Frontend", "Dev", ct);
 
-        var response = await AppHttpClient.DeleteAsync($"/api/positions/{positionId}", ct);
+        var response = await AppHttpClient.DeleteAsync($"/positions/{positionId}", ct);
         var result = await response.HandleResponseAsync(ct);
 
         Assert.True(result.IsSuccess);
@@ -36,7 +36,7 @@ public class DeletePositionTests : DirectoryBaseTests
     public async Task DeletePosition_WhenNotFound_Returns404()
     {
         var ct = CancellationToken.None;
-        var response = await AppHttpClient.DeleteAsync($"/api/positions/{Guid.NewGuid()}", ct);
+        var response = await AppHttpClient.DeleteAsync($"/positions/{Guid.NewGuid()}", ct);
         var result = await response.HandleResponseAsync(ct);
 
         Assert.True(result.IsFailure);
@@ -50,10 +50,10 @@ public class DeletePositionTests : DirectoryBaseTests
         var department = await CreateParentDepartment();
         var positionId = await CreatePositionViaApi(department.Id, "Backend", "Lead", ct);
 
-        var first = await AppHttpClient.DeleteAsync($"/api/positions/{positionId}", ct);
+        var first = await AppHttpClient.DeleteAsync($"/positions/{positionId}", ct);
         Assert.True((await first.HandleResponseAsync(ct)).IsSuccess);
 
-        var second = await AppHttpClient.DeleteAsync($"/api/positions/{positionId}", ct);
+        var second = await AppHttpClient.DeleteAsync($"/positions/{positionId}", ct);
         var result = await second.HandleResponseAsync(ct);
 
         Assert.True(result.IsFailure);

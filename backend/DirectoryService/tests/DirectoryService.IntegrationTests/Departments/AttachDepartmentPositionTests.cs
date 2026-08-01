@@ -20,7 +20,7 @@ public class AttachDepartmentPositionTests : DirectoryBaseTests
         var positionId = await CreatePositionInDb("Backend", "Dev", ct);
 
         var response = await AppHttpClient.PostAsync(
-            $"/api/departments/{department.Id}/positions/{positionId}",
+            $"/departments/{department.Id}/positions/{positionId}",
             null,
             ct);
         var result = await response.HandleResponseAsync(ct);
@@ -43,13 +43,13 @@ public class AttachDepartmentPositionTests : DirectoryBaseTests
         var positionId = await CreatePositionInDb("Backend", "Dev", ct);
 
         var first = await AppHttpClient.PostAsync(
-            $"/api/departments/{department.Id}/positions/{positionId}",
+            $"/departments/{department.Id}/positions/{positionId}",
             null,
             ct);
         Assert.True((await first.HandleResponseAsync(ct)).IsSuccess);
 
         var second = await AppHttpClient.PostAsync(
-            $"/api/departments/{department.Id}/positions/{positionId}",
+            $"/departments/{department.Id}/positions/{positionId}",
             null,
             ct);
         var result = await second.HandleResponseAsync(ct);
@@ -65,7 +65,7 @@ public class AttachDepartmentPositionTests : DirectoryBaseTests
         var positionId = await CreatePositionInDb("QA", "Lead", ct);
 
         var response = await AppHttpClient.PostAsync(
-            $"/api/departments/{Guid.NewGuid()}/positions/{positionId}",
+            $"/departments/{Guid.NewGuid()}/positions/{positionId}",
             null,
             ct);
         var result = await response.HandleResponseAsync(ct);

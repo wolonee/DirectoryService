@@ -50,12 +50,16 @@ public class DeleteLocationHandler : ICommandHandler<DeleteLocationCommand>
 
         var location = locationResult.Value;
 
-        // var deleteLinksResult = await _locationsRepository.DeleteDepartmentLocationsByLocationId(command.LocationId, cancellationToken);
-        // if (deleteLinksResult.IsFailure)
-        // {
-        //     transactionScope.Rollback();
-        //     return deleteLinksResult.Error.ToErrors();
-        // }
+        var deactivateResult = location.Deactivate();
+        if (deactivateResult.IsFailure)
+            return deactivateResult.Error.ToErrors();
+
+        var deleteLinksResult = await _locationsRepository.DeleteDepartmentLocationsByLocationId(command.LocationId, cancellationToken);
+        if (deleteLinksResult.IsFailure)
+        {
+            transactionScope.Rollback();
+            return deleteLinksResult.Error.ToErrors();
+        }
 
         location.SoftDelete();
 

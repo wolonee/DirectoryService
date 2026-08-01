@@ -24,7 +24,7 @@ public class CreateLocationTests : DirectoryBaseTests
             city: "Kazan",
             country: "Russia");
 
-        var response = await AppHttpClient.PostAsJsonAsync("/api/location", request, ct);
+        var response = await AppHttpClient.PostAsJsonAsync("/locations", request, ct);
         var result = await response.HandleResponseAsync<Guid>(cancellationToken: ct);
 
         Assert.True(result.IsSuccess);
@@ -45,11 +45,11 @@ public class CreateLocationTests : DirectoryBaseTests
         var ct = CancellationToken.None;
         var request = BuildCreateLocationRequest(name: "DuplicateNameOffice", street: "Street1");
 
-        var first = await AppHttpClient.PostAsJsonAsync("/api/location", request, ct);
+        var first = await AppHttpClient.PostAsJsonAsync("/locations", request, ct);
         Assert.True((await first.HandleResponseAsync<Guid>(cancellationToken: ct)).IsSuccess);
 
         var duplicate = request with { Address = new CreateLocationAddressRequest("Russia", "SPb", "OtherStreet") };
-        var second = await AppHttpClient.PostAsJsonAsync("/api/location", duplicate, ct);
+        var second = await AppHttpClient.PostAsJsonAsync("/locations", duplicate, ct);
         var result = await second.HandleResponseAsync<Guid?>(cancellationToken: ct);
 
         Assert.True(result.IsFailure);
@@ -64,10 +64,10 @@ public class CreateLocationTests : DirectoryBaseTests
         var firstRequest = BuildCreateLocationRequest(name: "OfficeA", street: address.Street, city: address.City, country: address.Country);
         var secondRequest = BuildCreateLocationRequest(name: "OfficeB", street: address.Street, city: address.City, country: address.Country);
 
-        var first = await AppHttpClient.PostAsJsonAsync("/api/location", firstRequest, ct);
+        var first = await AppHttpClient.PostAsJsonAsync("/locations", firstRequest, ct);
         Assert.True((await first.HandleResponseAsync<Guid>(cancellationToken: ct)).IsSuccess);
 
-        var second = await AppHttpClient.PostAsJsonAsync("/api/location", secondRequest, ct);
+        var second = await AppHttpClient.PostAsJsonAsync("/locations", secondRequest, ct);
         var result = await second.HandleResponseAsync<Guid?>(cancellationToken: ct);
 
         Assert.True(result.IsFailure);
@@ -80,7 +80,7 @@ public class CreateLocationTests : DirectoryBaseTests
         var ct = CancellationToken.None;
         var request = BuildCreateLocationRequest(name: "ab");
 
-        var response = await AppHttpClient.PostAsJsonAsync("/api/location", request, ct);
+        var response = await AppHttpClient.PostAsJsonAsync("/locations", request, ct);
         var result = await response.HandleResponseAsync<Guid?>(cancellationToken: ct);
 
         Assert.True(result.IsFailure);

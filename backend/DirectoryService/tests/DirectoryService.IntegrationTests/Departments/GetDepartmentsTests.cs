@@ -21,7 +21,7 @@ public class GetDepartmentsTests : DirectoryBaseTests
         await CreateChildDepartment(parent, difference: "ListChild");
 
         var response = await AppHttpClient.GetAsync(
-            "/api/departments?Pagination.Page=1&Pagination.PageSize=20",
+            "/departments?Pagination.Page=1&Pagination.PageSize=20",
             ct);
         var result = await response.HandleResponseAsync<PaginationResponse<GetDepartmentsDto>>(cancellationToken: ct);
 
@@ -40,7 +40,7 @@ public class GetDepartmentsTests : DirectoryBaseTests
 
         const string searchTerm = "uniquesearchxyz";
         var response = await AppHttpClient.GetAsync(
-            $"/api/departments?Search={searchTerm}&Pagination.Page=1&Pagination.PageSize=20",
+            $"/departments?Search={searchTerm}&Pagination.Page=1&Pagination.PageSize=20",
             ct);
         var result = await response.HandleResponseAsync<PaginationResponse<GetDepartmentsDto>>(cancellationToken: ct);
 
@@ -59,7 +59,7 @@ public class GetDepartmentsTests : DirectoryBaseTests
         await CreateChildDepartment(parent, difference: "InactiveChild", active: false);
 
         var response = await AppHttpClient.GetAsync(
-            "/api/departments?IsActive=false&Pagination.Page=1&Pagination.PageSize=20",
+            "/departments?Status=inactive&Pagination.Page=1&Pagination.PageSize=20",
             ct);
         var result = await response.HandleResponseAsync<PaginationResponse<GetDepartmentsDto>>(cancellationToken: ct);
 
@@ -78,7 +78,7 @@ public class GetDepartmentsTests : DirectoryBaseTests
         await CreateChildDepartment(parent, difference: "NoLink");
 
         var response = await AppHttpClient.GetAsync(
-            $"/api/departments?LocationIds={locationId}&Pagination.Page=1&Pagination.PageSize=20",
+            $"/departments?LocationIds={locationId}&Pagination.Page=1&Pagination.PageSize=20",
             ct);
         var result = await response.HandleResponseAsync<PaginationResponse<GetDepartmentsDto>>(cancellationToken: ct);
 
@@ -92,7 +92,7 @@ public class GetDepartmentsTests : DirectoryBaseTests
     {
         var ct = CancellationToken.None;
         var response = await AppHttpClient.GetAsync(
-            "/api/departments?Pagination.Page=0&Pagination.PageSize=20",
+            "/departments?Pagination.Page=0&Pagination.PageSize=20",
             ct);
         var result = await response.HandleResponseAsync<PaginationResponse<GetDepartmentsDto>?>(cancellationToken: ct);
 

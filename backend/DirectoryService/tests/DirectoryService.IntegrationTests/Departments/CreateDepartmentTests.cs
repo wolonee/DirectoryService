@@ -28,7 +28,7 @@ public class CreateDepartmentTests : DirectoryBaseTests
             null, 
             [locationId]);
         
-        HttpResponseMessage response = await AppHttpClient.PostAsJsonAsync("/api/departments", request, cancellationToken);
+        HttpResponseMessage response = await AppHttpClient.PostAsJsonAsync("/departments", request, cancellationToken);
 
         var result = await response.HandleResponseAsync<Guid>(cancellationToken: cancellationToken);
         
@@ -65,7 +65,7 @@ public class CreateDepartmentTests : DirectoryBaseTests
         var request = new CreateDepartmentRequest(
             "Подразделение", "podrazelenie", null, locationArray);
         
-        HttpResponseMessage response = await AppHttpClient.PostAsJsonAsync("/api/departments", request, cancellationToken);
+        HttpResponseMessage response = await AppHttpClient.PostAsJsonAsync("/departments", request, cancellationToken);
         
         var result = await response.HandleResponseAsync<Guid>(cancellationToken: cancellationToken);
         
@@ -101,7 +101,7 @@ public class CreateDepartmentTests : DirectoryBaseTests
         var request = new CreateDepartmentRequest(
             "ChildDepartment", "child_department", parentDepartmentId, [locationId]);
         
-        var response = await AppHttpClient.PostAsJsonAsync("/api/departments", request, cancellationToken);
+        var response = await AppHttpClient.PostAsJsonAsync("/departments", request, cancellationToken);
         
         var result = await response.HandleResponseAsync<Guid>(cancellationToken: cancellationToken);
         
@@ -138,7 +138,7 @@ public class CreateDepartmentTests : DirectoryBaseTests
         var request = new CreateDepartmentRequest(
             "d", "identifier", null, [locationId]);
         
-        var response = await AppHttpClient.PostAsJsonAsync("/api/departments", request, cancellationToken);
+        var response = await AppHttpClient.PostAsJsonAsync("/departments", request, cancellationToken);
         
         var result = await response.HandleResponseAsync<Guid?>(cancellationToken: cancellationToken);
         
@@ -167,7 +167,7 @@ public class CreateDepartmentTests : DirectoryBaseTests
         var request = new CreateDepartmentRequest(
             "department", "_identifier", null, [locationId]);
         
-        var response = await AppHttpClient.PostAsJsonAsync("/api/departments", request, cancellationToken);
+        var response = await AppHttpClient.PostAsJsonAsync("/departments", request, cancellationToken);
         
         var result = await response.HandleResponseAsync<Guid?>(cancellationToken: cancellationToken);
         
@@ -196,7 +196,7 @@ public class CreateDepartmentTests : DirectoryBaseTests
         var request = new CreateDepartmentRequest(
             "department", "department", Guid.Empty, [locationId]);
         
-        var response = await AppHttpClient.PostAsJsonAsync("/api/departments", request, cancellationToken);
+        var response = await AppHttpClient.PostAsJsonAsync("/departments", request, cancellationToken);
         
         var result = await response.HandleResponseAsync<Guid?>(cancellationToken: cancellationToken);
         
@@ -224,7 +224,7 @@ public class CreateDepartmentTests : DirectoryBaseTests
         var request = new CreateDepartmentRequest(
             "department", "department", null, [Guid.Empty]);
         
-        var response = await AppHttpClient.PostAsJsonAsync("/api/departments", request, cancellationToken);
+        var response = await AppHttpClient.PostAsJsonAsync("/departments", request, cancellationToken);
         
         var result = await response.HandleResponseAsync<Guid?>(cancellationToken: cancellationToken);
         

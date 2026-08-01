@@ -28,7 +28,7 @@ public class UpdateParentTests : DirectoryBaseTests
         
         var request = new UpdateParentRequest(department_l1.Id);
 
-        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{department_r1.Id}/parent", request, cancellationToken);
+        var response = await AppHttpClient.PutAsJsonAsync($"/departments/{department_r1.Id}/parent", request, cancellationToken);
 
         var result = await response.HandleResponseAsync(cancellationToken: cancellationToken);
 
@@ -74,7 +74,7 @@ public class UpdateParentTests : DirectoryBaseTests
         
         var request = new UpdateParentRequest(department_l1.Id);
 
-        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{department_r1.Id}/parent", request, cancellationToken);
+        var response = await AppHttpClient.PutAsJsonAsync($"/departments/{department_r1.Id}/parent", request, cancellationToken);
 
         var result = await response.HandleResponseAsync(cancellationToken: cancellationToken);
 
@@ -114,7 +114,7 @@ public class UpdateParentTests : DirectoryBaseTests
         
         var request = new UpdateParentRequest(root.Id);
 
-        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{department_r11.Id}/parent", request, cancellationToken);
+        var response = await AppHttpClient.PutAsJsonAsync($"/departments/{department_r11.Id}/parent", request, cancellationToken);
 
         var result = await response.HandleResponseAsync(cancellationToken: cancellationToken);
 
@@ -160,7 +160,7 @@ public class UpdateParentTests : DirectoryBaseTests
         
         var request = new UpdateParentRequest(root.Id);
 
-        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{department_r11.Id}/parent", request, cancellationToken);
+        var response = await AppHttpClient.PutAsJsonAsync($"/departments/{department_r11.Id}/parent", request, cancellationToken);
 
         var result = await response.HandleResponseAsync(cancellationToken: cancellationToken);
 
@@ -198,7 +198,7 @@ public class UpdateParentTests : DirectoryBaseTests
         
         var request = new UpdateParentRequest(Guid.NewGuid());
 
-        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{department_r1.Id}/parent", request, cancellationToken);
+        var response = await AppHttpClient.PutAsJsonAsync($"/departments/{department_r1.Id}/parent", request, cancellationToken);
 
         var result = await response.HandleResponseAsync(cancellationToken: cancellationToken);
 
@@ -238,7 +238,7 @@ public class UpdateParentTests : DirectoryBaseTests
         
         var request = new UpdateParentRequest(department_l1.Id);
 
-        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{department_r1.Id}/parent", request, cancellationToken);
+        var response = await AppHttpClient.PutAsJsonAsync($"/departments/{department_r1.Id}/parent", request, cancellationToken);
 
         var result = await response.HandleResponseAsync(cancellationToken: cancellationToken);
 
@@ -278,7 +278,7 @@ public class UpdateParentTests : DirectoryBaseTests
 
         var request = new UpdateParentRequest(department_l1.Id);
 
-        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{department_r1.Id}/parent", request, cancellationToken);
+        var response = await AppHttpClient.PutAsJsonAsync($"/departments/{department_r1.Id}/parent", request, cancellationToken);
 
         var result = await response.HandleResponseAsync(cancellationToken: cancellationToken);
 
@@ -318,7 +318,7 @@ public class UpdateParentTests : DirectoryBaseTests
         
         var request = new UpdateParentRequest(department_l1.Id);
 
-        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{Guid.NewGuid()}/parent", request, cancellationToken);
+        var response = await AppHttpClient.PutAsJsonAsync($"/departments/{Guid.NewGuid()}/parent", request, cancellationToken);
 
         var result = await response.HandleResponseAsync(cancellationToken: cancellationToken);
 
@@ -358,7 +358,7 @@ public class UpdateParentTests : DirectoryBaseTests
         
         var request = new UpdateParentRequest(department_r1.Id);
 
-        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{department_r1.Id}/parent", request, cancellationToken);
+        var response = await AppHttpClient.PutAsJsonAsync($"/departments/{department_r1.Id}/parent", request, cancellationToken);
 
         var result = await response.HandleResponseAsync(cancellationToken: cancellationToken);
 
@@ -398,7 +398,7 @@ public class UpdateParentTests : DirectoryBaseTests
         
         var request = new UpdateParentRequest(department_r11.Id);
 
-        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{department_r1.Id}/parent", request, cancellationToken);
+        var response = await AppHttpClient.PutAsJsonAsync($"/departments/{department_r1.Id}/parent", request, cancellationToken);
 
         var result = await response.HandleResponseAsync(cancellationToken: cancellationToken);
 
@@ -442,14 +442,14 @@ public class UpdateParentTests : DirectoryBaseTests
         var task1 = Task.Run(async () =>
         {
             var request = new UpdateParentRequest(alternativeParentDepartment.Id);
-            var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{departmentToMove.Id}/parent", request, cancellationToken);
+            var response = await AppHttpClient.PutAsJsonAsync($"/departments/{departmentToMove.Id}/parent", request, cancellationToken);
             return await response.HandleResponseAsync(cancellationToken: cancellationToken);
         });
     
         var task2 = Task.Run(async () =>
         {
             var request = new UpdateParentRequest(null);
-            var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{departmentToMove.Id}/parent", request, cancellationToken);
+            var response = await AppHttpClient.PutAsJsonAsync($"/departments/{departmentToMove.Id}/parent", request, cancellationToken);
             return await response.HandleResponseAsync(cancellationToken: cancellationToken);
         });
     

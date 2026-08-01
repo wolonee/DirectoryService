@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <PackageReference Include="DirectoryService.SharedKernel" Version="0.0.2" />
+    <PackageReference Include="Wolonee.SharedKernel" Version="0.0.2" />
   </ItemGroup>
 </Project>

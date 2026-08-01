@@ -21,7 +21,7 @@ public class GetLocationsTests : DirectoryBaseTests
         await CreateLocationViaApi(BuildCreateLocationRequest(name: "ListOfficeTwo", street: "ListStreet2"));
 
         var response = await AppHttpClient.GetAsync(
-            "/api/location?Pagination.Page=1&Pagination.PageSize=20",
+            "/locations?Pagination.Page=1&Pagination.PageSize=20",
             ct);
         var result = await response.HandleResponseAsync<PaginationResponse<GetLocationDto>>(cancellationToken: ct);
 
@@ -40,7 +40,7 @@ public class GetLocationsTests : DirectoryBaseTests
         await CreateLocationViaApi(BuildCreateLocationRequest(name: "OtherOffice", street: "OtherSearchStreet"));
 
         var response = await AppHttpClient.GetAsync(
-            $"/api/location?Search={uniqueName}&Pagination.Page=1&Pagination.PageSize=20",
+            $"/locations?Search={uniqueName}&Pagination.Page=1&Pagination.PageSize=20",
             ct);
         var result = await response.HandleResponseAsync<PaginationResponse<GetLocationDto>>(cancellationToken: ct);
 
@@ -53,7 +53,7 @@ public class GetLocationsTests : DirectoryBaseTests
     {
         var ct = CancellationToken.None;
         var response = await AppHttpClient.GetAsync(
-            "/api/location?Pagination.Page=0&Pagination.PageSize=20",
+            "/locations?Pagination.Page=0&Pagination.PageSize=20",
             ct);
         var result = await response.HandleResponseAsync<PaginationResponse<GetLocationDto>?>(cancellationToken: ct);
 
