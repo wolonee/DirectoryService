@@ -76,6 +76,7 @@ public sealed class InitiateUploadHandlerTests
             repository,
             new MediaAssetFactory(),
             provider,
+            new InitiateUploadValidator(),
             new FakeCurrentUser(userId),
             NullLogger<InitiateUploadHandler>.Instance);
 
@@ -153,8 +154,8 @@ public sealed class InitiateUploadHandlerTests
         public Task<Result<ObjectMetadataDto, Error>> GetObjectMetadataAsync(StorageKey storageKey, CancellationToken cancellationToken) =>
             Task.FromResult<Result<ObjectMetadataDto, Error>>(new ObjectMetadataDto(1, "image/webp", "etag", null, DateTime.UtcNow));
 
-        public Task<Result<DeleteObjectResponseDto, Error>> DeleteObjectAsync(StorageKey storageKey, CancellationToken cancellationToken) =>
-            Task.FromResult<Result<DeleteObjectResponseDto, Error>>(new DeleteObjectResponseDto(null, null));
+        public Task<Result<DeleteObjectResult, Error>> DeleteObjectAsync(StorageKey storageKey, CancellationToken cancellationToken) =>
+            Task.FromResult<Result<DeleteObjectResult, Error>>(new DeleteObjectResult(null, null));
 
         public Task<UnitResult<Error>> EnsureBucketExistsAsync(string bucketName, CancellationToken cancellationToken) =>
             Task.FromResult(UnitResult.Success<Error>());
