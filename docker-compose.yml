@@ -1,8 +1,6 @@
 services:
   file-service:
     container_name: file-service
-    env_file:
-      - ./backend/FileService/.env
     build:
       context: ./backend
       dockerfile: FileService/Dockerfile
@@ -14,6 +12,8 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Docker
       ASPNETCORE_HTTP_PORTS: 8003
+      S3Options__AccessKey: ${MINIO_ROOT_USER}
+      S3Options__SecretKey: ${MINIO_ROOT_PASSWORD}
     depends_on:
       postgres-init:
         condition: service_completed_successfully
@@ -159,8 +159,9 @@ services:
   minio:
     container_name: minio
     image: minio/minio:latest
-    env_file:
-      - ./backend/FileService/.env
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     ports:
       - "9000:9000"
       - "9001:9001"

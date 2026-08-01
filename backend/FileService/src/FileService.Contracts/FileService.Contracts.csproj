@@ -1,18 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-      <PackageId>DirectoryService.FileService.Contracts</PackageId>
+      <PackageId>Wolonee.FileService.Contracts</PackageId>
       <Version>0.0.1</Version>
-      <Authors>DirectoryService</Authors>
-      <Company>DirectoryService</Company>
+      <Authors>Wolonee</Authors>
+      <Company>Wolonee</Company>
       <PackageDescription>Contracts in FileService</PackageDescription>
       <RepositoryUrl>https://github.com/wolonee/DirectoryService</RepositoryUrl>
     </PropertyGroup>
-
-    <ItemGroup>
-      <PackageReference Include="CSharpFunctionalExtensions" Version="3.7.0" />
-      <PackageReference Include="DirectoryService.Core" Version="0.0.1" />
-      <PackageReference Include="DirectoryService.SharedKernel" Version="0.0.2" />
-    </ItemGroup>
 
 </Project>

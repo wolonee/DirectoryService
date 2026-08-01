@@ -17,6 +17,8 @@ using Microsoft.Extensions.Logging;
 
 namespace FileService.Core.Features.SimpleUpload;
 
+public sealed record CompleteUploadCommand(Guid FileId) : ICommand;
+
 /// <summary>
 /// Команда подтверждения уже загруженного объекта.
 /// </summary>
@@ -145,7 +147,6 @@ public sealed class CompleteUploadHandler
     }
 
 }
-
 
 
 

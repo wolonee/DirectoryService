@@ -311,7 +311,7 @@ public sealed class MultipartUploadHandlersTests
 
         public Task<Result<string, Error>> GenerateDownloadUrlAsync(StorageKey storageKey) => throw new NotSupportedException();
 
-        public Task<Result<DeleteObjectResponseDto, Error>> DeleteObjectAsync(StorageKey storageKey, CancellationToken cancellationToken) => throw new NotSupportedException();
+        public Task<Result<DeleteObjectResult, Error>> DeleteObjectAsync(StorageKey storageKey, CancellationToken cancellationToken) => throw new NotSupportedException();
 
         public Task<UnitResult<Error>> EnsureBucketExistsAsync(string bucketName, CancellationToken cancellationToken) => throw new NotSupportedException();
 

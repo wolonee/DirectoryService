@@ -18,6 +18,8 @@ using Microsoft.Extensions.Logging;
 
 namespace FileService.Core.Features;
 
+public sealed record StartMultipartUploadCommand(StartMultipartUploadRequest Request) : ICommand;
+
 public sealed class StartMultipartUploadValidator : AbstractValidator<StartMultipartUploadCommand>
 {
     public StartMultipartUploadValidator()

@@ -17,6 +17,8 @@ using Microsoft.Extensions.Logging;
 
 namespace FileService.Core.Features.SimpleUpload;
 
+public sealed record DeleteFileCommand(Guid FileId) : ICommand;
+
 public sealed class DeleteMediaAssetValidator : AbstractValidator<DeleteFileCommand>
 {
     public DeleteMediaAssetValidator()

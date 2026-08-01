@@ -16,6 +16,8 @@ using Microsoft.Extensions.Logging;
 
 namespace FileService.Core.Features.SimpleUpload;
 
+public sealed record CancelUploadCommand(Guid FileId) : ICommand;
+
 public sealed class CancelUploadValidator : AbstractValidator<CancelUploadCommand>
 {
     public CancelUploadValidator()

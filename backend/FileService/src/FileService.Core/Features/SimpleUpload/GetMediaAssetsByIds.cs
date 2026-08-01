@@ -18,12 +18,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FileService.Core.Features.SimpleUpload;
 
+public sealed record GetMediaAssetsQuery(IEnumerable<Guid> FileIds) : IQuery;
+
 public sealed class GetMediaAssetsValidator : AbstractValidator<GetMediaAssetsQuery>
 {
     public GetMediaAssetsValidator()
     {
         RuleFor(query => query.FileIds)
-            .NotNull()
+            .NotEmpty()
             .WithError(GeneralErrors.ValueIsRequired(nameof(GetMediaAssetsQuery.FileIds)));
     }
 }
@@ -33,10 +35,12 @@ public sealed class GetMediaAssetsEndpoint : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapPost("/files", async Task<EndpointResult<GetMediaAssetsResponse>> (
-            [FromBody] GetMediaAssetsQuery query,
+            [FromBody] GetMediaAssetsRequest request,
             [FromServices] GetMediaAssetsHandler handler,
             CancellationToken cancellationToken) =>
         {
+            var query = new GetMediaAssetsQuery(request.FileIds);
+
             return await handler.Handle(query, cancellationToken);
         });
     }

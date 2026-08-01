@@ -16,6 +16,8 @@ using Microsoft.AspNetCore.Routing;
 
 namespace FileService.Core.Features.SimpleUpload;
 
+public sealed record GetMediaAssetQuery(Guid FileId) : IQuery;
+
 public sealed class GetMediaAssetValidator : AbstractValidator<GetMediaAssetQuery>
 {
     public GetMediaAssetValidator()

@@ -16,6 +16,8 @@ using Microsoft.Extensions.Logging;
 
 namespace FileService.Core.Features;
 
+public sealed record AbortMultipartUploadCommand(AbortMultipartUploadRequest Request) : ICommand;
+
 public sealed class AbortMultipartUploadValidator : AbstractValidator<AbortMultipartUploadCommand>
 {
     public AbortMultipartUploadValidator()

@@ -4,10 +4,10 @@
     <ProjectReference Include="..\FileService.Domain\FileService.Domain.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="DirectoryService.Framework" Version="0.0.2" />
+    <PackageReference Include="Wolonee.Framework" Version="0.0.2" />
     <PackageReference Include="FluentValidation" Version="12.1.1" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.18" />
-    <PackageReference Include="DirectoryService.Core" Version="0.0.1" />
+    <PackageReference Include="Wolonee.Core" Version="0.0.1" />
   </ItemGroup>
 </Project>

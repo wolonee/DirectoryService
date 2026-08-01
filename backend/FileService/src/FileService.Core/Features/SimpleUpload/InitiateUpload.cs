@@ -18,6 +18,8 @@ using Microsoft.Extensions.Logging;
 
 namespace FileService.Core.Features.SimpleUpload;
 
+public sealed record InitiateUploadCommand(InitiateUploadRequest Request) : ICommand;
+
 public sealed class InitiateUploadValidator : AbstractValidator<InitiateUploadCommand>
 {
     public InitiateUploadValidator()

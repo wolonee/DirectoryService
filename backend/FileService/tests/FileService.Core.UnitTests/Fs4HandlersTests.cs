@@ -179,6 +179,22 @@ public sealed class Fs4HandlersTests
         Assert.Contains(result.Value.Files, file => file.FileId == uploading.Id && file.ContentUrl is null);
     }
 
+    [Fact]
+    public async Task GetMediaAssets_WithEmptyFileIds_ReturnsValidationError()
+    {
+        var handler = new GetMediaAssetsHandler(
+            new FakeS3Provider(),
+            new FakeReadDbContext([]),
+            new GetMediaAssetsValidator());
+
+        Result<GetMediaAssetsResponse, Errors> result = await handler.Handle(
+            new GetMediaAssetsQuery([]),
+            CancellationToken.None);
+
+        Assert.True(result.IsFailure);
+        Assert.Equal("value.is.required", Assert.Single(result.Error).Code);
+    }
+
     private static PreviewAsset CreatePreview(Guid? targetId = null) =>
         PreviewAsset.CreateForUpload(
             Guid.CreateVersion7(),
@@ -265,10 +281,10 @@ public sealed class Fs4HandlersTests
             return Task.FromResult<Result<string, Error>>("http://minio.test/download");
         }
 
-        public Task<Result<DeleteObjectResponseDto, Error>> DeleteObjectAsync(StorageKey storageKey, CancellationToken cancellationToken)
+        public Task<Result<DeleteObjectResult, Error>> DeleteObjectAsync(StorageKey storageKey, CancellationToken cancellationToken)
         {
             DeletedKeys.Add(storageKey);
-            return Task.FromResult<Result<DeleteObjectResponseDto, Error>>(new DeleteObjectResponseDto(null, null));
+            return Task.FromResult<Result<DeleteObjectResult, Error>>(new DeleteObjectResult(null, null));
         }
 
         public Task<Result<PresignedUploadDto, Error>> GenerateUploadUrlAsync(StorageKey storageKey, ContentType contentType, CancellationToken cancellationToken) => throw new NotSupportedException();

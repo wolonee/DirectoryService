@@ -1,8 +1,10 @@
 ﻿namespace FileService.Contracts.HttpCommunication;
 
-public record FileServiceOptions
+public sealed record FileServiceOptions
 {
-    public string Url { get; init; } = string.Empty;
+    public const string SectionName = "FileService";
 
-    public int Timeout { get; init; } = 5; // sec
+    public Uri BaseUrl { get; init; } = null!;
+
+    public TimeSpan Timeout { get; init; } = TimeSpan.FromSeconds(15);
 }

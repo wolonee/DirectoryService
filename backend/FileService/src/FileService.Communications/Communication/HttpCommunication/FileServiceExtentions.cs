@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -6,18 +6,27 @@ namespace FileService.Contracts.HttpCommunication;
 
 public static class FileServiceExtentions
 {
-    public static IServiceCollection AddFileServiceHttpCommunication(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddFileServiceHttpCommunication(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
-        services.Configure<FileServiceOptions>(configuration.GetSection(nameof(FileServiceOptions)));
+        services.AddSingleton<IValidateOptions<FileServiceOptions>, FileServiceOptionsValidator>();
 
-        services.AddHttpClient<IFileCommunicationService, FileCommunicationService>((sp, config) =>
+        services
+            .AddOptions<FileServiceOptions>()
+            .Bind(configuration.GetSection(FileServiceOptions.SectionName))
+            .ValidateOnStart();
+
+        services.AddHttpClient<IFileCommunicationService, FileCommunicationService>((serviceProvider, client) =>
         {
-            FileServiceOptions options = sp.GetRequiredService<IOptions<FileServiceOptions>>().Value;
-            config.BaseAddress = new Uri(options.Url);
+            FileServiceOptions options = serviceProvider
+                .GetRequiredService<IOptions<FileServiceOptions>>()
+                .Value;
 
-            config.Timeout = TimeSpan.FromSeconds(options.Timeout);
+            client.BaseAddress = options.BaseUrl;
+            client.Timeout = options.Timeout;
         });
-        
+
         return services;
     }
 }

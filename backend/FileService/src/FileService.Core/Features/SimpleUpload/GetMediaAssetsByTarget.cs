@@ -19,6 +19,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FileService.Core.Features.SimpleUpload;
 
+public sealed record GetMediaAssetsByTargetQuery(GetMediaAssetsByTargetRequest Request) : IQuery;
+
 public sealed class GetMediaAssetsByTargetValidator : AbstractValidator<GetMediaAssetsByTargetQuery>
 {
     public GetMediaAssetsByTargetValidator()

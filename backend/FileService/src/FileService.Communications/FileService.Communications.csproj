@@ -1,23 +1,27 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-      <PackageId>DirectoryService.FileService.Communication</PackageId>
+      <PackageId>Wolonee.FileService.Client</PackageId>
       <Version>0.0.1</Version>
-      <Authors>DirectoryService</Authors>
-      <Company>DirectoryService</Company>
+      <Authors>Wolonee</Authors>
+      <Company>Wolonee</Company>
       <PackageDescription>Communication in FileService</PackageDescription>
       <RepositoryUrl>https://github.com/wolonee/DirectoryService</RepositoryUrl>
     </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="CSharpFunctionalExtensions" Version="3.7.0" />
-    <PackageReference Include="DirectoryService.SharedKernel" Version="0.0.2" />
-    <PackageReference Include="DirectoryService.Core" Version="0.0.1" />
-    <PackageReference Include="DirectoryService.Framework" Version="0.0.2" />
+    <PackageReference Include="Wolonee.SharedKernel" Version="0.0.2" />
+    <PackageReference Include="Wolonee.Core" Version="0.0.1" />
+    <PackageReference Include="Wolonee.Framework" Version="0.0.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\FileService.Contracts\FileService.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="FileService.Communications.UnitTests" />
   </ItemGroup>
 
 </Project>
