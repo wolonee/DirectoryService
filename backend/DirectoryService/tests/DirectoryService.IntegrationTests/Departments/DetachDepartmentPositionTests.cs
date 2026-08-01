@@ -20,7 +20,7 @@ public class DetachDepartmentPositionTests : DirectoryBaseTests
         var positionId = await CreatePositionViaApi(department.Id, "Frontend", "Dev", ct);
 
         var response = await AppHttpClient.DeleteAsync(
-            $"/api/departments/{department.Id}/positions/{positionId}",
+            $"/departments/{department.Id}/positions/{positionId}",
             ct);
         var result = await response.HandleResponseAsync(ct);
 
@@ -42,7 +42,7 @@ public class DetachDepartmentPositionTests : DirectoryBaseTests
         var positionId = await CreatePositionInDb("QA", "Engineer", ct);
 
         var response = await AppHttpClient.DeleteAsync(
-            $"/api/departments/{department.Id}/positions/{positionId}",
+            $"/departments/{department.Id}/positions/{positionId}",
             ct);
         var result = await response.HandleResponseAsync(ct);
 

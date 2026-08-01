@@ -18,7 +18,7 @@ public class DeleteDepartmentTests : DirectoryBaseTests
         var ct = CancellationToken.None;
         var department = await CreateParentDepartment();
 
-        var response = await AppHttpClient.DeleteAsync($"/api/departments/{department.Id}", ct);
+        var response = await AppHttpClient.DeleteAsync($"/departments/{department.Id}", ct);
         var result = await response.HandleResponseAsync(ct);
 
         Assert.True(result.IsSuccess);
@@ -39,7 +39,7 @@ public class DeleteDepartmentTests : DirectoryBaseTests
         var parent = await CreateParentDepartment();
         await CreateChildDepartment(parent, difference: "child-for-delete-test");
 
-        var response = await AppHttpClient.DeleteAsync($"/api/departments/{parent.Id}", ct);
+        var response = await AppHttpClient.DeleteAsync($"/departments/{parent.Id}", ct);
         var result = await response.HandleResponseAsync(ct);
 
         Assert.True(result.IsFailure);
@@ -50,7 +50,7 @@ public class DeleteDepartmentTests : DirectoryBaseTests
     public async Task DeleteDepartment_WhenNotFound_Returns404()
     {
         var ct = CancellationToken.None;
-        var response = await AppHttpClient.DeleteAsync($"/api/departments/{Guid.NewGuid()}", ct);
+        var response = await AppHttpClient.DeleteAsync($"/departments/{Guid.NewGuid()}", ct);
         var result = await response.HandleResponseAsync(ct);
 
         Assert.True(result.IsFailure);

@@ -151,7 +151,7 @@ public class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory>, IAsync
         CreateLocationRequest request,
         CancellationToken cancellationToken = default)
     {
-        var response = await AppHttpClient.PostAsJsonAsync("/api/location", request, cancellationToken);
+        var response = await AppHttpClient.PostAsJsonAsync("/locations", request, cancellationToken);
         var result = await response.HandleResponseAsync<Guid>(cancellationToken: cancellationToken);
         Assert.True(result.IsSuccess);
         return result.Value;
@@ -178,7 +178,7 @@ public class DirectoryBaseTests : IClassFixture<DirectoryTestWebFactory>, IAsync
             null,
             [departmentId]);
 
-        var response = await AppHttpClient.PostAsJsonAsync("/api/positions", request, cancellationToken);
+        var response = await AppHttpClient.PostAsJsonAsync("/positions", request, cancellationToken);
         var result = await response.HandleResponseAsync<Guid>(cancellationToken: cancellationToken);
         Assert.True(result.IsSuccess);
         return result.Value;

@@ -22,7 +22,7 @@ public class RenamePositionTests : DirectoryBaseTests
         var positionId = await CreatePositionViaApi(department.Id, "Old", "Role", ct);
 
         var request = new RenamePositionRequest(new CreatePositionNameRequest("New", "Role"));
-        var response = await AppHttpClient.PatchAsJsonAsync($"/api/positions/{positionId}", request, ct);
+        var response = await AppHttpClient.PatchAsJsonAsync($"/positions/{positionId}", request, ct);
         var result = await response.HandleResponseAsync<Guid>(cancellationToken: ct);
 
         Assert.True(result.IsSuccess);
@@ -41,7 +41,7 @@ public class RenamePositionTests : DirectoryBaseTests
         var ct = CancellationToken.None;
         var request = new RenamePositionRequest(new CreatePositionNameRequest("New", "Role"));
 
-        var response = await AppHttpClient.PatchAsJsonAsync($"/api/positions/{Guid.NewGuid()}", request, ct);
+        var response = await AppHttpClient.PatchAsJsonAsync($"/positions/{Guid.NewGuid()}", request, ct);
         var result = await response.HandleResponseAsync<Guid?>(cancellationToken: ct);
 
         Assert.True(result.IsFailure);
@@ -57,7 +57,7 @@ public class RenamePositionTests : DirectoryBaseTests
         var positionId = await CreatePositionViaApi(department.Id, "Other", "Role", ct);
 
         var request = new RenamePositionRequest(new CreatePositionNameRequest("Taken", "Role"));
-        var response = await AppHttpClient.PatchAsJsonAsync($"/api/positions/{positionId}", request, ct);
+        var response = await AppHttpClient.PatchAsJsonAsync($"/positions/{positionId}", request, ct);
         var result = await response.HandleResponseAsync<Guid?>(cancellationToken: ct);
 
         Assert.True(result.IsFailure);
@@ -72,7 +72,7 @@ public class RenamePositionTests : DirectoryBaseTests
         var positionId = await CreatePositionViaApi(department.Id, "Valid", "Role", ct);
 
         var request = new RenamePositionRequest(new CreatePositionNameRequest("x", "y"));
-        var response = await AppHttpClient.PatchAsJsonAsync($"/api/positions/{positionId}", request, ct);
+        var response = await AppHttpClient.PatchAsJsonAsync($"/positions/{positionId}", request, ct);
         var result = await response.HandleResponseAsync<Guid?>(cancellationToken: ct);
 
         Assert.True(result.IsFailure);

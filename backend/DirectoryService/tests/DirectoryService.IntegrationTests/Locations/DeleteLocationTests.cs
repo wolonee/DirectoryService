@@ -20,7 +20,7 @@ public class DeleteLocationTests : DirectoryBaseTests
         var department = await CreateParentDepartment();
         await AttachLocationToDepartment(department.Id, locationId, ct);
 
-        var response = await AppHttpClient.DeleteAsync($"/api/location/{locationId}", ct);
+        var response = await AppHttpClient.DeleteAsync($"/locations/{locationId}", ct);
         var result = await response.HandleResponseAsync(ct);
 
         Assert.True(result.IsSuccess);
@@ -37,7 +37,7 @@ public class DeleteLocationTests : DirectoryBaseTests
     public async Task DeleteLocation_WhenNotFound_Returns404()
     {
         var ct = CancellationToken.None;
-        var response = await AppHttpClient.DeleteAsync($"/api/location/{Guid.NewGuid()}", ct);
+        var response = await AppHttpClient.DeleteAsync($"/locations/{Guid.NewGuid()}", ct);
         var result = await response.HandleResponseAsync(ct);
 
         Assert.True(result.IsFailure);

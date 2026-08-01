@@ -25,7 +25,7 @@ public class CreatePositionTests : DirectoryBaseTests
             "Description",
             [department.Id]);
 
-        var response = await AppHttpClient.PostAsJsonAsync("/api/positions", request, ct);
+        var response = await AppHttpClient.PostAsJsonAsync("/positions", request, ct);
         var result = await response.HandleResponseAsync<Guid>(cancellationToken: ct);
 
         Assert.True(result.IsSuccess);
@@ -52,10 +52,10 @@ public class CreatePositionTests : DirectoryBaseTests
             null,
             [department.Id]);
 
-        var first = await AppHttpClient.PostAsJsonAsync("/api/positions", request, ct);
+        var first = await AppHttpClient.PostAsJsonAsync("/positions", request, ct);
         Assert.True((await first.HandleResponseAsync<Guid>(cancellationToken: ct)).IsSuccess);
 
-        var second = await AppHttpClient.PostAsJsonAsync("/api/positions", request, ct);
+        var second = await AppHttpClient.PostAsJsonAsync("/positions", request, ct);
         var result = await second.HandleResponseAsync<Guid?>(cancellationToken: ct);
 
         Assert.True(result.IsFailure);
@@ -72,7 +72,7 @@ public class CreatePositionTests : DirectoryBaseTests
             null,
             [Guid.NewGuid()]);
 
-        var response = await AppHttpClient.PostAsJsonAsync("/api/positions", request, ct);
+        var response = await AppHttpClient.PostAsJsonAsync("/positions", request, ct);
         var result = await response.HandleResponseAsync<Guid?>(cancellationToken: ct);
 
         Assert.True(result.IsFailure);
@@ -90,7 +90,7 @@ public class CreatePositionTests : DirectoryBaseTests
             null,
             [department.Id, department.Id]);
 
-        var response = await AppHttpClient.PostAsJsonAsync("/api/positions", request, ct);
+        var response = await AppHttpClient.PostAsJsonAsync("/positions", request, ct);
         var result = await response.HandleResponseAsync<Guid?>(cancellationToken: ct);
 
         Assert.True(result.IsFailure);

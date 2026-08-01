@@ -23,7 +23,7 @@ public class GetLocationByIdTests : DirectoryBaseTests
                 city: "Novosibirsk",
                 country: "Russia"));
 
-        var response = await AppHttpClient.GetAsync($"/api/location/{locationId}", ct);
+        var response = await AppHttpClient.GetAsync($"/locations/{locationId}", ct);
         var result = await response.HandleResponseAsync<GetLocationByIdResponse>(cancellationToken: ct);
 
         Assert.True(result.IsSuccess);
@@ -39,7 +39,7 @@ public class GetLocationByIdTests : DirectoryBaseTests
     public async Task GetLocationById_WhenNotFound_Returns404()
     {
         var ct = CancellationToken.None;
-        var response = await AppHttpClient.GetAsync($"/api/location/{Guid.NewGuid()}", ct);
+        var response = await AppHttpClient.GetAsync($"/locations/{Guid.NewGuid()}", ct);
         var result = await response.HandleResponseAsync<GetLocationByIdResponse?>(cancellationToken: ct);
 
         Assert.True(result.IsFailure);

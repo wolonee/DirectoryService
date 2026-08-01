@@ -29,7 +29,7 @@ public class UpdateLocationsTests : DirectoryBaseTests
 
         var request = new UpdateLocationsRequest(locationsIds);
         
-        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{departmentId}/locations", request, cancellationToken);
+        var response = await AppHttpClient.PutAsJsonAsync($"/departments/{departmentId}/locations", request, cancellationToken);
 
         var result = await response.HandleResponseAsync<Guid>(cancellationToken: cancellationToken);
         
@@ -65,7 +65,7 @@ public class UpdateLocationsTests : DirectoryBaseTests
         
         var request = new UpdateLocationsRequest(locationsIds);
         
-        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{departmentId}/locations", request, cancellationToken);
+        var response = await AppHttpClient.PutAsJsonAsync($"/departments/{departmentId}/locations", request, cancellationToken);
 
         var result = await response.HandleResponseAsync<Guid>(cancellationToken: cancellationToken);
         
@@ -98,7 +98,7 @@ public class UpdateLocationsTests : DirectoryBaseTests
         
         var request = new UpdateLocationsRequest(locationsIds);
         
-        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{departmentId}/locations", request, cancellationToken);
+        var response = await AppHttpClient.PutAsJsonAsync($"/departments/{departmentId}/locations", request, cancellationToken);
 
         var result = await response.HandleResponseAsync<Guid?>(cancellationToken: cancellationToken);
         
@@ -130,7 +130,7 @@ public class UpdateLocationsTests : DirectoryBaseTests
         
         var request = new UpdateLocationsRequest(locationsIds);
         
-        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{departmentId}/locations", request, cancellationToken);
+        var response = await AppHttpClient.PutAsJsonAsync($"/departments/{departmentId}/locations", request, cancellationToken);
 
         var result = await response.HandleResponseAsync<Guid?>(cancellationToken: cancellationToken);
         
@@ -164,7 +164,7 @@ public class UpdateLocationsTests : DirectoryBaseTests
         
         var request = new UpdateLocationsRequest(locationsIds);
         
-        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{departmentId}/locations", request, cancellationToken);
+        var response = await AppHttpClient.PutAsJsonAsync($"/departments/{departmentId}/locations", request, cancellationToken);
 
         var result = await response.HandleResponseAsync<Guid?>(cancellationToken: cancellationToken);
         
@@ -189,7 +189,7 @@ public class UpdateLocationsTests : DirectoryBaseTests
         
         var request = new UpdateLocationsRequest(locationsIds);
         
-        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{departmentId}/locations", request, cancellationToken);
+        var response = await AppHttpClient.PutAsJsonAsync($"/departments/{departmentId}/locations", request, cancellationToken);
 
         var result = await response.HandleResponseAsync<Guid?>(cancellationToken: cancellationToken);
         
@@ -211,7 +211,7 @@ public class UpdateLocationsTests : DirectoryBaseTests
         
         var request = new UpdateLocationsRequest(locationsIds);
         
-        var response = await AppHttpClient.PutAsJsonAsync($"/api/departments/{departmentId}/locations", request, cancellationToken);
+        var response = await AppHttpClient.PutAsJsonAsync($"/departments/{departmentId}/locations", request, cancellationToken);
 
         var result = await response.HandleResponseAsync<Guid?>(cancellationToken: cancellationToken);
         
