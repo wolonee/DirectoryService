@@ -59,7 +59,7 @@ public class GetDepartmentsTests : DirectoryBaseTests
         await CreateChildDepartment(parent, difference: "InactiveChild", active: false);
 
         var response = await AppHttpClient.GetAsync(
-            "/departments?IsActive=false&Pagination.Page=1&Pagination.PageSize=20",
+            "/departments?Status=inactive&Pagination.Page=1&Pagination.PageSize=20",
             ct);
         var result = await response.HandleResponseAsync<PaginationResponse<GetDepartmentsDto>>(cancellationToken: ct);
 
