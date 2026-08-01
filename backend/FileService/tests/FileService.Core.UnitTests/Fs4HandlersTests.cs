@@ -24,13 +24,9 @@ public sealed class Fs4HandlersTests
         PreviewAsset asset = CreatePreview();
         var repository = new FakeRepository(asset);
         var provider = new FakeS3Provider();
-        var handler = new CancelUploadHandler(
-            repository,
-            provider,
-            new CancelUploadValidator(),
-            NullLogger<CancelUploadHandler>.Instance);
+        var handler = new CancelUploadHandler(repository, provider, NullLogger<CancelUploadHandler>.Instance);
 
-        Result<CancelUploadResponse, Errors> result = await handler.Handle(new CancelUploadCommand(asset.Id), CancellationToken.None);
+        Result<CancelUploadResponse, Error> result = await handler.Handle(new CancelUploadCommand(asset.Id), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(MediaStatus.DELETED, asset.Status);
@@ -46,10 +42,9 @@ public sealed class Fs4HandlersTests
         var handler = new CancelUploadHandler(
             repository,
             new FakeS3Provider(),
-            new CancelUploadValidator(),
             NullLogger<CancelUploadHandler>.Instance);
 
-        Result<CancelUploadResponse, Errors> result = await handler.Handle(new CancelUploadCommand(asset.Id), CancellationToken.None);
+        Result<CancelUploadResponse, Error> result = await handler.Handle(new CancelUploadCommand(asset.Id), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(MediaStatus.DELETED, asset.Status);
@@ -64,13 +59,12 @@ public sealed class Fs4HandlersTests
         var handler = new CancelUploadHandler(
             new FakeRepository(asset),
             new FakeS3Provider(),
-            new CancelUploadValidator(),
             NullLogger<CancelUploadHandler>.Instance);
 
-        Result<CancelUploadResponse, Errors> result = await handler.Handle(new CancelUploadCommand(asset.Id), CancellationToken.None);
+        Result<CancelUploadResponse, Error> result = await handler.Handle(new CancelUploadCommand(asset.Id), CancellationToken.None);
 
         Assert.True(result.IsFailure);
-        Assert.Equal("media-asset.invalid-status", result.Error.Single().Code);
+        Assert.Equal("media-asset.invalid-status", result.Error.Code);
     }
 
     [Fact]
@@ -79,13 +73,9 @@ public sealed class Fs4HandlersTests
         PreviewAsset asset = CreateReadyPreview();
         var repository = new FakeRepository(asset);
         var provider = new FakeS3Provider();
-        var handler = new DeleteMediaAssetHandler(
-            repository,
-            provider,
-            new DeleteMediaAssetValidator(),
-            NullLogger<DeleteMediaAssetHandler>.Instance);
+        var handler = new DeleteMediaAssetHandler(repository, provider, NullLogger<DeleteMediaAssetHandler>.Instance);
 
-        Result<DeleteMediaAssetResponse, Errors> result = await handler.Handle(new DeleteFileCommand(asset.Id), CancellationToken.None);
+        Result<DeleteMediaAssetResponse, Error> result = await handler.Handle(new DeleteFileCommand(asset.Id), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(MediaStatus.DELETED, asset.Status);
@@ -99,13 +89,9 @@ public sealed class Fs4HandlersTests
         VideoAsset asset = CreateReadyVideo();
         var repository = new FakeRepository(asset);
         var provider = new FakeS3Provider();
-        var handler = new DeleteMediaAssetHandler(
-            repository,
-            provider,
-            new DeleteMediaAssetValidator(),
-            NullLogger<DeleteMediaAssetHandler>.Instance);
+        var handler = new DeleteMediaAssetHandler(repository, provider, NullLogger<DeleteMediaAssetHandler>.Instance);
 
-        Result<DeleteMediaAssetResponse, Errors> result = await handler.Handle(new DeleteFileCommand(asset.Id), CancellationToken.None);
+        Result<DeleteMediaAssetResponse, Error> result = await handler.Handle(new DeleteFileCommand(asset.Id), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(MediaStatus.DELETED, asset.Status);
@@ -123,10 +109,9 @@ public sealed class Fs4HandlersTests
         var handler = new DeleteMediaAssetHandler(
             repository,
             new FakeS3Provider(),
-            new DeleteMediaAssetValidator(),
             NullLogger<DeleteMediaAssetHandler>.Instance);
 
-        Result<DeleteMediaAssetResponse, Errors> result = await handler.Handle(new DeleteFileCommand(asset.Id), CancellationToken.None);
+        Result<DeleteMediaAssetResponse, Error> result = await handler.Handle(new DeleteFileCommand(asset.Id), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(MediaStatus.DELETED, asset.Status);
@@ -138,12 +123,9 @@ public sealed class Fs4HandlersTests
     {
         PreviewAsset ready = CreateReadyPreview();
         var provider = new FakeS3Provider();
-        var handler = new GetMediaAssetHandler(
-            new FakeRepository(ready),
-            provider,
-            new GetMediaAssetValidator());
+        var handler = new GetMediaAssetHandler(new FakeRepository(ready), provider);
 
-        Result<GetMediaAssetResponse, Errors> result = await handler.Handle(new GetMediaAssetQuery(ready.Id), CancellationToken.None);
+        Result<GetMediaAssetResponse, Error> result = await handler.Handle(new GetMediaAssetQuery(ready.Id), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         Assert.Equal("http://minio.test/download", result.Value.ContentUrl);
@@ -161,10 +143,9 @@ public sealed class Fs4HandlersTests
         var provider = new FakeS3Provider();
         var handler = new GetMediaAssetsByTargetHandler(
             provider,
-            new FakeReadDbContext([ready, uploading, deleted]),
-            new GetMediaAssetsByTargetValidator());
+            new FakeReadDbContext([ready, uploading, deleted]));
 
-        Result<GetMediaAssetsByTargetResponse, Errors> result = await handler.Handle(
+        Result<GetMediaAssetsByTargetResponse, Error> result = await handler.Handle(
             new GetMediaAssetsByTargetQuery(new GetMediaAssetsByTargetRequest
             {
                 TargetId = targetId,
@@ -177,22 +158,6 @@ public sealed class Fs4HandlersTests
         Assert.Equal(1, provider.BatchDownloadUrlKeys.Count);
         Assert.Contains(result.Value.Files, file => file.FileId == ready.Id && file.ContentUrl is not null);
         Assert.Contains(result.Value.Files, file => file.FileId == uploading.Id && file.ContentUrl is null);
-    }
-
-    [Fact]
-    public async Task GetMediaAssets_WithEmptyFileIds_ReturnsValidationError()
-    {
-        var handler = new GetMediaAssetsHandler(
-            new FakeS3Provider(),
-            new FakeReadDbContext([]),
-            new GetMediaAssetsValidator());
-
-        Result<GetMediaAssetsResponse, Errors> result = await handler.Handle(
-            new GetMediaAssetsQuery([]),
-            CancellationToken.None);
-
-        Assert.True(result.IsFailure);
-        Assert.Equal("value.is.required", Assert.Single(result.Error).Code);
     }
 
     private static PreviewAsset CreatePreview(Guid? targetId = null) =>
@@ -281,10 +246,10 @@ public sealed class Fs4HandlersTests
             return Task.FromResult<Result<string, Error>>("http://minio.test/download");
         }
 
-        public Task<Result<DeleteObjectResult, Error>> DeleteObjectAsync(StorageKey storageKey, CancellationToken cancellationToken)
+        public Task<Result<DeleteObjectResponseDto, Error>> DeleteObjectAsync(StorageKey storageKey, CancellationToken cancellationToken)
         {
             DeletedKeys.Add(storageKey);
-            return Task.FromResult<Result<DeleteObjectResult, Error>>(new DeleteObjectResult(null, null));
+            return Task.FromResult<Result<DeleteObjectResponseDto, Error>>(new DeleteObjectResponseDto(null, null));
         }
 
         public Task<Result<PresignedUploadDto, Error>> GenerateUploadUrlAsync(StorageKey storageKey, ContentType contentType, CancellationToken cancellationToken) => throw new NotSupportedException();

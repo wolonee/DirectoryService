@@ -27,11 +27,10 @@ public sealed class MultipartUploadHandlersTests
             repository,
             new MediaAssetFactory(),
             new FakeChunkSizeCalculator(5 * 1024 * 1024, 2),
-            new StartMultipartUploadValidator(),
             new FakeCurrentUser(userId),
             NullLogger<StartMultipartUploadHandler>.Instance);
 
-        Result<StartMultipartUploadResponse, Errors> startResult = await startHandler.Handle(
+        Result<StartMultipartUploadResponse, Error> startResult = await startHandler.Handle(
             CreateStartCommand(6 * 1024 * 1024),
             CancellationToken.None);
 
@@ -43,10 +42,9 @@ public sealed class MultipartUploadHandlersTests
             provider,
             repository,
             new FakeCurrentUser(userId),
-            new CompleteMultipartUploadValidator(),
             NullLogger<CompleteMultipartUploadHandler>.Instance);
 
-        Result<CompleteMultipartUploadResponse, Errors> completeResult = await completeHandler.Handle(
+        Result<CompleteMultipartUploadResponse, Error> completeResult = await completeHandler.Handle(
             new CompleteMultipartUploadCommand(new CompleteMultipartUploadRequest
             {
                 FileId = startResult.Value.FileId,
@@ -77,10 +75,9 @@ public sealed class MultipartUploadHandlersTests
             provider,
             repository,
             new FakeCurrentUser(userId),
-            new CompleteMultipartUploadValidator(),
             NullLogger<CompleteMultipartUploadHandler>.Instance);
 
-        Result<CompleteMultipartUploadResponse, Errors> result = await handler.Handle(
+        Result<CompleteMultipartUploadResponse, Error> result = await handler.Handle(
             new CompleteMultipartUploadCommand(new CompleteMultipartUploadRequest
             {
                 FileId = asset.Id,
@@ -109,10 +106,9 @@ public sealed class MultipartUploadHandlersTests
             provider,
             new FakeRepository(asset),
             new FakeCurrentUser(userId),
-            new CompleteMultipartUploadValidator(),
             NullLogger<CompleteMultipartUploadHandler>.Instance);
 
-        Result<CompleteMultipartUploadResponse, Errors> result = await handler.Handle(
+        Result<CompleteMultipartUploadResponse, Error> result = await handler.Handle(
             new CompleteMultipartUploadCommand(new CompleteMultipartUploadRequest
             {
                 FileId = asset.Id,
@@ -122,7 +118,7 @@ public sealed class MultipartUploadHandlersTests
             CancellationToken.None);
 
         Assert.True(result.IsFailure);
-        Assert.Equal("media-asset.invalid-multipart-upload-id", result.Error.Single().Code);
+        Assert.Equal("media-asset.invalid-multipart-upload-id", result.Error.Code);
         Assert.Equal(0, provider.CompleteCalls);
     }
 
@@ -139,10 +135,9 @@ public sealed class MultipartUploadHandlersTests
             provider,
             new FakeRepository(asset),
             new FakeCurrentUser(userId),
-            new CompleteMultipartUploadValidator(),
             NullLogger<CompleteMultipartUploadHandler>.Instance);
 
-        Result<CompleteMultipartUploadResponse, Errors> result = await handler.Handle(
+        Result<CompleteMultipartUploadResponse, Error> result = await handler.Handle(
             new CompleteMultipartUploadCommand(new CompleteMultipartUploadRequest
             {
                 FileId = asset.Id,
@@ -152,7 +147,7 @@ public sealed class MultipartUploadHandlersTests
             CancellationToken.None);
 
         Assert.True(result.IsFailure);
-        Assert.Equal("media-asset.already-completed", result.Error.Single().Code);
+        Assert.Equal("media-asset.already-completed", result.Error.Code);
         Assert.Equal(0, provider.CompleteCalls);
     }
 
@@ -168,10 +163,9 @@ public sealed class MultipartUploadHandlersTests
             provider,
             repository,
             new FakeCurrentUser(userId),
-            new AbortMultipartUploadValidator(),
             NullLogger<AbortMultipartUploadHandler>.Instance);
 
-        Result<AbortMultipartUploadResponse, Errors> result = await handler.Handle(
+        Result<AbortMultipartUploadResponse, Error> result = await handler.Handle(
             new AbortMultipartUploadCommand(new AbortMultipartUploadRequest
             {
                 FileId = asset.Id,
@@ -311,7 +305,7 @@ public sealed class MultipartUploadHandlersTests
 
         public Task<Result<string, Error>> GenerateDownloadUrlAsync(StorageKey storageKey) => throw new NotSupportedException();
 
-        public Task<Result<DeleteObjectResult, Error>> DeleteObjectAsync(StorageKey storageKey, CancellationToken cancellationToken) => throw new NotSupportedException();
+        public Task<Result<DeleteObjectResponseDto, Error>> DeleteObjectAsync(StorageKey storageKey, CancellationToken cancellationToken) => throw new NotSupportedException();
 
         public Task<UnitResult<Error>> EnsureBucketExistsAsync(string bucketName, CancellationToken cancellationToken) => throw new NotSupportedException();
 

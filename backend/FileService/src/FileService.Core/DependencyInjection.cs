@@ -1,9 +1,7 @@
-using DirectoryService.Application.Abstractions;
 using FileService.Core.Features;
-using FileService.Core.Features.SimpleUpload;
 using FileService.Domain;
 using FileService.Web.EndpointsExtensions;
-using FluentValidation;
+using FileService.Core.Features.SimpleUpload;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,12 +13,22 @@ public static class DependencyInjection
     {
         services.AddEndpoints(typeof(InitiateUploadEndpoint).Assembly);
         services.AddScoped<IMediaAssetFactory, MediaAssetFactory>();
+        services.AddScoped<InitiateUploadHandler>();
+        services.AddScoped<CancelUploadHandler>();
+        services.AddScoped<CompleteUploadHandler>();
+        services.AddScoped<DeleteMediaAssetHandler>();
+        services.AddScoped<GetMediaAssetHandler>();
+        services.AddScoped<GetMediaAssetsByTargetHandler>();
+        services.AddScoped<GetMediaAssetsHandler>();
+        services.AddScoped<StartMultipartUploadHandler>();
+        services.AddScoped<CompleteMultipartUploadHandler>();
+        services.AddScoped<AbortMultipartUploadHandler>();
         
-        services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
+        // services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
         
-        var assembly = typeof(StartMultipartUploadHandler).Assembly;
-        
-        services.AddHandlers(assembly);
+        // var assembly = typeof(StartMultipartUploadHandler).Assembly;
+        //
+        // services.AddHandlers(assembly);
         
         return services;
     }

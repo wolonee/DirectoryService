@@ -12,10 +12,10 @@
     </ItemGroup>
 
     <PropertyGroup>
-      <PackageId>Wolonee.Core</PackageId>
+      <PackageId>DirectoryService.Core</PackageId>
       <Version>0.0.1</Version>
-      <Authors>Wolonee</Authors>
-      <Company>Wolonee</Company>
+      <Authors>DirectoryService</Authors>
+      <Company>DirectoryService</Company>
       <PackageDescription>Core</PackageDescription>
       <RepositoryUrl>https://github.com/wolonee/DirectoryService</RepositoryUrl>
     </PropertyGroup>

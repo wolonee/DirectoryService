@@ -1,7 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Shared.Errors;
 
-namespace FileService.Core.Abstractions;
+namespace FileService.Infrastructure.S3;
 
 public interface IChunkSizeCalculator
 {

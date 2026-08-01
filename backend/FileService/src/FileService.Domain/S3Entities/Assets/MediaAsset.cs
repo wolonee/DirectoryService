@@ -82,16 +82,16 @@ public abstract class MediaAsset
         return UnitResult.Success<Error>();
     }
 
-    public UnitResult<Error> MarkReady(StorageKey finalKey, StorageReference storageReference, DateTime changedAt)
+    public UnitResult<Error> MarkReady(StorageKey rawKey, StorageReference storageReference, DateTime changedAt)
     {
-        if (string.IsNullOrEmpty(finalKey.FullPath))
+        if (string.IsNullOrEmpty(rawKey.FullPath))
             return Error.Validation("media.final-key.required", "Final storage key is required");
         
         UnitResult<Error> result = ChangeStatus(MediaStatus.READY, changedAt);
         if (result.IsFailure)
             return result;
 
-        FinalKey = finalKey;
+        FinalKey = rawKey;
         StorageReference = storageReference;
 
         return result;

@@ -1,7 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
-using FileService.Core.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace FileService.Infrastructure.S3;

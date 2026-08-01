@@ -11,10 +11,10 @@
     </ItemGroup>
 
     <PropertyGroup>
-      <PackageId>Wolonee.Framework</PackageId>
+      <PackageId>DirectoryService.Framework</PackageId>
       <Version>0.0.2</Version>
-      <Authors>Wolonee</Authors>
-      <Company>Wolonee</Company>
+      <Authors>DirectoryService</Authors>
+      <Company>DirectoryService</Company>
       <PackageDescription>Framework</PackageDescription>
       <RepositoryUrl>https://github.com/wolonee/DirectoryService</RepositoryUrl>
     </PropertyGroup>

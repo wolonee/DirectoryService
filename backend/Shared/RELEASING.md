@@ -4,9 +4,9 @@ Shared содержит три отдельных NuGet-пакета:
 
 | Папка | Package ID |
 |---|---|
-| `Shared.SharedKernel` | `Wolonee.SharedKernel` |
-| `Core` | `Wolonee.Core` |
-| `Framework` | `Wolonee.Framework` |
+| `Shared.SharedKernel` | `DirectoryService.SharedKernel` |
+| `Core` | `DirectoryService.Core` |
+| `Framework` | `DirectoryService.Framework` |
 
 Если изменён только один пакет, выпускать остальные не нужно. Уже опубликованную версию перезаписать нельзя — перед каждым релизом увеличивай `<Version>` в `.csproj`.
 
@@ -51,7 +51,7 @@ dotnet pack -c Release --no-restore -o ../artifacts
 Пакет появится здесь:
 
 ```text
-backend/Shared/artifacts/Wolonee.Framework.0.0.2.nupkg
+backend/Shared/artifacts/DirectoryService.Framework.0.0.2.nupkg
 ```
 
 ### 5. Опубликуй пакет
@@ -62,7 +62,7 @@ backend/Shared/artifacts/Wolonee.Framework.0.0.2.nupkg
 read -s "GITHUB_PACKAGES_TOKEN?GitHub Packages token: "
 echo
 
-dotnet nuget push ../artifacts/Wolonee.Framework.0.0.2.nupkg \
+dotnet nuget push ../artifacts/DirectoryService.Framework.0.0.2.nupkg \
   --source github \
   --api-key "$GITHUB_PACKAGES_TOKEN" \
   --skip-duplicate
@@ -80,7 +80,7 @@ unset GITHUB_PACKAGES_TOKEN
 cd ../../FileService
 ```
 
-Поменяй версию `Wolonee.Framework` на `0.0.2` в проектах, которые его используют:
+Поменяй версию `DirectoryService.Framework` на `0.0.2` в проектах, которые его используют:
 
 - `src/FileService.Core/FileService.Core.csproj`;
 - `src/FileService.Web/FileService.Web.csproj`.

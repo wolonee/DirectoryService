@@ -6,7 +6,7 @@
     <ProjectReference Include="..\FileService.Infrastructure.S3\FileService.Infrastructure.S3.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Wolonee.Framework" Version="0.0.2" />
+    <PackageReference Include="DirectoryService.Framework" Version="0.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.18">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

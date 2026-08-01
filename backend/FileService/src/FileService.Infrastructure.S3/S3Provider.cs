@@ -327,7 +327,7 @@ public class S3Provider : IS3Provider, IDisposable
         }
     }
 
-    public async Task<Result<DeleteObjectResult, Error>> DeleteObjectAsync(
+    public async Task<Result<DeleteObjectResponseDto, Error>> DeleteObjectAsync(
         StorageKey storageKey, 
         CancellationToken cancellationToken)
     {
@@ -341,7 +341,7 @@ public class S3Provider : IS3Provider, IDisposable
 
             DeleteObjectResponse response = await _s3Client.DeleteObjectAsync(request, cancellationToken);
 
-            return new DeleteObjectResult(response.DeleteMarker, response.VersionId);
+            return new DeleteObjectResponseDto(response.DeleteMarker, response.VersionId);
         }
         catch (AmazonS3Exception ex) when (ex.ErrorCode == "NoSuchKey")
         {
@@ -350,7 +350,7 @@ public class S3Provider : IS3Provider, IDisposable
                 storageKey.Bucket,
                 storageKey.Value);
 
-            return new DeleteObjectResult(null, null);
+            return new DeleteObjectResponseDto(null, null);
         }
         catch (Exception ex)
         {

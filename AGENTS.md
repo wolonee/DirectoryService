@@ -2,10 +2,6 @@
 
 This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
 
-Also read `/Users/tiglev/dev/AGENTS.md` and
-`/Users/tiglev/dev/AgentContext/SKILLS.md`. This repository's rules take
-priority when they differ.
-
 ## Repository layout
 
 `backend/` holds two **independent** .NET solutions, plus `frontend/` is a third unit with its own toolchain:
