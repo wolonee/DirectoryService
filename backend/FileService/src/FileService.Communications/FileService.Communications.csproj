@@ -2,7 +2,7 @@
 
     <PropertyGroup>
       <PackageId>Wolonee.FileService.Client</PackageId>
-      <Version>0.0.1</Version>
+      <Version>0.0.2</Version>
       <Authors>Wolonee</Authors>
       <Company>Wolonee</Company>
       <PackageDescription>Communication in FileService</PackageDescription>
