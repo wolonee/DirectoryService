@@ -32,6 +32,19 @@ internal sealed class FileCommunicationService : IFileCommunicationService
 
             return await response.HandleResponseAsync<GetMediaAssetResponse>(cancellationToken);
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (OperationCanceledException exception)
+        {
+            _logger.LogError(
+                exception,
+                "Timeout while getting media asset {FileId} from File Service",
+                request.FileId);
+
+            return FileServiceClientErrors.Timeout().ToErrors();
+        }
         catch (HttpRequestException exception)
         {
             _logger.LogError(
@@ -57,6 +70,19 @@ internal sealed class FileCommunicationService : IFileCommunicationService
                 cancellationToken);
 
             return await response.HandleResponseAsync<GetMediaAssetsResponse>(cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (OperationCanceledException exception)
+        {
+            _logger.LogError(
+                exception,
+                "Timeout while getting {FileCount} media assets from File Service",
+                fileCount);
+
+            return FileServiceClientErrors.Timeout().ToErrors();
         }
         catch (HttpRequestException exception)
         {
@@ -86,6 +112,20 @@ internal sealed class FileCommunicationService : IFileCommunicationService
 
             return await response.HandleResponseAsync<GetMediaAssetsByTargetResponse>(cancellationToken);
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (OperationCanceledException exception)
+        {
+            _logger.LogError(
+                exception,
+                "Timeout while getting media assets for target {TargetId} of type {TargetType} from File Service",
+                request.TargetId,
+                request.TargetType);
+
+            return FileServiceClientErrors.Timeout().ToErrors();
+        }
         catch (HttpRequestException exception)
         {
             _logger.LogError(
@@ -109,6 +149,19 @@ internal sealed class FileCommunicationService : IFileCommunicationService
                 cancellationToken);
 
             return await response.HandleResponseAsync<AssetExistsResponse>(cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (OperationCanceledException exception)
+        {
+            _logger.LogError(
+                exception,
+                "Timeout while checking media asset {id} exists in File Service",
+                request.FileId);
+
+            return FileServiceClientErrors.Timeout().ToErrors();
         }
         catch (HttpRequestException exception)
         {
