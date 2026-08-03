@@ -12,7 +12,8 @@ namespace DirectoryService.Infrastructure.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterDatabase()
-                .Annotation("Npgsql:PostgresExtension:ltree", ",,");
+                .Annotation("Npgsql:PostgresExtension:ltree", ",,")
+                .Annotation("Npgsql:PostgresExtension:pg_trgm", ",,");
 
             migrationBuilder.CreateTable(
                 name: "department",

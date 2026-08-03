@@ -71,8 +71,9 @@ if (!app.Environment.IsProduction())
     });
 }
 
-using (var scope = app.Services.CreateScope())
+if (!isTesting)
 {
+    using var scope = app.Services.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<DirectoryServiceDbContext>();
     await context.Database.MigrateAsync();
 }
