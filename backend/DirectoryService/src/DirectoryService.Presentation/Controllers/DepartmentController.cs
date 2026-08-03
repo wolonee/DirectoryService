@@ -1,22 +1,22 @@
 ﻿using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Departments.Commands.AttachDepartmentPosition;
 using DirectoryService.Application.Departments.Commands.CreateDepartment;
-using DirectoryService.Application.Departments.Commands.DeleteDepartment;
 using DirectoryService.Application.Departments.Commands.DetachDepartmentPosition;
 using DirectoryService.Application.Departments.Commands.RestoreDepartment;
+using DirectoryService.Application.Departments.Commands.SoftDeleteDepartment;
 using DirectoryService.Application.Departments.Commands.UpdateLocations;
 using DirectoryService.Application.Departments.Commands.UpdateParent;
 using DirectoryService.Application.Departments.Queries.Get;
 using DirectoryService.Application.Departments.Queries.GetById;
 using DirectoryService.Application.Departments.Queries.GetChildrenByParent;
-using DirectoryService.Application.Departments.Queries.GetDescendants;
-using DirectoryService.Application.Departments.Queries.GetDepartmentParentsByName;
 using DirectoryService.Application.Departments.Queries.GetDepartmentPositions;
+using DirectoryService.Application.Departments.Queries.GetDescendants;
 using DirectoryService.Application.Departments.Queries.GetParentsById;
-using DirectoryService.Contracts.Departments;
+using DirectoryService.Application.Departments.Queries.GetParentsByName;
+using DirectoryService.Contracts.Common;
+using DirectoryService.Contracts.Departments.Dto;
 using DirectoryService.Contracts.Departments.Requests;
 using DirectoryService.Contracts.Departments.Responses;
-using DirectoryService.Contracts.Common;
 using DirectoryService.Presentation.EndpointResults;
 using Microsoft.AspNetCore.Mvc;
 

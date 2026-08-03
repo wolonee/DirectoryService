@@ -59,6 +59,8 @@ public class DirectoryTestWebFactory : WebApplicationFactory<Program>, IAsyncLif
     
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseEnvironment("Testing");
+
         builder.ConfigureTestServices(services =>
         {
             services.RemoveAll<DirectoryServiceDbContext>();

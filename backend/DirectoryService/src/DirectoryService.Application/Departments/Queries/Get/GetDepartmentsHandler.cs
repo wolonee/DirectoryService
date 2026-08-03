@@ -6,6 +6,7 @@ using DirectoryService.Application.Database;
 using DirectoryService.Application.Validation;
 using DirectoryService.Contracts.Common;
 using DirectoryService.Contracts.Departments;
+using DirectoryService.Contracts.Departments.Dto;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Shared.Errors;
 using FluentValidation;

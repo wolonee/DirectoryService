@@ -63,7 +63,7 @@ public sealed class InitiateUploadEndpoint : IEndpoint
     {
         app.MapPost("/files/initiate", async Task<EndpointResult<InitiateUploadResponse>> (
             [FromBody] InitiateUploadRequest request,
-            [FromServices] InitiateUploadHandler handler,
+            [FromServices] ICommandHandler<InitiateUploadResponse, InitiateUploadCommand> handler,
             CancellationToken cancellationToken) =>
         {
             var command = new InitiateUploadCommand(request);

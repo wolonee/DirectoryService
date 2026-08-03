@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Shared.Errors;
+using FileService.Contracts.Features.AssetExists;
 
 namespace FileService.Contracts.HttpCommunication;
 
@@ -10,4 +11,6 @@ public interface IFileCommunicationService
     Task<Result<GetMediaAssetsResponse, Errors>> GetMediaAssetsByIds(GetMediaAssetsRequest request, CancellationToken cancellationToken);
 
     Task<Result<GetMediaAssetsByTargetResponse, Errors>> GetMediaAssetsByTarget(GetMediaAssetsByTargetRequest request, CancellationToken cancellationToken);
+
+    Task<Result<AssetExistsResponse, Errors>> AssetExistsAsync(AssetExistsRequest request, CancellationToken cancellationToken);
 }

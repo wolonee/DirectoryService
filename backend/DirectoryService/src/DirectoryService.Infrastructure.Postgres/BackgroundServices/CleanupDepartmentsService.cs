@@ -3,6 +3,8 @@ using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Application.Database;
 using DirectoryService.Contracts.Departments;
+using DirectoryService.Contracts.Departments.Dto;
+using DirectoryService.Infrastructure.BackgroundServices.Infrastructure;
 using DirectoryService.Infrastructure.Database;
 using DirectoryService.Infrastructure.Repositories;
 using DirectoryService.Shared.Errors;

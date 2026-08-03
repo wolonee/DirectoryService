@@ -10,6 +10,9 @@ public static class LocationErrors
     public static Error NotFound(Guid id) =>
         Error.NotFound("location.not.found", $"Location with id: {id} not found.");
     
+    public static Error NotFoundPhoto() =>
+        Error.NotFound("location.photo.not.found", $"Location photo not found.");
+    
     public static Error IsAlreadyActive(Guid id) =>
         Error.Conflict("location.is.already.active", $"Location {id} is already active.");
     
@@ -28,4 +31,12 @@ public static class LocationErrors
     
     public static Error AddressAlreadyExists(string address) =>
         Error.Conflict("location.address.already.exists", $"Address {address} already exists.");
+    
+    public static Error PhotoAlreadyExists() =>
+        Error.Conflict("location.photo.already.exists", $"Photo already exists.");
+
+    public static Error PhotoAlreadyAttached(Guid assetId) =>
+        Error.Conflict(
+            "location.photo.already.attached",
+            $"Asset {assetId} is already attached to the location.");
 }

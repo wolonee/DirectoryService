@@ -3,7 +3,7 @@ using DirectoryService.Shared.Errors;
 using DirectoryService.Shared.HttpCommunication;
 using Microsoft.EntityFrameworkCore;
 
-namespace DirectoryService.IntegrationTests.Departments.DeleteDepartment;
+namespace DirectoryService.IntegrationTests.Departments;
 
 public class DeleteDepartmentTests : DirectoryBaseTests
 {

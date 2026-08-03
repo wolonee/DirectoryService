@@ -45,7 +45,7 @@ public sealed class AbortMultipartUploadEndpoint : IEndpoint
     {
         app.MapPost("/files/multipart/abort", async Task<EndpointResult<AbortMultipartUploadResponse>>(
             [FromBody] AbortMultipartUploadRequest request,
-            [FromServices] AbortMultipartUploadHandler handler,
+            [FromServices] ICommandHandler<AbortMultipartUploadResponse, AbortMultipartUploadCommand> handler,
             CancellationToken cancellationToken) =>
         {
             var command = new AbortMultipartUploadCommand(request);

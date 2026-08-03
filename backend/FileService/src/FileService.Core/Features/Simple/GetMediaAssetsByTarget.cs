@@ -44,7 +44,7 @@ public sealed class GetMediaAssetsByTargetEndpoint : IEndpoint
     {
         app.MapGet("/files", async Task<EndpointResult<GetMediaAssetsByTargetResponse>>(
             [AsParameters] GetMediaAssetsByTargetRequest request,
-            [FromServices] GetMediaAssetsByTargetHandler handler,
+            [FromServices] IQueryHandler<GetMediaAssetsByTargetResponse, GetMediaAssetsByTargetQuery> handler,
             CancellationToken cancellationToken) => 
         {
             var query = new GetMediaAssetsByTargetQuery(request);

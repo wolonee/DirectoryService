@@ -5,7 +5,7 @@ using DirectoryService.Shared.Errors;
 using DirectoryService.Shared.HttpCommunication;
 using Microsoft.EntityFrameworkCore;
 
-namespace DirectoryService.IntegrationTests.Locations.CreateLocation;
+namespace DirectoryService.IntegrationTests.Locations;
 
 public class CreateLocationTests : DirectoryBaseTests
 {

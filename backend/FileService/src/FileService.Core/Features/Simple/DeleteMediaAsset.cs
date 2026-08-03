@@ -37,7 +37,7 @@ public sealed class DeleteMediaAssetEndpoint : IEndpoint
             "/files/{fileId:guid}",
             async Task<EndpointResult<DeleteMediaAssetResponse>> (
                 [FromRoute] Guid fileId,
-                [FromServices] DeleteMediaAssetHandler handler,
+                [FromServices] ICommandHandler<DeleteMediaAssetResponse, DeleteFileCommand> handler,
                 CancellationToken cancellationToken) =>
             {
                 var command = new DeleteFileCommand(fileId);

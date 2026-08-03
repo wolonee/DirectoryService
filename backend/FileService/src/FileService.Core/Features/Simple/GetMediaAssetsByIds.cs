@@ -36,7 +36,7 @@ public sealed class GetMediaAssetsEndpoint : IEndpoint
     {
         app.MapPost("/files", async Task<EndpointResult<GetMediaAssetsResponse>> (
             [FromBody] GetMediaAssetsRequest request,
-            [FromServices] GetMediaAssetsHandler handler,
+            [FromServices] IQueryHandler<GetMediaAssetsResponse, GetMediaAssetsQuery> handler,
             CancellationToken cancellationToken) =>
         {
             var query = new GetMediaAssetsQuery(request.FileIds);

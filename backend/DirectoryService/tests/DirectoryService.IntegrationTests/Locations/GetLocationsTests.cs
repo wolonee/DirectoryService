@@ -4,7 +4,7 @@ using DirectoryService.IntegrationTests.Infrastructure;
 using DirectoryService.Shared.Errors;
 using DirectoryService.Shared.HttpCommunication;
 
-namespace DirectoryService.IntegrationTests.Locations.GetLocations;
+namespace DirectoryService.IntegrationTests.Locations;
 
 public class GetLocationsTests : DirectoryBaseTests
 {

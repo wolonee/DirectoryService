@@ -2,6 +2,7 @@ using System.Net.Http.Json;
 using CSharpFunctionalExtensions;
 using DirectoryService.Shared.Errors;
 using DirectoryService.Shared.HttpCommunication;
+using FileService.Contracts.Features.AssetExists;
 using Microsoft.Extensions.Logging;
 
 namespace FileService.Contracts.HttpCommunication;
@@ -33,17 +34,13 @@ internal sealed class FileCommunicationService : IFileCommunicationService
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            _logger.LogInformation(
-                "Getting media asset {FileId} from File Service was cancelled",
-                request.FileId);
-
             throw;
         }
         catch (OperationCanceledException exception)
         {
-            _logger.LogWarning(
+            _logger.LogError(
                 exception,
-                "Timed out while getting media asset {FileId} from File Service",
+                "Timeout while getting media asset {FileId} from File Service",
                 request.FileId);
 
             return FileServiceClientErrors.Timeout().ToErrors();
@@ -76,17 +73,13 @@ internal sealed class FileCommunicationService : IFileCommunicationService
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            _logger.LogInformation(
-                "Getting {FileCount} media assets from File Service was cancelled",
-                fileCount);
-
             throw;
         }
         catch (OperationCanceledException exception)
         {
-            _logger.LogWarning(
+            _logger.LogError(
                 exception,
-                "Timed out while getting {FileCount} media assets from File Service",
+                "Timeout while getting {FileCount} media assets from File Service",
                 fileCount);
 
             return FileServiceClientErrors.Timeout().ToErrors();
@@ -121,18 +114,15 @@ internal sealed class FileCommunicationService : IFileCommunicationService
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            _logger.LogInformation(
-                "Getting media assets for target {TargetId} from File Service was cancelled",
-                request.TargetId);
-
             throw;
         }
         catch (OperationCanceledException exception)
         {
-            _logger.LogWarning(
+            _logger.LogError(
                 exception,
-                "Timed out while getting media assets for target {TargetId} from File Service",
-                request.TargetId);
+                "Timeout while getting media assets for target {TargetId} of type {TargetType} from File Service",
+                request.TargetId,
+                request.TargetType);
 
             return FileServiceClientErrors.Timeout().ToErrors();
         }
@@ -143,6 +133,42 @@ internal sealed class FileCommunicationService : IFileCommunicationService
                 "Network failure while getting media assets for target {TargetId} of type {TargetType} from File Service",
                 request.TargetId,
                 request.TargetType);
+
+            return FileServiceClientErrors.Unavailable().ToErrors();
+        }
+    }
+    
+    public async Task<Result<AssetExistsResponse, Errors>> AssetExistsAsync(
+        AssetExistsRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            HttpResponseMessage response = await _httpClient.GetAsync(
+                $"/files/{request.FileId}/exists",
+                cancellationToken);
+
+            return await response.HandleResponseAsync<AssetExistsResponse>(cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (OperationCanceledException exception)
+        {
+            _logger.LogError(
+                exception,
+                "Timeout while checking media asset {id} exists in File Service",
+                request.FileId);
+
+            return FileServiceClientErrors.Timeout().ToErrors();
+        }
+        catch (HttpRequestException exception)
+        {
+            _logger.LogError(
+                exception,
+                "Network failure while checking media assets with id {id} exists from File Service",
+                request.FileId);
 
             return FileServiceClientErrors.Unavailable().ToErrors();
         }

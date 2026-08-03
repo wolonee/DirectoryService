@@ -34,7 +34,7 @@ public sealed class GetMediaAssetEndpoint : IEndpoint
     {
         app.MapGet("/files/{fileId:guid}", async Task<EndpointResult<GetMediaAssetResponse>> (
             [FromRoute] Guid fileId,
-            [FromServices] GetMediaAssetHandler handler,
+            [FromServices] IQueryHandler<GetMediaAssetResponse, GetMediaAssetQuery> handler,
             CancellationToken cancellationToken) =>
         {
             return await handler.Handle(new GetMediaAssetQuery(fileId), cancellationToken);

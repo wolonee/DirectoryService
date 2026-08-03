@@ -13,6 +13,7 @@ public sealed record MediaOwner
         "user",
         "course",
         "department",
+        "location",
     ];
 
     public string Context { get; private init; } = null!;
@@ -65,5 +66,8 @@ public sealed record MediaOwner
     
     public static Result<MediaOwner, Error> ForCourse(Guid departmentId, Guid uploaderId) =>
         Create("course", departmentId, uploaderId);
+
+    public static Result<MediaOwner, Error> ForLocation(Guid locationId, Guid uploaderId) =>
+        Create("location", locationId, uploaderId);
     
 }

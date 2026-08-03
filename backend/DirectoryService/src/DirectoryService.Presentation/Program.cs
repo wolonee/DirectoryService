@@ -2,6 +2,7 @@ using System.Globalization;
 using DirectoryService.Application.Database;
 using DirectoryService.Domain;
 using DirectoryService.Infrastructure.BackgroundServices;
+using DirectoryService.Infrastructure.BackgroundServices.Infrastructure;
 using DirectoryService.Infrastructure.Database;
 using DirectoryService.Infrastructure.Seeder;
 using DirectoryService.Presentation;
@@ -22,7 +23,6 @@ if (!isTesting)
         .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
         .CreateLogger();
 }
-
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,22 +71,29 @@ if (!app.Environment.IsProduction())
     });
 }
 
+if (!isTesting)
+{
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<DirectoryServiceDbContext>();
+    await context.Database.MigrateAsync();
+}
+
 // using (var scope = app.Services.CreateScope())
 // {
-//     var context = scope.ServiceProvider.GetRequiredService<DirectoryServiceDbContext>();
+//     var context = scope.ServiceProvider
+//         .GetRequiredService<DirectoryServiceDbContext>();
+//
+//     await context.Database.MigrateAsync();
 //     
 //     var seeder = new DepartmentTreeSeeder(context);
-//     
 //     Console.WriteLine("Clear database...");
 //
 //     await seeder.ClearAsync();
-//
 //     Console.WriteLine("Starting seeding...");
 //     
 //     var count = await seeder.SeedAsync();
 //     Console.WriteLine($"Seeded {count} departments.");
 // }
-
 app.UseHttpsRedirection();
 
 app.UseAuthorization();

@@ -16,11 +16,11 @@
       <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.1" />
       <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.1" />
       <PackageReference Include="Scrutor" Version="7.0.0" />
+      <PackageReference Include="wolonee.fileservice.client" Version="0.0.2" />
     </ItemGroup>
 
     <ItemGroup>
       <Folder Include="Departments\Commands\" />
-      <Folder Include="Locations\Commands\" />
       <Folder Include="Positions\Commands\" />
       <Folder Include="Positions\Queries\" />
     </ItemGroup>
