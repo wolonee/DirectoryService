@@ -61,7 +61,7 @@ public sealed class CompleteMultipartUploadEndpoint : IEndpoint
     {
         app.MapPost("/files/multipart/complete", async Task<EndpointResult<CompleteMultipartUploadResponse>>(
             [FromBody] CompleteMultipartUploadRequest request,
-            [FromServices] CompleteMultipartUploadHandler handler,
+            [FromServices] ICommandHandler<CompleteMultipartUploadResponse, CompleteMultipartUploadCommand> handler,
             CancellationToken cancellationToken) =>
         {
             var command = new CompleteMultipartUploadCommand(request);

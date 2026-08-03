@@ -1,6 +1,3 @@
 ﻿namespace FileService.Contracts.Features.AssetExists;
 
-public class AssetExistsRequest
-{
-    
-}
+public record AssetExistsRequest(Guid FileId);

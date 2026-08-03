@@ -9,6 +9,7 @@ public enum MediaUsage
     LESSON_VIDEO,
     COMPANY_PRESENTATION,
     COURSE_COVER,
+    LOCATION_PHOTO,
 }
 
 public static class MediaUsageExtensions
@@ -20,6 +21,7 @@ public static class MediaUsageExtensions
             "lesson_video" => MediaUsage.LESSON_VIDEO,
             "company_presentation" => MediaUsage.COMPANY_PRESENTATION,
             "course_cover" => MediaUsage.COURSE_COVER,
+            "location_photo" => MediaUsage.LOCATION_PHOTO,
             _ => GeneralErrors.ValueIsInvalid(nameof(MediaUsage)),
         };
     }

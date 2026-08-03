@@ -43,7 +43,7 @@ public sealed class CompleteUploadEndpoint : IEndpoint
     {
         app.MapPost("/files/{fileId:guid}/complete", async Task<EndpointResult<CompleteUploadResponse>> (
             [FromRoute] Guid fileId,
-            [FromServices] CompleteUploadHandler handler,
+            [FromServices] ICommandHandler<CompleteUploadResponse, CompleteUploadCommand> handler,
             CancellationToken cancellationToken) =>
         {
             var command = new CompleteUploadCommand(fileId);
@@ -147,7 +147,6 @@ public sealed class CompleteUploadHandler
     }
 
 }
-
 
 
 

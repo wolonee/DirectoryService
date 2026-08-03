@@ -44,6 +44,63 @@ public sealed class InitiateUploadHandlerTests
     }
 
     [Fact]
+    public async Task Handle_ValidLocationPhoto_CreatesLocationPreviewAsset()
+    {
+        var repository = new FakeRepository();
+        var provider = new FakeS3Provider();
+        var handler = CreateHandler(repository, provider, Guid.CreateVersion7());
+        Guid locationId = Guid.CreateVersion7();
+
+        var result = await handler.Handle(
+            new InitiateUploadCommand(new InitiateUploadRequest
+            {
+                FileName = "location.webp",
+                ContentType = "image/webp",
+                Size = 1_024,
+                AssetType = "preview",
+                Usage = "location_photo",
+                TargetType = "location",
+                TargetId = locationId,
+            }),
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(repository.Asset);
+        Assert.Equal(MediaUsage.LOCATION_PHOTO, repository.Asset!.Usage);
+        Assert.Equal("location", repository.Asset.Owner.Context);
+        Assert.Equal(locationId, repository.Asset.Owner.EntityId);
+    }
+
+    [Theory]
+    [InlineData("unknown_usage", "location")]
+    [InlineData("location_photo", "unknown_context")]
+    public async Task Handle_UnsupportedLocationPhotoUsageOrContext_ReturnsFailure(
+        string usage,
+        string targetType)
+    {
+        var repository = new FakeRepository();
+        var provider = new FakeS3Provider();
+        var handler = CreateHandler(repository, provider, Guid.CreateVersion7());
+
+        var result = await handler.Handle(
+            new InitiateUploadCommand(new InitiateUploadRequest
+            {
+                FileName = "location.webp",
+                ContentType = "image/webp",
+                Size = 1_024,
+                AssetType = "preview",
+                Usage = usage,
+                TargetType = targetType,
+                TargetId = Guid.CreateVersion7(),
+            }),
+            CancellationToken.None);
+
+        Assert.True(result.IsFailure);
+        Assert.Null(repository.Asset);
+        Assert.Null(provider.RequestedKey);
+    }
+
+    [Fact]
     public async Task Handle_UnknownAssetType_ReturnsFailureWithoutCreatingAsset()
     {
         var repository = new FakeRepository();

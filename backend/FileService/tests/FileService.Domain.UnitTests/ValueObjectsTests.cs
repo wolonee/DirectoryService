@@ -61,6 +61,7 @@ public class ValueObjectsTests
     [InlineData("lesson_video", MediaUsage.LESSON_VIDEO)]
     [InlineData("COURSE_COVER", MediaUsage.COURSE_COVER)]
     [InlineData("company_presentation", MediaUsage.COMPANY_PRESENTATION)]
+    [InlineData(" location_photo ", MediaUsage.LOCATION_PHOTO)]
     public void MediaUsage_ToMediaUsage_WithValidValue_ReturnsEnum(string value, MediaUsage expected)
     {
         var result = value.ToMediaUsage();
@@ -142,6 +143,20 @@ public class ValueObjectsTests
         Assert.True(result.IsSuccess);
         Assert.Equal("lesson", result.Value.Context);
         Assert.Equal(entityId, result.Value.EntityId);
+    }
+
+    [Fact]
+    public void MediaOwner_ForLocation_CreatesLocationOwner()
+    {
+        Guid locationId = Guid.CreateVersion7();
+        Guid uploaderId = Guid.CreateVersion7();
+
+        var result = MediaOwner.ForLocation(locationId, uploaderId);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal("location", result.Value.Context);
+        Assert.Equal(locationId, result.Value.EntityId);
+        Assert.Equal(uploaderId, result.Value.UploaderId);
     }
 
     [Theory]

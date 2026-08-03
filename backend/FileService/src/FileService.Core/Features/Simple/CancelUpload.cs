@@ -34,7 +34,7 @@ public sealed class CancelUploadEndpoint : IEndpoint
     {
         app.MapPost("/files/{fileId:guid}/cancel", async Task<EndpointResult<CancelUploadResponse>> (
             [FromRoute] Guid fileId,
-            [FromServices] CancelUploadHandler handler,
+            [FromServices] ICommandHandler<CancelUploadResponse, CancelUploadCommand> handler,
             CancellationToken cancellationToken) =>
         {
             var command = new CancelUploadCommand(fileId);

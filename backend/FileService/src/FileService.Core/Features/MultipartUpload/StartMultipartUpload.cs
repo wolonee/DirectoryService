@@ -63,7 +63,7 @@ public sealed class StartMultipartUploadEndpoint : IEndpoint
     {
         app.MapPost("/files/multipart/start", async Task<EndpointResult<StartMultipartUploadResponse>>(
             [FromBody] StartMultipartUploadRequest request, 
-            [FromServices] StartMultipartUploadHandler handler,
+            [FromServices] ICommandHandler<StartMultipartUploadResponse, StartMultipartUploadCommand> handler,
             CancellationToken cancellationToken) =>
         {
             var command = new StartMultipartUploadCommand(request);
