@@ -3,13 +3,13 @@ using Dapper;
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Database;
 using DirectoryService.Application.Validation;
-using DirectoryService.Contracts.Departments.Responses;
 using DirectoryService.Contracts.Common;
+using DirectoryService.Contracts.Departments.Responses;
 using DirectoryService.Shared.Errors;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 
-namespace DirectoryService.Application.Departments.Queries.GetDepartmentParentsByName;
+namespace DirectoryService.Application.Departments.Queries.GetParentsByName;
 
 public class GetDepartmentParentsByNameHandler : IQueryHandler<PaginationResponse<GetDepartmentParentsByNameWithParentsDto>, GetDepartmentParentsByNameQuery>
 {

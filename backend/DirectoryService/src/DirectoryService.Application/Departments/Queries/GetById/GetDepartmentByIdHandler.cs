@@ -2,6 +2,7 @@
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Database;
 using DirectoryService.Contracts.Departments;
+using DirectoryService.Contracts.Departments.Dto;
 using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
 using Microsoft.EntityFrameworkCore;

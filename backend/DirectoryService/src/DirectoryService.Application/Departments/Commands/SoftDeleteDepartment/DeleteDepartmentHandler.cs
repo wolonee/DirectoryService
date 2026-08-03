@@ -7,7 +7,7 @@ using DirectoryService.Shared.Errors;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 
-namespace DirectoryService.Application.Departments.Commands.DeleteDepartment;
+namespace DirectoryService.Application.Departments.Commands.SoftDeleteDepartment;
 
 public class DeleteDepartmentHandler : ICommandHandler<DeleteDepartmentCommand>
 {

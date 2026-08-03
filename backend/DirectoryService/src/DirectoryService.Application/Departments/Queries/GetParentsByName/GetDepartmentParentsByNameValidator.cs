@@ -3,7 +3,7 @@ using DirectoryService.Contracts.Common;
 using DirectoryService.Shared.EntitiesErrors;
 using FluentValidation;
 
-namespace DirectoryService.Application.Departments.Queries.GetDepartmentParentsByName;
+namespace DirectoryService.Application.Departments.Queries.GetParentsByName;
 
 public class GetDepartmentParentsByNameValidator : AbstractValidator<GetDepartmentParentsByNameQuery>
 {

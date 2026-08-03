@@ -66,6 +66,20 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
             .HasMaxLength(LengthConstants.LENGTH200)
             .HasColumnName("timezone");
 
+        builder.OwnsOne(l => l.Photo, photo =>
+        {
+            photo.Property(p => p.AssetId)
+                .HasColumnName("photo_asset_id");
+
+            photo.Property(p => p.ContentType)
+                .HasMaxLength(LengthConstants.LENGTH200)
+                .HasColumnName("photo_content_type");
+
+            photo.Property(p => p.AttachedAt)
+                .HasColumnName("photo_attached_at");
+        });
+        builder.Navigation(l => l.Photo).IsRequired(false);
+
         builder.Property(l => l.IsActive)
             .IsRequired()
             .HasColumnName("is_active");

@@ -3,7 +3,7 @@ using DirectoryService.Shared.Errors;
 using DirectoryService.Shared.HttpCommunication;
 using Microsoft.EntityFrameworkCore;
 
-namespace DirectoryService.IntegrationTests.Locations.DeleteLocation;
+namespace DirectoryService.IntegrationTests.Locations;
 
 public class DeleteLocationTests : DirectoryBaseTests
 {

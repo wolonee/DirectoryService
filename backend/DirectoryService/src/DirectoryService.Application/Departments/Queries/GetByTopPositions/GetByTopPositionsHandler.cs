@@ -5,10 +5,9 @@ using DirectoryService.Application.Database;
 using DirectoryService.Contracts.Common;
 using DirectoryService.Contracts.Departments.Responses;
 using DirectoryService.Shared.Errors;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace DirectoryService.Application.Departments.Queries;
+namespace DirectoryService.Application.Departments.Queries.GetByTopPositions;
 
 public class GetByTopPositionsHandler : IQueryHandler<PaginationResponse<GetTopDepartmentsDepartmentDto>>
 {

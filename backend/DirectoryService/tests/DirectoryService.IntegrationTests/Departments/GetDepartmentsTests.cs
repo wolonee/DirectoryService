@@ -1,5 +1,6 @@
 using DirectoryService.Contracts.Common;
 using DirectoryService.Contracts.Departments;
+using DirectoryService.Contracts.Departments.Dto;
 using DirectoryService.IntegrationTests.Infrastructure;
 using DirectoryService.Shared.Errors;
 using DirectoryService.Shared.HttpCommunication;

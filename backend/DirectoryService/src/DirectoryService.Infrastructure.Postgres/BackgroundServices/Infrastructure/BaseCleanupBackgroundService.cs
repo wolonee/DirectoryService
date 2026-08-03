@@ -4,7 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace DirectoryService.Infrastructure.BackgroundServices;
+namespace DirectoryService.Infrastructure.BackgroundServices.Infrastructure;
 
 public abstract class BaseCleanupBackgroundService : BackgroundService
 {

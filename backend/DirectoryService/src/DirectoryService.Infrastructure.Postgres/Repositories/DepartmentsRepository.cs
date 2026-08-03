@@ -4,6 +4,7 @@ using Dapper;
 using DirectoryService.Application.Database;
 using DirectoryService.Application.Departments;
 using DirectoryService.Contracts.Departments;
+using DirectoryService.Contracts.Departments.Dto;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Infrastructure.Database;
 using DirectoryService.Shared;

@@ -2,6 +2,7 @@
 using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Application.Database;
+using DirectoryService.Infrastructure.BackgroundServices.Infrastructure;
 using DirectoryService.Shared.Errors;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;

@@ -5,7 +5,7 @@ using DirectoryService.Shared.Errors;
 using DirectoryService.Shared.HttpCommunication;
 using Microsoft.EntityFrameworkCore;
 
-namespace DirectoryService.IntegrationTests.Positions.RenamePosition;
+namespace DirectoryService.IntegrationTests.Positions;
 
 public class RenamePositionTests : DirectoryBaseTests
 {

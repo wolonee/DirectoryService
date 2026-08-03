@@ -1,4 +1,4 @@
-﻿namespace DirectoryService.Infrastructure.BackgroundServices;
+﻿namespace DirectoryService.Infrastructure.BackgroundServices.Infrastructure;
 
 public class CleanupServiceOptions
 {

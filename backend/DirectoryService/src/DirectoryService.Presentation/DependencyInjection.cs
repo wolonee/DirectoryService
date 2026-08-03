@@ -1,5 +1,6 @@
 using DirectoryService.Application;
 using DirectoryService.Infrastructure;
+using FileService.Contracts.HttpCommunication;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using Serilog.Exceptions;
@@ -14,6 +15,7 @@ public static class DependencyInjection
 
         services.AddApplication();
         services.AddInfrastructure();
+        services.AddFileServiceHttpCommunication(configuration);
         services.AddWebDependencies();
 
         services.AddSerilogLogging(configuration);
@@ -40,7 +42,7 @@ public static class DependencyInjection
             .ReadFrom.Services(sp)
             .Enrich.FromLogContext()
             .Enrich.WithExceptionDetails()
-            .Enrich.WithProperty("ServiceName", "LessonService"));
+            .Enrich.WithProperty("ServiceName", "DirectoryService"));
 
         return services;
     }

@@ -2,12 +2,11 @@ using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Database;
 using DirectoryService.Application.Validation;
-using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 
-namespace DirectoryService.Application.Positions.Commands.DeletePosition;
+namespace DirectoryService.Application.Positions.Commands.SoftDeletePosition;
 
 public class DeletePositionHandler : ICommandHandler<DeletePositionCommand>
 {

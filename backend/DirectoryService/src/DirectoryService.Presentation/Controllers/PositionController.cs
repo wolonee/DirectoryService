@@ -1,9 +1,9 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Positions.Commands.CreatePosition;
-using DirectoryService.Application.Positions.Commands.DeletePosition;
 using DirectoryService.Application.Positions.Commands.RenamePosition;
 using DirectoryService.Application.Positions.Commands.RestorePosition;
+using DirectoryService.Application.Positions.Commands.SoftDeletePosition;
 using DirectoryService.Application.Positions.Queries.Get;
 using DirectoryService.Contracts.Common;
 using DirectoryService.Contracts.Positions;

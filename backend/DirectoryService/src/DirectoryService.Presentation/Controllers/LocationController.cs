@@ -1,8 +1,11 @@
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Locations;
 using DirectoryService.Application.Locations.Commands.CreateLocation;
-using DirectoryService.Application.Locations.Commands.DeleteLocation;
+using DirectoryService.Application.Locations.Commands.Photo.AttachPhoto;
+using DirectoryService.Application.Locations.Commands.Photo.DeletePhoto;
+using DirectoryService.Application.Locations.Commands.Photo.UpdatePhoto;
 using DirectoryService.Application.Locations.Commands.RestoreLocation;
+using DirectoryService.Application.Locations.Commands.SoftDeleteLocation;
 using DirectoryService.Application.Locations.Commands.UpdateLocation;
 using DirectoryService.Application.Locations.Queries.GetLocationById;
 using DirectoryService.Application.Locations.Queries.GetLocations;
@@ -97,6 +100,41 @@ public class LocationController : ControllerBase
     {
         var command = new RestoreLocationCommand(id);
 
+        return await handler.Handle(command, cancellationToken);
+    }
+
+    [HttpPost("{locationId:guid}/photo")]
+    public async Task<EndpointResult> PostPhoto(
+        [FromRoute] Guid locationId,
+        [FromBody] AttachPhotoRequest request,
+        [FromServices] ICommandHandler<AttachPhotoCommand> handler,
+        CancellationToken cancellationToken = default)
+    {
+        var command = new AttachPhotoCommand(locationId, request);
+        
+        return await handler.Handle(command, cancellationToken);
+    }
+    
+    [HttpPut("{locationId:guid}/photo")]
+    public async Task<EndpointResult> UpdatePhoto(
+        [FromRoute] Guid locationId,
+        [FromBody] UpdatePhotoRequest request,
+        [FromServices] ICommandHandler<UpdatePhotoCommand> handler,
+        CancellationToken cancellationToken = default)
+    {
+        var command = new UpdatePhotoCommand(locationId, request);
+        
+        return await handler.Handle(command, cancellationToken);
+    }
+
+    [HttpDelete("{locationId:guid}/photo")]
+    public async Task<EndpointResult> DeletePhoto(
+        [FromRoute] Guid locationId,
+        [FromServices] ICommandHandler<DeletePhotoCommand> handler,
+        CancellationToken cancellationToken)
+    {
+        var command = new DeletePhotoCommand(locationId);
+        
         return await handler.Handle(command, cancellationToken);
     }
 }

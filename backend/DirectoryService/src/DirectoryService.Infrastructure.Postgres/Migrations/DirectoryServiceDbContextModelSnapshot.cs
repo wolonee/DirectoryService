@@ -385,10 +385,39 @@ namespace DirectoryService.Infrastructure.Migrations
                                 .HasForeignKey("LocationId");
                         });
 
+                    b.OwnsOne("DirectoryService.Domain.Locations.ValueObjects.LocationPhoto", "Photo", b1 =>
+                        {
+                            b1.Property<Guid>("LocationId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<Guid>("AssetId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("photo_asset_id");
+
+                            b1.Property<DateTime>("AttachedAt")
+                                .HasColumnType("timestamp with time zone")
+                                .HasColumnName("photo_attached_at");
+
+                            b1.Property<string>("ContentType")
+                                .IsRequired()
+                                .HasMaxLength(200)
+                                .HasColumnType("character varying(200)")
+                                .HasColumnName("photo_content_type");
+
+                            b1.HasKey("LocationId");
+
+                            b1.ToTable("locations");
+
+                            b1.WithOwner()
+                                .HasForeignKey("LocationId");
+                        });
+
                     b.Navigation("Address")
                         .IsRequired();
 
                     b.Navigation("Name");
+
+                    b.Navigation("Photo");
                 });
 
             modelBuilder.Entity("DirectoryService.Domain.Positions.Position", b =>
