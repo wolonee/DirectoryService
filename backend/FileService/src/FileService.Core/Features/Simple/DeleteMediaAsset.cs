@@ -7,6 +7,7 @@ using DirectoryService.Shared.Errors;
 using FileService.Contracts;
 using FileService.Core;
 using FileService.Core.Abstractions;
+using FileService.Core.Caching;
 using FileService.Domain;
 using FileService.Web.EndpointsExtensions;
 using FluentValidation;
@@ -129,7 +130,19 @@ public sealed class DeleteMediaAssetHandler
             return saveChanges.Error.ToErrors();
         }
         
-        await _cache.RemoveAsync(asset.FinalKey.Value, cancellationToken);
+        try
+        {
+            await _cache.RemoveAsync(
+                MediaAssetCacheKeys.DownloadUrl(asset.FinalKey),
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Failed to evict cached URL for {FileId}; it will expire by TTL",
+                asset.Id);
+        }
         
         var response = new DeleteMediaAssetResponse
         {

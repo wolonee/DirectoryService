@@ -6,6 +6,7 @@ using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
 using FileService.Contracts;
 using FileService.Core.Abstractions;
+using FileService.Core.Caching;
 using FileService.Core.Models;
 using FileService.Domain;
 using FileService.Domain.Assets;
@@ -57,14 +58,12 @@ public sealed class GetMediaAssetsHandler
     private readonly IReadDbContext _readDbContext;
     private readonly HybridCache _cache;
     private readonly ILogger<GetMediaAssetsHandler> _logger;
-    private readonly FileStorageOptions _options;
     private readonly IValidator<GetMediaAssetsQuery> _validator;
 
     public GetMediaAssetsHandler(
         IS3Provider s3Provider,
         IReadDbContext readDbContext,
         HybridCache cache,
-        IOptions<FileStorageOptions> options,
         ILogger<GetMediaAssetsHandler> logger,
         IValidator<GetMediaAssetsQuery> validator)
     {
@@ -72,7 +71,6 @@ public sealed class GetMediaAssetsHandler
         _readDbContext = readDbContext;
         _cache = cache;
         _logger = logger;
-        _options = options.Value;
         _validator = validator;
     }
 
@@ -125,7 +123,7 @@ public sealed class GetMediaAssetsHandler
         IEnumerable<Task<(StorageKey key, string? url)>> cacheUrlsTasks = keys.Select(async key =>
         {
             string? url = await _cache.GetOrCreateAsync(
-                key: key.Value,
+                key: MediaAssetCacheKeys.DownloadUrl(key),
                 factory: _ => ValueTask.FromResult<string?>(null),
                 cancellationToken: cancellationToken);
 
@@ -163,13 +161,8 @@ public sealed class GetMediaAssetsHandler
                 result[mediaUrl.StorageKey] = mediaUrl.PresignedUrl;
 
                 await _cache.SetAsync(
-                    key: mediaUrl.StorageKey.Value,
+                    key: MediaAssetCacheKeys.DownloadUrl(mediaUrl.StorageKey),
                     value: mediaUrl.PresignedUrl,
-                    options: new HybridCacheEntryOptions()
-                    {
-                        Expiration = _options.DownloadUrlExpiration.Subtract(TimeSpan.FromHours(1)),
-                        LocalCacheExpiration = TimeSpan.FromHours(1),
-                    },
                     cancellationToken: cancellationToken);
             });
 

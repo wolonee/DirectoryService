@@ -146,6 +146,9 @@ public sealed class FileServiceTestWebFactory : WebApplicationFactory<Program>, 
                 ["FileStorageOptions:RequiredBuckets:0"] = BucketNames[0],
                 ["FileStorageOptions:RequiredBuckets:1"] = BucketNames[1],
                 ["FileStorageOptions:RequiredBuckets:2"] = BucketNames[2],
+                ["CacheOptions:RedisEndpoint"] = "localhost:6379",
+                ["CacheOptions:PresignedUrlTtl"] = "00:05:00",
+                ["CacheOptions:LocalCacheTtl"] = "00:01:00",
             };
 
             configuration.AddInMemoryCollection(values);

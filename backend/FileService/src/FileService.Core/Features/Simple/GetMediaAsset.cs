@@ -6,6 +6,7 @@ using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
 using FileService.Contracts;
 using FileService.Core.Abstractions;
+using FileService.Core.Caching;
 using FileService.Domain;
 using FileService.Domain.Assets;
 using FileService.Infrastructure.S3;
@@ -51,20 +52,17 @@ public sealed class GetMediaAssetHandler
     private readonly IMediaAssetRepository _repository;
     private readonly IS3Provider _s3Provider;
     private readonly HybridCache _cache;
-    private readonly FileStorageOptions _options;
     private readonly IValidator<GetMediaAssetQuery> _validator;
 
     public GetMediaAssetHandler(
         IMediaAssetRepository repository,
         IS3Provider s3Provider,
         HybridCache cache,
-        IOptions<FileStorageOptions> options,
         IValidator<GetMediaAssetQuery> validator)
     {
         _repository = repository;
         _s3Provider = s3Provider;
         _cache = cache;
-        _options = options.Value;
         _validator = validator;
     }
 
@@ -134,7 +132,7 @@ public sealed class GetMediaAssetHandler
         CancellationToken cancellationToken)
     {
         string? url = await _cache.GetOrCreateAsync(
-            key: storageKey.Value,
+            key: MediaAssetCacheKeys.DownloadUrl(storageKey),
             factory: _ => ValueTask.FromResult<string?>(null),
             cancellationToken: cancellationToken);
 
@@ -145,13 +143,8 @@ public sealed class GetMediaAssetHandler
                 return urlResult.Error;
                 
             await _cache.SetAsync(
-                key: storageKey.Value,
+                key: MediaAssetCacheKeys.DownloadUrl(storageKey),
                 value: urlResult.Value,
-                options: new HybridCacheEntryOptions()
-                {
-                    Expiration = _options.DownloadUrlExpiration.Subtract(TimeSpan.FromMinutes(30)),
-                    LocalCacheExpiration = TimeSpan.FromHours(1),
-                },
                 cancellationToken: cancellationToken);
             
             return urlResult.Value;
