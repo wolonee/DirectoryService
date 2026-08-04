@@ -8,16 +8,16 @@ namespace FileService.Infrastructure.S3;
 
 public class S3BucketInitializationService : BackgroundService
 {
-    private readonly S3Options _s3Options;
+    private readonly FileStorageOptions _fileStorageOptions;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<S3BucketInitializationService> _logger;
 
     public S3BucketInitializationService(
-        IOptions<S3Options> s3Options,
+        IOptions<FileStorageOptions> s3Options,
         IServiceScopeFactory scopeFactory,
         ILogger<S3BucketInitializationService> logger)
     {
-        _s3Options = s3Options.Value;
+        _fileStorageOptions = s3Options.Value;
         _scopeFactory = scopeFactory;
         _logger = logger;
     }
@@ -26,7 +26,7 @@ public class S3BucketInitializationService : BackgroundService
     {
         try
         {
-            if (_s3Options.RequiredBuckets.Count == 0)
+            if (_fileStorageOptions.RequiredBuckets.Count == 0)
             {
                 _logger.LogInformation("S3 bucket initialization service required buckets");
                 throw new ArgumentException("RequiredBuckets is required");
@@ -34,12 +34,12 @@ public class S3BucketInitializationService : BackgroundService
 
             _logger.LogInformation(
                 "Starting S3 buckets initialization. Required buckets: {Buckets}",
-                string.Join(", ", _s3Options.RequiredBuckets));
+                string.Join(", ", _fileStorageOptions.RequiredBuckets));
 
             using IServiceScope scope = _scopeFactory.CreateScope();
             IS3Provider s3Provider = scope.ServiceProvider.GetRequiredService<IS3Provider>();
 
-            foreach (string bucketName in _s3Options.RequiredBuckets)
+            foreach (string bucketName in _fileStorageOptions.RequiredBuckets)
             {
                 await InitializeBucketAsync(s3Provider, bucketName, stoppingToken);
             }

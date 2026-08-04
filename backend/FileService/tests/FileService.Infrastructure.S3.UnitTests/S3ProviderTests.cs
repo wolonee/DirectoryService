@@ -16,7 +16,7 @@ public class S3ProviderTests
         using var s3Client = new MissingObjectS3Client();
         using var provider = new S3Provider(
             s3Client,
-            Options.Create(new S3Options
+            Options.Create(new FileStorageOptions
             {
                 MaxConcurrentRequests = 1,
             }),

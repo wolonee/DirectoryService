@@ -154,7 +154,7 @@ public class S3ProviderPresignedUploadIntegrationTests : IAsyncLifetime
 
         return new S3Provider(
             client,
-            Options.Create(new S3Options
+            Options.Create(new FileStorageOptions
             {
                 UploadUrlExpiration = TimeSpan.FromHours(1),
                 DownloadUrlExpiration = TimeSpan.FromHours(1),

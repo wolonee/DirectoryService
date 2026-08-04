@@ -2,9 +2,9 @@ using FileService.Infrastructure.S3;
 
 namespace FileService.Infrastructure.S3.UnitTests;
 
-public class S3OptionsValidatorTests
+public class FileStorageOptionsValidatorTests
 {
-    private readonly S3OptionsValidator _validator = new();
+    private readonly FileStorageOptionsValidator _validator = new();
 
     [Fact]
     public void Validate_WhenOptionsAreValid_ShouldSucceed()

@@ -23,30 +23,30 @@ public class ChunkSizeCalculatorTests
     public void CalculateChunkSize_WhenMoreThanS3MaximumPartsAreRequested_UsesMaximumParts()
     {
         // Arrange
-        var calculator = CreateCalculator(new S3Options
+        var calculator = CreateCalculator(new FileStorageOptions
         {
-            MinimumChunkSizeBytes = S3Options.S3MinimumPartSizeBytes,
-            RecommendedChunkSizeBytes = S3Options.S3MinimumPartSizeBytes,
-            MaxChunks = S3Options.S3MaximumPartsCount,
+            MinimumChunkSizeBytes = FileStorageOptions.S3MinimumPartSizeBytes,
+            RecommendedChunkSizeBytes = FileStorageOptions.S3MinimumPartSizeBytes,
+            MaxChunks = FileStorageOptions.S3MaximumPartsCount,
         });
 
         // Act
         var result = calculator.CalculateChunkSize(
-            S3Options.S3MinimumPartSizeBytes * (S3Options.S3MaximumPartsCount + 1L));
+            FileStorageOptions.S3MinimumPartSizeBytes * (FileStorageOptions.S3MaximumPartsCount + 1L));
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.Equal(S3Options.S3MaximumPartsCount, result.Value.TotalChunks);
-        Assert.True(result.Value.ChunkSize >= S3Options.S3MinimumPartSizeBytes);
+        Assert.Equal(FileStorageOptions.S3MaximumPartsCount, result.Value.TotalChunks);
+        Assert.True(result.Value.ChunkSize >= FileStorageOptions.S3MinimumPartSizeBytes);
     }
 
     [Fact]
     public void CalculateChunkSize_WhenConfiguredMinimumIsBelowS3Limit_ReturnsFailure()
     {
         // Arrange
-        var calculator = CreateCalculator(new S3Options
+        var calculator = CreateCalculator(new FileStorageOptions
         {
-            MinimumChunkSizeBytes = S3Options.S3MinimumPartSizeBytes - 1,
+            MinimumChunkSizeBytes = FileStorageOptions.S3MinimumPartSizeBytes - 1,
         });
 
         // Act
@@ -56,11 +56,11 @@ public class ChunkSizeCalculatorTests
         Assert.True(result.IsFailure);
     }
 
-    private static ChunkSizeCalculator CreateCalculator(S3Options? options = null) =>
-        new(Options.Create(options ?? new S3Options
+    private static ChunkSizeCalculator CreateCalculator(FileStorageOptions? options = null) =>
+        new(Options.Create(options ?? new FileStorageOptions
         {
-            MinimumChunkSizeBytes = S3Options.S3MinimumPartSizeBytes,
+            MinimumChunkSizeBytes = FileStorageOptions.S3MinimumPartSizeBytes,
             RecommendedChunkSizeBytes = 100L * 1024 * 1024,
-            MaxChunks = S3Options.S3MaximumPartsCount,
+            MaxChunks = FileStorageOptions.S3MaximumPartsCount,
         }));
 }

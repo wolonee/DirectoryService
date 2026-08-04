@@ -9,16 +9,16 @@ namespace FileService.Infrastructure.S3;
 public class S3HealthCheck : IHealthCheck
 {
     private readonly IAmazonS3 _s3Client;
-    private readonly S3Options _s3Options;
+    private readonly FileStorageOptions _fileStorageOptions;
     private readonly ILogger<S3HealthCheck> _logger;
 
     public S3HealthCheck(
         IAmazonS3 s3Client,
-        IOptions<S3Options> s3Options,
+        IOptions<FileStorageOptions> s3Options,
         ILogger<S3HealthCheck> logger)
     {
         _s3Client = s3Client;
-        _s3Options = s3Options.Value;
+        _fileStorageOptions = s3Options.Value;
         _logger = logger;
     }
 
@@ -26,7 +26,7 @@ public class S3HealthCheck : IHealthCheck
         HealthCheckContext context,
         CancellationToken cancellationToken)
     {
-        if (_s3Options.RequiredBuckets.Count == 0)
+        if (_fileStorageOptions.RequiredBuckets.Count == 0)
         {
             _logger.LogError("Required S3 buckets are not configured");
             return HealthCheckResult.Unhealthy("Required S3 buckets are not configured");
@@ -34,7 +34,7 @@ public class S3HealthCheck : IHealthCheck
 
         try
         {
-            foreach (string bucketName in _s3Options.RequiredBuckets)
+            foreach (string bucketName in _fileStorageOptions.RequiredBuckets)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 

@@ -132,20 +132,20 @@ public sealed class FileServiceTestWebFactory : WebApplicationFactory<Program>, 
             {
                 ["ConnectionStrings:FileServiceDb"] = _postgres.GetConnectionString(),
                 ["Development:MockUserId"] = MockUserId,
-                ["S3Options:Endpoint"] = MinioEndpoint,
-                ["S3Options:ExternalEndpoint"] = MinioEndpoint,
-                ["S3Options:AccessKey"] = "test-access-key",
-                ["S3Options:SecretKey"] = "test-secret-key",
-                ["S3Options:WithSsl"] = "false",
-                ["S3Options:UploadUrlExpiration"] = "00:10:00",
-                ["S3Options:DownloadUrlExpiration"] = "00:10:00",
-                ["S3Options:MaxConcurrentRequests"] = "4",
-                ["S3Options:MinimumChunkSizeBytes"] = "5242880",
-                ["S3Options:RecommendedChunkSizeBytes"] = "5242880",
-                ["S3Options:MaxChunks"] = "10000",
-                ["S3Options:RequiredBuckets:0"] = BucketNames[0],
-                ["S3Options:RequiredBuckets:1"] = BucketNames[1],
-                ["S3Options:RequiredBuckets:2"] = BucketNames[2],
+                ["FileStorageOptions:Endpoint"] = MinioEndpoint,
+                ["FileStorageOptions:ExternalEndpoint"] = MinioEndpoint,
+                ["FileStorageOptions:AccessKey"] = "test-access-key",
+                ["FileStorageOptions:SecretKey"] = "test-secret-key",
+                ["FileStorageOptions:WithSsl"] = "false",
+                ["FileStorageOptions:UploadUrlExpiration"] = "00:10:00",
+                ["FileStorageOptions:DownloadUrlExpiration"] = "00:10:00",
+                ["FileStorageOptions:MaxConcurrentRequests"] = "4",
+                ["FileStorageOptions:MinimumChunkSizeBytes"] = "5242880",
+                ["FileStorageOptions:RecommendedChunkSizeBytes"] = "5242880",
+                ["FileStorageOptions:MaxChunks"] = "10000",
+                ["FileStorageOptions:RequiredBuckets:0"] = BucketNames[0],
+                ["FileStorageOptions:RequiredBuckets:1"] = BucketNames[1],
+                ["FileStorageOptions:RequiredBuckets:2"] = BucketNames[2],
             };
 
             configuration.AddInMemoryCollection(values);
@@ -160,8 +160,8 @@ public sealed class FileServiceTestWebFactory : WebApplicationFactory<Program>, 
                 serviceProvider.GetRequiredService<FileServiceDbContext>());
             services.AddScoped<IMediaAssetRepository, MediaAssetRepository>();
 
-            services.RemoveAll<IOptions<S3Options>>();
-            services.AddSingleton<IOptions<S3Options>>(Options.Create(new S3Options
+            services.RemoveAll<IOptions<FileStorageOptions>>();
+            services.AddSingleton<IOptions<FileStorageOptions>>(Options.Create(new FileStorageOptions
             {
                 Endpoint = MinioEndpoint,
                 ExternalEndpoint = MinioEndpoint,
