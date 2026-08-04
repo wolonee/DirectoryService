@@ -34,7 +34,6 @@ try
     }
 
     app.Configure();
-    
     app.Run();
 }
 catch (Exception ex)
