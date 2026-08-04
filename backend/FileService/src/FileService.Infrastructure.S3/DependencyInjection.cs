@@ -12,21 +12,21 @@ public static class DependencyInjectionS3Extentions
     public static IServiceCollection AddS3(this IServiceCollection services, IConfiguration configuration)
     {
         services
-            .AddOptions<S3Options>()
-            .Bind(configuration.GetSection(nameof(S3Options)))
+            .AddOptions<FileStorageOptions>()
+            .Bind(configuration.GetSection(nameof(FileStorageOptions)))
             .ValidateOnStart();
-        services.AddSingleton<IValidateOptions<S3Options>, S3OptionsValidator>();
+        services.AddSingleton<IValidateOptions<FileStorageOptions>, FileStorageOptionsValidator>();
 
         services.AddSingleton<IAmazonS3>(sp =>
         {
-            S3Options s3Options = sp.GetRequiredService<IOptions<S3Options>>().Value;
+            FileStorageOptions fileStorageOptions = sp.GetRequiredService<IOptions<FileStorageOptions>>().Value;
 
             var config = new AmazonS3Config
             {
-                ServiceURL = s3Options.Endpoint, UseHttp = !s3Options.WithSsl, ForcePathStyle = true,
+                ServiceURL = fileStorageOptions.Endpoint, UseHttp = !fileStorageOptions.WithSsl, ForcePathStyle = true,
             };
             
-            return new AmazonS3Client(s3Options.AccessKey, s3Options.SecretKey, config);
+            return new AmazonS3Client(fileStorageOptions.AccessKey, fileStorageOptions.SecretKey, config);
         });
 
         services.AddScoped<IS3Provider, S3Provider>();

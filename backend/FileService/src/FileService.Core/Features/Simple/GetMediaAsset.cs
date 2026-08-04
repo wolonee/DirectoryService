@@ -6,13 +6,17 @@ using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
 using FileService.Contracts;
 using FileService.Core.Abstractions;
+using FileService.Core.Caching;
 using FileService.Domain;
 using FileService.Domain.Assets;
+using FileService.Infrastructure.S3;
 using FileService.Web.EndpointsExtensions;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Caching.Hybrid;
+using Microsoft.Extensions.Options;
 
 namespace FileService.Core.Features.SimpleUpload;
 
@@ -47,15 +51,18 @@ public sealed class GetMediaAssetHandler
 {
     private readonly IMediaAssetRepository _repository;
     private readonly IS3Provider _s3Provider;
+    private readonly HybridCache _cache;
     private readonly IValidator<GetMediaAssetQuery> _validator;
 
     public GetMediaAssetHandler(
         IMediaAssetRepository repository,
         IS3Provider s3Provider,
+        HybridCache cache,
         IValidator<GetMediaAssetQuery> validator)
     {
         _repository = repository;
         _s3Provider = s3Provider;
+        _cache = cache;
         _validator = validator;
     }
 
@@ -102,10 +109,10 @@ public sealed class GetMediaAssetHandler
 
         if (asset.StorageReference is null || asset.FinalKey == StorageKey.None)
             return Error.Conflict("media-asset.storage-reference-missing", "Ready file has no storage reference.").ToErrors();
-
-        Result<string, Error> urlResult = await _s3Provider.GenerateDownloadUrlAsync(asset.FinalKey);
+        
+        var urlResult = await GetPresignedUrlFromCacheAsync(asset.FinalKey, cancellationToken);
         if (urlResult.IsFailure)
-            return urlResult.Error.ToErrors();
+            return urlResult.Error.ToErrors();  
 
         return new GetMediaAssetResponse(
             asset.Id,
@@ -118,5 +125,31 @@ public sealed class GetMediaAssetHandler
             asset.MediaData.Size,
             storage,
             urlResult.Value);
+    }
+
+    private async Task<Result<string, Error>> GetPresignedUrlFromCacheAsync(
+        StorageKey storageKey,
+        CancellationToken cancellationToken)
+    {
+        string? url = await _cache.GetOrCreateAsync(
+            key: MediaAssetCacheKeys.DownloadUrl(storageKey),
+            factory: _ => ValueTask.FromResult<string?>(null),
+            cancellationToken: cancellationToken);
+
+        if (url is null)
+        {
+            var urlResult = await _s3Provider.GenerateDownloadUrlAsync(storageKey);
+            if (urlResult.IsFailure)
+                return urlResult.Error;
+                
+            await _cache.SetAsync(
+                key: MediaAssetCacheKeys.DownloadUrl(storageKey),
+                value: urlResult.Value,
+                cancellationToken: cancellationToken);
+            
+            return urlResult.Value;
+        }
+
+        return url;
     }
 }

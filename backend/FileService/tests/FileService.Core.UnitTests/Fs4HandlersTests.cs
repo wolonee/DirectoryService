@@ -11,6 +11,8 @@ using FileService.Core.Models;
 using FileService.Domain;
 using FileService.Domain.Assets;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.Extensions.Caching.Hybrid;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -83,6 +85,7 @@ public sealed class Fs4HandlersTests
             repository,
             provider,
             new DeleteMediaAssetValidator(),
+            CreateCache(),
             NullLogger<DeleteMediaAssetHandler>.Instance);
 
         Result<DeleteMediaAssetResponse, Errors> result = await handler.Handle(new DeleteFileCommand(asset.Id), CancellationToken.None);
@@ -103,6 +106,7 @@ public sealed class Fs4HandlersTests
             repository,
             provider,
             new DeleteMediaAssetValidator(),
+            CreateCache(),
             NullLogger<DeleteMediaAssetHandler>.Instance);
 
         Result<DeleteMediaAssetResponse, Errors> result = await handler.Handle(new DeleteFileCommand(asset.Id), CancellationToken.None);
@@ -124,6 +128,7 @@ public sealed class Fs4HandlersTests
             repository,
             new FakeS3Provider(),
             new DeleteMediaAssetValidator(),
+            CreateCache(),
             NullLogger<DeleteMediaAssetHandler>.Instance);
 
         Result<DeleteMediaAssetResponse, Errors> result = await handler.Handle(new DeleteFileCommand(asset.Id), CancellationToken.None);
@@ -141,12 +146,37 @@ public sealed class Fs4HandlersTests
         var handler = new GetMediaAssetHandler(
             new FakeRepository(ready),
             provider,
+            CreateCache(),
             new GetMediaAssetValidator());
 
         Result<GetMediaAssetResponse, Errors> result = await handler.Handle(new GetMediaAssetQuery(ready.Id), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         Assert.Equal("http://minio.test/download", result.Value.ContentUrl);
+        Assert.Equal(1, provider.SingleDownloadUrlCalls);
+    }
+
+    [Fact]
+    public async Task GetById_SecondCall_ServesUrlFromCacheWithoutResigning()
+    {
+        PreviewAsset ready = CreateReadyPreview();
+        var provider = new FakeS3Provider();
+        var handler = new GetMediaAssetHandler(
+            new FakeRepository(ready),
+            provider,
+            CreateCache(),
+            new GetMediaAssetValidator());
+
+        Result<GetMediaAssetResponse, Errors> first =
+            await handler.Handle(new GetMediaAssetQuery(ready.Id), CancellationToken.None);
+        Result<GetMediaAssetResponse, Errors> second =
+            await handler.Handle(new GetMediaAssetQuery(ready.Id), CancellationToken.None);
+
+        Assert.True(first.IsSuccess);
+        Assert.True(second.IsSuccess);
+        Assert.Equal(first.Value.ContentUrl, second.Value.ContentUrl);
+
+        // Второй запрос обслужен из кэша: подпись у S3-провайдера вызвана ровно один раз.
         Assert.Equal(1, provider.SingleDownloadUrlCalls);
     }
 
@@ -162,6 +192,8 @@ public sealed class Fs4HandlersTests
         var handler = new GetMediaAssetsByTargetHandler(
             provider,
             new FakeReadDbContext([ready, uploading, deleted]),
+            CreateCache(),
+            NullLogger<GetMediaAssetsByTargetHandler>.Instance,
             new GetMediaAssetsByTargetValidator());
 
         Result<GetMediaAssetsByTargetResponse, Errors> result = await handler.Handle(
@@ -185,6 +217,8 @@ public sealed class Fs4HandlersTests
         var handler = new GetMediaAssetsHandler(
             new FakeS3Provider(),
             new FakeReadDbContext([]),
+            CreateCache(),
+            NullLogger<GetMediaAssetsHandler>.Instance,
             new GetMediaAssetsValidator());
 
         Result<GetMediaAssetsResponse, Errors> result = await handler.Handle(
@@ -193,6 +227,13 @@ public sealed class Fs4HandlersTests
 
         Assert.True(result.IsFailure);
         Assert.Equal("value.is.required", Assert.Single(result.Error).Code);
+    }
+
+    private static HybridCache CreateCache()
+    {
+        var services = new ServiceCollection();
+        services.AddHybridCache();
+        return services.BuildServiceProvider().GetRequiredService<HybridCache>();
     }
 
     private static PreviewAsset CreatePreview(Guid? targetId = null) =>

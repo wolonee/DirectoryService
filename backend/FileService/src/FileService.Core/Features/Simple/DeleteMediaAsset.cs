@@ -7,12 +7,14 @@ using DirectoryService.Shared.Errors;
 using FileService.Contracts;
 using FileService.Core;
 using FileService.Core.Abstractions;
+using FileService.Core.Caching;
 using FileService.Domain;
 using FileService.Web.EndpointsExtensions;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 
 namespace FileService.Core.Features.SimpleUpload;
@@ -53,17 +55,20 @@ public sealed class DeleteMediaAssetHandler
     private readonly IMediaAssetRepository _repository;
     private readonly IS3Provider _s3Provider;
     private readonly IValidator<DeleteFileCommand> _validator;
+    private readonly HybridCache _cache;
     private readonly ILogger<DeleteMediaAssetHandler> _logger;
 
     public DeleteMediaAssetHandler(
         IMediaAssetRepository repository,
         IS3Provider s3Provider,
         IValidator<DeleteFileCommand> validator,
+        HybridCache cache,
         ILogger<DeleteMediaAssetHandler> logger)
     {
         _repository = repository;
         _s3Provider = s3Provider;
         _validator = validator;
+        _cache = cache;
         _logger = logger;
     }
 
@@ -125,6 +130,20 @@ public sealed class DeleteMediaAssetHandler
             return saveChanges.Error.ToErrors();
         }
         
+        try
+        {
+            await _cache.RemoveAsync(
+                MediaAssetCacheKeys.DownloadUrl(asset.FinalKey),
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Failed to evict cached URL for {FileId}; it will expire by TTL",
+                asset.Id);
+        }
+        
         var response = new DeleteMediaAssetResponse
         {
             FileId = asset.Id,
@@ -133,5 +152,4 @@ public sealed class DeleteMediaAssetHandler
         
         return response;
     }
-
 }

@@ -2,9 +2,9 @@ using FileService.Infrastructure.S3;
 
 namespace FileService.Infrastructure.S3.UnitTests;
 
-public class S3OptionsValidatorTests
+public class FileStorageOptionsValidatorTests
 {
-    private readonly S3OptionsValidator _validator = new();
+    private readonly FileStorageOptionsValidator _validator = new();
 
     [Fact]
     public void Validate_WhenOptionsAreValid_ShouldSucceed()
@@ -22,7 +22,7 @@ public class S3OptionsValidatorTests
     public void Validate_WhenUploadUrlExpirationIsNotPositive_ShouldFail(int expirationHours)
     {
         // Arrange
-        S3Options options = CreateValidOptions() with
+        FileStorageOptions options = CreateValidOptions() with
         {
             UploadUrlExpiration = TimeSpan.FromHours(expirationHours),
         };
@@ -33,14 +33,14 @@ public class S3OptionsValidatorTests
         // Assert
         Assert.False(result.Succeeded);
         Assert.NotNull(result.Failures);
-        Assert.Contains("S3Options:UploadUrlExpiration must be greater than zero.", result.Failures);
+        Assert.Contains("FileStorageOptions:UploadUrlExpiration must be greater than zero.", result.Failures);
     }
 
     [Fact]
     public void Validate_WhenRequiredBucketsAreEmpty_ShouldFail()
     {
         // Arrange
-        S3Options options = CreateValidOptions() with
+        FileStorageOptions options = CreateValidOptions() with
         {
             RequiredBuckets = [],
         };
@@ -51,16 +51,16 @@ public class S3OptionsValidatorTests
         // Assert
         Assert.False(result.Succeeded);
         Assert.NotNull(result.Failures);
-        Assert.Contains("S3Options:RequiredBuckets must contain at least one bucket.", result.Failures);
+        Assert.Contains("FileStorageOptions:RequiredBuckets must contain at least one bucket.", result.Failures);
     }
 
     [Fact]
     public void Validate_WhenMaxChunksExceedsS3Limit_ShouldFail()
     {
         // Arrange
-        S3Options options = CreateValidOptions() with
+        FileStorageOptions options = CreateValidOptions() with
         {
-            MaxChunks = S3Options.S3MaximumPartsCount + 1,
+            MaxChunks = FileStorageOptions.S3MaximumPartsCount + 1,
         };
 
         // Act
@@ -68,16 +68,16 @@ public class S3OptionsValidatorTests
 
         // Assert
         Assert.False(result.Succeeded);
-        Assert.Contains("S3Options:MaxChunks must be between 1 and 10000.", result.Failures);
+        Assert.Contains("FileStorageOptions:MaxChunks must be between 1 and 10000.", result.Failures);
     }
 
     [Fact]
     public void Validate_WhenMinimumChunkSizeIsLessThanS3Limit_ShouldFail()
     {
         // Arrange
-        S3Options options = CreateValidOptions() with
+        FileStorageOptions options = CreateValidOptions() with
         {
-            MinimumChunkSizeBytes = S3Options.S3MinimumPartSizeBytes - 1,
+            MinimumChunkSizeBytes = FileStorageOptions.S3MinimumPartSizeBytes - 1,
         };
 
         // Act
@@ -86,11 +86,11 @@ public class S3OptionsValidatorTests
         // Assert
         Assert.False(result.Succeeded);
         Assert.Contains(
-            $"S3Options:MinimumChunkSizeBytes must be at least {S3Options.S3MinimumPartSizeBytes} bytes.",
+            $"FileStorageOptions:MinimumChunkSizeBytes must be at least {FileStorageOptions.S3MinimumPartSizeBytes} bytes.",
             result.Failures);
     }
 
-    private static S3Options CreateValidOptions() => new()
+    private static FileStorageOptions CreateValidOptions() => new()
     {
         Endpoint = "http://minio:9000",
         AccessKey = "test-access-key",
