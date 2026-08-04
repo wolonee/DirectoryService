@@ -1,6 +1,6 @@
 ﻿namespace FileService.Infrastructure.S3;
 
-public record S3Options
+public record FileStorageOptions
 {
     public const long S3MinimumPartSizeBytes = 5L * 1024 * 1024;
 

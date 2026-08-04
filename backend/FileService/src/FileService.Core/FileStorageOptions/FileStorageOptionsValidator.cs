@@ -2,7 +2,7 @@ using Microsoft.Extensions.Options;
 
 namespace FileService.Infrastructure.S3;
 
-public sealed class S3OptionsValidator : IValidateOptions<FileStorageOptions>
+public sealed class FileStorageOptionsValidator : IValidateOptions<FileStorageOptions>
 {
     public ValidateOptionsResult Validate(string? name, FileStorageOptions options)
     {
