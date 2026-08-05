@@ -13,7 +13,7 @@ public static class DependencyInjection
     {
         services.AddCors();
 
-        services.AddApplication();
+        services.AddApplication(configuration);
         services.AddInfrastructure();
         services.AddFileServiceHttpCommunication(configuration);
         services.AddWebDependencies();

@@ -5,6 +5,7 @@ using DirectoryService.Application.Validation;
 using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
 using FluentValidation;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 
 namespace DirectoryService.Application.Departments.Commands.SoftDeleteDepartment;
@@ -14,17 +15,20 @@ public class DeleteDepartmentHandler : ICommandHandler<DeleteDepartmentCommand>
     private readonly IValidator<DeleteDepartmentCommand> _validator;
     private readonly IDepartmentsRepository _departmentsRepository;
     private readonly ITransactionManager _transactionManager;
+    private readonly HybridCache _cache;
     private readonly ILogger<DeleteDepartmentHandler> _logger;
 
     public DeleteDepartmentHandler(
         IValidator<DeleteDepartmentCommand> validator,
         IDepartmentsRepository departmentsRepository,
         ITransactionManager transactionManager,
+        HybridCache cache,
         ILogger<DeleteDepartmentHandler> logger)
     {
         _validator = validator;
         _departmentsRepository = departmentsRepository;
         _transactionManager = transactionManager;
+        _cache = cache;
         _logger = logger;
     }
 
@@ -94,9 +98,29 @@ public class DeleteDepartmentHandler : ICommandHandler<DeleteDepartmentCommand>
             transactionScope.Rollback();
             return commitResult.Error.ToErrors();
         }
+        
+        await InvalidateChildren(department.ParentId, cancellationToken);
 
         _logger.LogInformation("Soft Deleted department {DepartmentId}", command.DepartmentId);
 
         return UnitResult.Success<Errors>();
+    }
+    
+    private async Task InvalidateChildren(Guid? parentId, CancellationToken ct)
+    {
+        if (parentId is null)
+            return;
+
+        try
+        {
+            await _cache.RemoveByTagAsync(DepartmentCacheKeys.ChildrenTag(parentId.Value), ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Failed to evict children cache for parent {ParentId}; it will expire by TTL",
+                parentId.Value);
+        }
     }
 }
