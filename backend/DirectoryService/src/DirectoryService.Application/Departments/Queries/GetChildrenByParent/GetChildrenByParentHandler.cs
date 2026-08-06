@@ -58,10 +58,14 @@ public class GetChildrenByParentHandler : IQueryHandler<PaginationResponse<GetDe
 
     private async Task<PaginationResponse<GetDepartmentChildrenByParentDto>> GetDepartmentChildrenFromCache(Guid parentId, int page, int pageSize, CancellationToken cancellationToken)
     {
+        var cameFromDb = false;
+        
         PaginationResponse<GetDepartmentChildrenByParentDto> paginationResponse = await _cache.GetOrCreateAsync(
             key: DepartmentCacheKeys.ChildrenPage(parentId, page, pageSize),
             factory: async ct =>
             {
+                cameFromDb = true;
+                
                 IDbConnection dbConnection = await _dbConnectionFactory.CreateConnectionAsync(ct);
 
                 int offset = (page - 1) * pageSize;
@@ -119,6 +123,11 @@ public class GetChildrenByParentHandler : IQueryHandler<PaginationResponse<GetDe
             },
             tags: [DepartmentCacheKeys.ChildrenTag(parentId)],
             cancellationToken: cancellationToken);
+        
+        if (cameFromDb)
+            _logger.LogInformation("CACHE MISS: children {ParentId} p{Page} из БД", parentId, page);
+        else
+            _logger.LogInformation("CACHE HIT: children {ParentId} p{Page} из кэша", parentId, page);
         
         return paginationResponse;
     }
