@@ -21,10 +21,14 @@ public static class DependencyInjection
         var cacheOptions = configuration.GetSection(nameof(CacheOptions)).Get<CacheOptions>()
                            ?? new CacheOptions();
 
-        services.AddStackExchangeRedisCache(setup =>
+        if (cacheOptions.UseRedis && !string.IsNullOrWhiteSpace(cacheOptions.RedisEndpoint))
         {
-            setup.Configuration = cacheOptions.RedisEndpoint;
-        });
+            services.AddStackExchangeRedisCache(setup =>
+            {
+                setup.Configuration = cacheOptions.RedisEndpoint;
+            });
+        }
+        
         services.AddHybridCache(options =>
         {
             options.DefaultEntryOptions = new HybridCacheEntryOptions
