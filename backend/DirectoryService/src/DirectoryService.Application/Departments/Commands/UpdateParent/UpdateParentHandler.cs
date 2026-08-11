@@ -2,9 +2,11 @@
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Database;
 using DirectoryService.Application.Validation;
+using DirectoryService.Domain.Departments;
 using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
 using FluentValidation;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 
 namespace DirectoryService.Application.Departments.Commands.UpdateParent;
@@ -14,17 +16,20 @@ public class UpdateParentHandler : ICommandHandler<UpdateParentCommand>
     private readonly IValidator<UpdateParentCommand> _validator;
     private readonly IDepartmentsRepository _departmentsRepository;
     private readonly ITransactionManager _transactionManager;
+    private readonly HybridCache _cache;
     private readonly ILogger<UpdateParentHandler> _logger;
 
     public UpdateParentHandler(
         IValidator<UpdateParentCommand> validator,
         IDepartmentsRepository departmentsRepository,
         ITransactionManager transactionManager,
+        HybridCache cache,
         ILogger<UpdateParentHandler> logger)
     {
         _validator = validator;
         _departmentsRepository = departmentsRepository;
         _transactionManager = transactionManager;
+        _cache = cache;
         _logger = logger;
     }
 
@@ -66,7 +71,7 @@ public class UpdateParentHandler : ICommandHandler<UpdateParentCommand>
         
         string rootPath = department.DepartmentPath.Value;
         string newParentPath = string.Empty;
-
+        
         if (command.Request.ParentId != null)
         {
             var parentResult = await _departmentsRepository.GetActiveDepartmentWithLock(command.Request.ParentId.Value, cancellationToken);
@@ -87,7 +92,6 @@ public class UpdateParentHandler : ICommandHandler<UpdateParentCommand>
                 department.Id,
                 parent.Id,
                 cancellationToken);
-
             if (updateParentResult.IsFailure)
                 return updateParentResult.Error.ToErrors();
         }
@@ -100,7 +104,6 @@ public class UpdateParentHandler : ICommandHandler<UpdateParentCommand>
                 department.Id,
                 null,
                 cancellationToken);
-
             if (updateParentResult.IsFailure)
                 return updateParentResult.Error.ToErrors();
         }
@@ -119,10 +122,32 @@ public class UpdateParentHandler : ICommandHandler<UpdateParentCommand>
             transactionScope.Rollback();
             return commitResult.Error.ToErrors();
         }
-        
+
+        // Инвалидация после коммита: гасим старого и нового родителя (null → no-op внутри)
+        await InvalidateChildren(department.ParentId, cancellationToken);
+        await InvalidateChildren(command.Request.ParentId, cancellationToken);
+
         // Logging about success result
         _logger.LogInformation("Department was successfully updated.");
         
         return UnitResult.Success<Errors>();
+    }
+    
+    private async Task InvalidateChildren(Guid? parentId, CancellationToken ct)
+    {
+        if (parentId is null)
+            return;
+
+        try
+        {
+            await _cache.RemoveByTagAsync(DepartmentCacheKeys.ChildrenTag(parentId.Value), ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Failed to evict children cache for parent {ParentId}; it will expire by TTL",
+                parentId.Value);
+        }
     }
 }

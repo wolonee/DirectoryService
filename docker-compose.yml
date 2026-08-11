@@ -44,11 +44,14 @@ services:
        - ASPNETCORE_HTTP_PORTS=8002
        - ConnectionStrings__DirectoryServiceDb=${DB_CONNECTION_STRING}
        - Seq__ServerUrl=http://seq:5341
+       - CacheOptions__RedisEndpoint=redis:6379
      depends_on:
        postgres:
          condition: service_healthy
        directory-service-migrations:
          condition: service_completed_successfully
+       redis:
+         condition: service_healthy
      healthcheck:
        test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
        interval: 5s

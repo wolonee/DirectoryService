@@ -7,6 +7,7 @@ using DirectoryService.Contracts.Departments.Responses;
 using DirectoryService.Contracts.Common;
 using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 
 namespace DirectoryService.Application.Departments.Queries.GetChildrenByParent;
@@ -15,6 +16,7 @@ public class GetChildrenByParentHandler : IQueryHandler<PaginationResponse<GetDe
 {
     private readonly IDbConnectionFactory _dbConnectionFactory;
     private readonly IDepartmentsRepository _departmentsRepository;
+    private readonly HybridCache _cache;
     private readonly ILogger<GetChildrenByParentHandler> _logger;
     
     private const string DEPARTMENT_ID = "department_id";
@@ -24,10 +26,12 @@ public class GetChildrenByParentHandler : IQueryHandler<PaginationResponse<GetDe
     public GetChildrenByParentHandler(
         IDbConnectionFactory dbConnectionFactory,
         IDepartmentsRepository departmentsRepository,
+        HybridCache cache,
         ILogger<GetChildrenByParentHandler> logger)
     {
         _dbConnectionFactory = dbConnectionFactory;
         _departmentsRepository = departmentsRepository;
+        _cache = cache;
         _logger = logger;
     }
 
@@ -35,8 +39,6 @@ public class GetChildrenByParentHandler : IQueryHandler<PaginationResponse<GetDe
         GetDepartmentChildrenByParentQuery query,
         CancellationToken cancellationToken = default)
     {
-        IDbConnection dbConnection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
-
         var existsParentResult = await _departmentsRepository.Exists(query.ParentId, cancellationToken);
         if (existsParentResult.IsFailure)
             return existsParentResult.Error.ToErrors();
@@ -48,57 +50,85 @@ public class GetChildrenByParentHandler : IQueryHandler<PaginationResponse<GetDe
         }
         
         var pagination = query.Pagination ?? new PaginationRequest();
+        
+        var result = await GetDepartmentChildrenFromCache(query.ParentId, pagination.Page, pagination.PageSize, cancellationToken);
 
-        int pageSize = pagination.PageSize;
-        int offset = (pagination.Page - 1) * pageSize;
+        return result;
+    }
 
-        var parameters = new DynamicParameters();
-        parameters.Add(DEPARTMENT_ID, query.ParentId);
-        parameters.Add(PAGE_SIZE_PARAMETER, pageSize, DbType.Int32);
-        parameters.Add(OFFSET_PARAMETER, offset, DbType.Int32);
-
-        long? totalCount = null;
-
-        var result = await dbConnection.QueryAsync<GetDepartmentChildrenByParentDto, long, GetDepartmentChildrenByParentDto>(
-            $"""
-             WITH children AS (SELECT d.id,
-                                   d.parent_id,
-                                   d.name,
-                                   d.identifier,
-                                   d.path,
-                                   d.depth,
-                                   d.is_active,
-                                   d.created_at,
-                                   d.updated_at
-                            FROM department d
-                            WHERE d.parent_id = @{DEPARTMENT_ID}
-                              AND d.is_deleted = false)
-
-             SELECT c.*,
-                    EXISTS(SELECT 1 FROM department WHERE parent_id = c.id) AS has_more_children,
-                    COUNT(*) OVER() AS total_count
-             FROM children c
-             ORDER BY c.name
-             LIMIT @{PAGE_SIZE_PARAMETER} OFFSET @{OFFSET_PARAMETER}
-             """,
-            param: parameters,
-            splitOn: "total_count",
-            map: (child, count) =>
+    private async Task<PaginationResponse<GetDepartmentChildrenByParentDto>> GetDepartmentChildrenFromCache(Guid parentId, int page, int pageSize, CancellationToken cancellationToken)
+    {
+        var cameFromDb = false;
+        
+        PaginationResponse<GetDepartmentChildrenByParentDto> paginationResponse = await _cache.GetOrCreateAsync(
+            key: DepartmentCacheKeys.ChildrenPage(parentId, page, pageSize),
+            factory: async ct =>
             {
-                if (totalCount == null)
-                    totalCount = count;
+                cameFromDb = true;
+                
+                IDbConnection dbConnection = await _dbConnectionFactory.CreateConnectionAsync(ct);
 
-                return child;
-            });
+                int offset = (page - 1) * pageSize;
+                
+                var parameters = new DynamicParameters();
+                parameters.Add(DEPARTMENT_ID, parentId);
+                parameters.Add(PAGE_SIZE_PARAMETER, pageSize, DbType.Int32);
+                parameters.Add(OFFSET_PARAMETER, offset, DbType.Int32);
+                
+                long? totalCount = null;
 
-        var count = totalCount ?? 0;
-        var totalPages = (int)Math.Ceiling((double)count / pageSize);
+                IEnumerable<GetDepartmentChildrenByParentDto> result =
+                    await dbConnection
+                        .QueryAsync<GetDepartmentChildrenByParentDto, long, GetDepartmentChildrenByParentDto>(
+                            $"""
+                             WITH children AS (SELECT d.id,
+                                                   d.parent_id,
+                                                   d.name,
+                                                   d.identifier,
+                                                   d.path,
+                                                   d.depth,
+                                                   d.is_active,
+                                                   d.created_at,
+                                                   d.updated_at
+                                            FROM department d
+                                            WHERE d.parent_id = @{DEPARTMENT_ID}
+                                              AND d.is_deleted = false)
 
-        return new PaginationResponse<GetDepartmentChildrenByParentDto>(
-            result.ToList(),
-            count,
-            pagination.Page,
-            pageSize,
-            totalPages);
+                             SELECT c.*,
+                                    EXISTS(SELECT 1 FROM department WHERE parent_id = c.id) AS has_more_children,
+                                    COUNT(*) OVER() AS total_count
+                             FROM children c
+                             ORDER BY c.name
+                             LIMIT @{PAGE_SIZE_PARAMETER} OFFSET @{OFFSET_PARAMETER}
+                             """,
+                            param: parameters,
+                            splitOn: "total_count",
+                            map: (child, count) =>
+                            {
+                                if (totalCount == null)
+                                    totalCount = count;
+
+                                return child;
+                            });
+                
+                long count = totalCount ?? 0;
+                int totalPages = (int)Math.Ceiling((double)count / pageSize);
+
+                return new PaginationResponse<GetDepartmentChildrenByParentDto>(
+                    result.ToList(),
+                    count,
+                    page,
+                    pageSize,
+                    totalPages);
+            },
+            tags: [DepartmentCacheKeys.ChildrenTag(parentId)],
+            cancellationToken: cancellationToken);
+        
+        if (cameFromDb)
+            _logger.LogInformation("CACHE MISS: children {ParentId} p{Page} из БД", parentId, page);
+        else
+            _logger.LogInformation("CACHE HIT: children {ParentId} p{Page} из кэша", parentId, page);
+        
+        return paginationResponse;
     }
 }

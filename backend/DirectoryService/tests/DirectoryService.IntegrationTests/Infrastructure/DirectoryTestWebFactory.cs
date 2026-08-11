@@ -3,6 +3,7 @@ using DirectoryService.Application.Database;
 using DirectoryService.Infrastructure.Database;
 using DirectoryService.Presentation;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -65,6 +66,9 @@ public class DirectoryTestWebFactory : WebApplicationFactory<Program>, IAsyncLif
         {
             services.RemoveAll<DirectoryServiceDbContext>();
             services.RemoveAll<IReadDbContext>();
+
+            // Без реального Redis в тестах: убираем L2, HybridCache работает только на L1.
+            services.RemoveAll<IDistributedCache>();
 
             services.AddScoped<DirectoryServiceDbContext>(_ =>
                 new DirectoryServiceDbContext(_dbContainer.GetConnectionString()));

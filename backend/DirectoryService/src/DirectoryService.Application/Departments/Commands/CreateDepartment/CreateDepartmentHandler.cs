@@ -7,6 +7,7 @@ using DirectoryService.Domain.Departments.ValueObjects;
 using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
 using FluentValidation;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 
 namespace DirectoryService.Application.Departments.Commands.CreateDepartment;
@@ -15,6 +16,7 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
 {
     private readonly IValidator<CreateDepartmentCommand> _validator;
     private readonly IDepartmentsRepository _departmentsRepository;
+    private readonly HybridCache _cache;
     private readonly ILocationsRepository _locationsRepository;
     private readonly ILogger<CreateDepartmentHandler> _logger;
 
@@ -22,10 +24,13 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
     public CreateDepartmentHandler(
         IValidator<CreateDepartmentCommand> validator,
         IDepartmentsRepository departmentsRepository,
-        ILocationsRepository locationsRepository, ILogger<CreateDepartmentHandler> logger)
+        HybridCache cache,
+        ILocationsRepository locationsRepository, 
+        ILogger<CreateDepartmentHandler> logger)
     {
         _validator = validator;
         _departmentsRepository = departmentsRepository;
+        _cache = cache;
         _locationsRepository = locationsRepository;
         _logger = logger;
     }
@@ -99,6 +104,16 @@ public class CreateDepartmentHandler : ICommandHandler<Guid, CreateDepartmentCom
             var saveResult = await _departmentsRepository.AddAsync(resultDepartment.Value, cancellationToken);
             if (saveResult.IsFailure)
                 return saveResult.Error.ToErrors();
+
+            try
+            {
+                await _cache.RemoveByTagAsync(DepartmentCacheKeys.ChildrenTag(request.ParentId.Value), cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to evict children cache for parent {ParentId}",
+                    request.ParentId.Value);
+            }
             
             // логирование об успешном сохранении
             _logger.LogInformation("Created Child Department with id {departmentId}", saveResult.Value);
