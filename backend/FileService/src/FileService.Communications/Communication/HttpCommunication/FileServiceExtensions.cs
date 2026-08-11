@@ -2,7 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace FileService.Contracts.HttpCommunication;
+namespace FileService.Communications.Communication.HttpCommunication;
 
 public static class FileServiceExtensions
 {

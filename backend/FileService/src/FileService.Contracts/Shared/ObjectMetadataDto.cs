@@ -1,4 +1,4 @@
-namespace FileService.Contracts;
+namespace FileService.Contracts.Shared;
 
 public sealed record ObjectMetadataDto(
     long ContentLength,

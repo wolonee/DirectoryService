@@ -1,4 +1,4 @@
-namespace FileService.Contracts;
+namespace FileService.Contracts.Features.MultipartUpload.AbortMultipartUpload;
 
 public sealed record AbortMultipartUploadResponse
 {

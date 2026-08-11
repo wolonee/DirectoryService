@@ -1,4 +1,4 @@
-namespace FileService.Contracts;
+namespace FileService.Contracts.Features.Simple.DeleteMediaAsset;
 
 /// <summary>
 /// Результат soft-delete файла.

@@ -1,3 +1,4 @@
+using FileService.Core.Options.FileStorageOptions;
 using FileService.Infrastructure.S3;
 
 namespace FileService.Infrastructure.S3.UnitTests;

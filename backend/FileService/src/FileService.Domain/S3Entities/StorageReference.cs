@@ -2,7 +2,7 @@ using CSharpFunctionalExtensions;
 using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
 
-namespace FileService.Domain;
+namespace FileService.Domain.S3Entities;
 
 public sealed record StorageReference
 {

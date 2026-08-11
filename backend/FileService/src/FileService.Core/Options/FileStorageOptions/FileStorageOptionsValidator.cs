@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Options;
 
-namespace FileService.Infrastructure.S3;
+namespace FileService.Core.Options.FileStorageOptions;
 
 public sealed class FileStorageOptionsValidator : IValidateOptions<FileStorageOptions>
 {

@@ -1,4 +1,4 @@
-namespace FileService.Contracts;
+namespace FileService.Contracts.Features.Simple.CancelUpload;
 
 /// <summary>
 /// Результат отмены незавершённой загрузки.

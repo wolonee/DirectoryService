@@ -4,11 +4,11 @@ using DirectoryService.Application.Validation;
 using DirectoryService.Presentation.EndpointResults;
 using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
-using FileService.Contracts;
-using FileService.Core;
+using FileService.Contracts.Features.Simple.DeleteMediaAsset;
 using FileService.Core.Abstractions;
 using FileService.Core.Caching;
 using FileService.Domain;
+using FileService.Domain.S3Entities;
 using FileService.Web.EndpointsExtensions;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
@@ -17,7 +17,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 
-namespace FileService.Core.Features.SimpleUpload;
+namespace FileService.Core.Features.Simple;
 
 public sealed record DeleteFileCommand(Guid FileId) : ICommand;
 

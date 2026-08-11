@@ -4,10 +4,11 @@ using DirectoryService.Application.Validation;
 using DirectoryService.Presentation.EndpointResults;
 using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
-using FileService.Contracts;
+using FileService.Contracts.Features.Simple.CompleteUpload;
 using FileService.Core.Abstractions;
 using FileService.Domain;
-using FileService.Domain.Assets;
+using FileService.Domain.S3Entities;
+using FileService.Domain.S3Entities.Assets;
 using FileService.Web.EndpointsExtensions;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
@@ -15,7 +16,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
-namespace FileService.Core.Features.SimpleUpload;
+namespace FileService.Core.Features.Simple;
 
 public sealed record CompleteUploadCommand(Guid FileId) : ICommand;
 

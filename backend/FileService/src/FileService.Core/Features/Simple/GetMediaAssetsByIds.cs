@@ -4,13 +4,12 @@ using DirectoryService.Application.Validation;
 using DirectoryService.Presentation.EndpointResults;
 using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
-using FileService.Contracts;
+using FileService.Contracts.Features.Simple.GetMediaAssets;
 using FileService.Core.Abstractions;
 using FileService.Core.Caching;
 using FileService.Core.Models;
-using FileService.Domain;
-using FileService.Domain.Assets;
-using FileService.Infrastructure.S3;
+using FileService.Domain.S3Entities;
+using FileService.Domain.S3Entities.Assets;
 using FileService.Web.EndpointsExtensions;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
@@ -19,9 +18,8 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
-namespace FileService.Core.Features.SimpleUpload;
+namespace FileService.Core.Features.Simple;
 
 public sealed record GetMediaAssetsQuery(IEnumerable<Guid> FileIds) : IQuery;
 

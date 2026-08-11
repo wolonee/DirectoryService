@@ -2,7 +2,7 @@
 using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
 
-namespace FileService.Domain.Assets;
+namespace FileService.Domain.S3Entities.Assets;
 
 public class VideoAsset : MediaAsset
 {
@@ -100,4 +100,6 @@ public class VideoAsset : MediaAsset
         
         return UnitResult.Success<Error>();
     }
+
+    public override bool RequiresProcessing() => true;
 }

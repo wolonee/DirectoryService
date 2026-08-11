@@ -1,6 +1,8 @@
 using Amazon.S3;
 using Amazon.S3.Model;
+using FileService.Core.Options.FileStorageOptions;
 using FileService.Domain;
+using FileService.Domain.S3Entities;
 using FileService.Infrastructure.S3;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;

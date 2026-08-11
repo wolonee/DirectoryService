@@ -1,4 +1,4 @@
-﻿namespace FileService.Contracts.HttpCommunication;
+﻿namespace FileService.Communications.Communication.HttpCommunication;
 
 public sealed record FileServiceOptions
 {

@@ -1,8 +1,6 @@
 using System.Globalization;
 using FileService.Infrastructure.Postgres.Database;
-using FileService.Infrastructure.S3;
 using FileService.Web.Configuration;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -45,4 +43,7 @@ finally
     Log.CloseAndFlush();
 }
 
-public partial class Program;
+namespace FileService.Web
+{
+    public partial class Program;
+}

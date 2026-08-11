@@ -1,7 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Shared.Errors;
 
-namespace FileService.Domain.Assets;
+namespace FileService.Domain.S3Entities.Assets;
 
 public abstract class MediaAsset
 {
@@ -17,9 +17,9 @@ public abstract class MediaAsset
     
     public DateTime UpdatedAt { get; protected set; }
     
-    public StorageKey RawKey { get; protected init; } = null!;
+    public StorageKey? RawKey { get; protected init; } = null!;
     
-    public StorageKey FinalKey { get; protected set; } = null!;
+    public StorageKey? FinalKey { get; protected set; } = null!;
 
     public string? MultipartUploadId { get; protected set; }
     
@@ -28,7 +28,9 @@ public abstract class MediaAsset
     public MediaStatus Status { get; protected set; }
     
     public StorageReference? StorageReference { get; protected set; }
-
+    
+    public StorageKey? UploadKey => RequiresProcessing() ? RawKey! : FinalKey;
+    
     protected MediaAsset()
     {
     }
@@ -68,6 +70,8 @@ public abstract class MediaAsset
             (MediaStatus.FAILED, MediaStatus.DELETED) => true,
             _ => false,
         };
+    
+    public virtual bool RequiresProcessing() => false;
 
     public UnitResult<Error> MarkUploaded(DateTime changedAt) =>
         ChangeStatus(MediaStatus.UPLOADED, changedAt);

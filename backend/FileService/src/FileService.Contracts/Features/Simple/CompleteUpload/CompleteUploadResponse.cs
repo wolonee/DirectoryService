@@ -1,4 +1,6 @@
-namespace FileService.Contracts;
+using FileService.Contracts.Shared;
+
+namespace FileService.Contracts.Features.Simple.CompleteUpload;
 
 /// <summary>
 /// Результат подтверждения загрузки файла.

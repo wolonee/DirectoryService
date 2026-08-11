@@ -1,5 +1,6 @@
 using FileService.Domain;
-using FileService.Domain.Assets;
+using FileService.Domain.S3Entities;
+using FileService.Domain.S3Entities.Assets;
 using FileService.Infrastructure.Postgres.Configurations;
 using FileService.Infrastructure.Postgres.Database;
 using Microsoft.EntityFrameworkCore;

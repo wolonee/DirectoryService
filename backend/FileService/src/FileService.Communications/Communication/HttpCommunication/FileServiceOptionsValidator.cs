@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Options;
 
-namespace FileService.Contracts.HttpCommunication;
+namespace FileService.Communications.Communication.HttpCommunication;
 
 public sealed class FileServiceOptionsValidator : IValidateOptions<FileServiceOptions>
 {

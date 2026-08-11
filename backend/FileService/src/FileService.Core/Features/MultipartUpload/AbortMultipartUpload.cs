@@ -4,9 +4,10 @@ using DirectoryService.Application.Validation;
 using DirectoryService.Presentation.EndpointResults;
 using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
-using FileService.Contracts;
+using FileService.Contracts.Features.MultipartUpload.AbortMultipartUpload;
 using FileService.Core.Abstractions;
 using FileService.Domain;
+using FileService.Domain.S3Entities;
 using FileService.Web.EndpointsExtensions;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
@@ -14,7 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
-namespace FileService.Core.Features;
+namespace FileService.Core.Features.MultipartUpload;
 
 public sealed record AbortMultipartUploadCommand(AbortMultipartUploadRequest Request) : ICommand;
 

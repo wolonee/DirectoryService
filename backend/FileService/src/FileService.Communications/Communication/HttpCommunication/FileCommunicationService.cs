@@ -2,10 +2,13 @@ using System.Net.Http.Json;
 using CSharpFunctionalExtensions;
 using DirectoryService.Shared.Errors;
 using DirectoryService.Shared.HttpCommunication;
-using FileService.Contracts.Features.AssetExists;
+using FileService.Contracts.Features.Simple.AssetExists;
+using FileService.Contracts.Features.Simple.GetMediaAsset;
+using FileService.Contracts.Features.Simple.GetMediaAssets;
+using FileService.Contracts.Features.Simple.GetMediaAssetsByTarget;
 using Microsoft.Extensions.Logging;
 
-namespace FileService.Contracts.HttpCommunication;
+namespace FileService.Communications.Communication.HttpCommunication;
 
 internal sealed class FileCommunicationService : IFileCommunicationService
 {

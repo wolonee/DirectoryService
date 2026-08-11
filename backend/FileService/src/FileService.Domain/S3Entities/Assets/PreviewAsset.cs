@@ -1,9 +1,8 @@
-﻿using System.Drawing;
-using CSharpFunctionalExtensions;
+﻿using CSharpFunctionalExtensions;
 using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
 
-namespace FileService.Domain.Assets;
+namespace FileService.Domain.S3Entities.Assets;
 
 public class PreviewAsset : MediaAsset
 {

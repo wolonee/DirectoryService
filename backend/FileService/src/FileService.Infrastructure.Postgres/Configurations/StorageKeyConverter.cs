@@ -1,5 +1,6 @@
 using System.Text.Json;
 using FileService.Domain;
+using FileService.Domain.S3Entities;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace FileService.Infrastructure.Postgres.Configurations;

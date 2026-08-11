@@ -1,7 +1,13 @@
 using System.Net.Http.Json;
 using Amazon.S3;
 using FileService.Contracts;
+using FileService.Contracts.Features.Simple.CancelUpload;
+using FileService.Contracts.Features.Simple.CompleteUpload;
+using FileService.Contracts.Features.Simple.DeleteMediaAsset;
+using FileService.Contracts.Features.Simple.GetMediaAssetsByTarget;
+using FileService.Contracts.Features.Simple.InitiateUpload;
 using FileService.Domain;
+using FileService.Domain.S3Entities;
 using FileService.IntegrationTests.Infrastructure;
 
 namespace FileService.IntegrationTests;

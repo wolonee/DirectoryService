@@ -2,6 +2,7 @@
 using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
 using FileService.Core.Abstractions;
+using FileService.Core.Options.FileStorageOptions;
 using Microsoft.Extensions.Options;
 
 namespace FileService.Infrastructure.S3;
