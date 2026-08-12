@@ -100,11 +100,11 @@ public sealed class DeleteMediaAssetHandler
             return MediaAssetErrors.InvalidStatus(asset.Id, asset.Status).ToErrors();
         }
         
-        var keysToDelete = new HashSet<StorageKey>
-        {
-            asset.FinalKey,
-            asset.RawKey,
-        };
+        var keysToDelete = new HashSet<StorageKey>();
+        if (asset.RawKey is not null)
+            keysToDelete.Add(asset.RawKey);
+        if (asset.FinalKey is not null)
+            keysToDelete.Add(asset.FinalKey);
 
         foreach (var key in keysToDelete)
         {

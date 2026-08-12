@@ -43,7 +43,7 @@ public class AssetPoliciesTests
         Assert.True(result.IsSuccess);
         Assert.Equal(AssetType.PREVIEW, result.Value.AssetType);
         Assert.Equal(MediaStatus.UPLOADING, result.Value.Status);
-        Assert.Equal("preview", result.Value.RawKey.Bucket);
+        Assert.Equal("preview", result.Value.UploadKey.Bucket);
     }
 
     [Fact]
@@ -58,7 +58,7 @@ public class AssetPoliciesTests
     }
 
     [Fact]
-    public void PreviewAsset_CompleteUpload_MarksReadyWithRawKey()
+    public void PreviewAsset_CompleteUpload_MarksReadyWithFinalKey()
     {
         PreviewAsset asset = PreviewAsset.CreateForUpload(
             Guid.CreateVersion7(),
@@ -67,8 +67,11 @@ public class AssetPoliciesTests
             CreateOwner()).Value;
         DateTime timestamp = new(2026, 7, 20, 13, 0, 0, DateTimeKind.Utc);
 
+        // Direct upload: ключ лежит в FinalKey и доступен через UploadKey (RawKey у preview null).
+        StorageKey uploadKey = asset.UploadKey;
+
         StorageReference storageReference = StorageReference.Create(
-            asset.RawKey,
+            uploadKey,
             1_024,
             "image/webp",
             null,
@@ -79,7 +82,7 @@ public class AssetPoliciesTests
 
         Assert.True(result.IsSuccess);
         Assert.Equal(MediaStatus.READY, asset.Status);
-        Assert.Equal(asset.RawKey, asset.FinalKey);
+        Assert.Equal(uploadKey, asset.FinalKey);
         Assert.Equal(timestamp, asset.UpdatedAt);
     }
 

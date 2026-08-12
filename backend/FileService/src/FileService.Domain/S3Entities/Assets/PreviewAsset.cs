@@ -78,7 +78,7 @@ public class PreviewAsset : MediaAsset
         if (uploadedResult.IsFailure)
             return uploadedResult.Error;
 
-        var readyResult = MarkReady(RawKey, storageReference, timestamp);
+        var readyResult = MarkReady(UploadKey, storageReference, timestamp);
         if (readyResult.IsFailure)
             return readyResult.Error;
         

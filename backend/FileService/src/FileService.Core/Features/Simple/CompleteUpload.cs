@@ -103,7 +103,7 @@ public sealed class CompleteUploadHandler
         if (asset.AssetType != AssetType.PREVIEW)
             return GeneralErrors.ValueIsInvalid(nameof(asset.AssetType)).ToErrors();
 
-        var metadataResult = await _s3Provider.GetObjectMetadataAsync(asset.RawKey, cancellationToken);
+        var metadataResult = await _s3Provider.GetObjectMetadataAsync(asset.UploadKey, cancellationToken);
         if (metadataResult.IsFailure)
             return metadataResult.Error.ToErrors();
         
@@ -122,7 +122,7 @@ public sealed class CompleteUploadHandler
         }
         
         Result<StorageReference, Error> storageReferenceResult = StorageReference.Create(
-            asset.RawKey,
+            asset.UploadKey,
             metadata.ContentLength,
             metadata.ContentType ?? string.Empty,
             metadata.ETag,

@@ -144,7 +144,7 @@ public sealed class InitiateUploadHandler
 
         Result<PresignedUploadDto, Error> uploadUrlResult =
             await _s3Provider.GenerateUploadUrlAsync(
-                mediaAssetResult.Value.RawKey,
+                mediaAssetResult.Value.UploadKey,
                 mediaAssetResult.Value.MediaData.ContentType,
                 cancellationToken);
         if (uploadUrlResult.IsFailure)

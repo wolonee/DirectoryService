@@ -17,7 +17,7 @@ public abstract class MediaAsset
     
     public DateTime UpdatedAt { get; protected set; }
     
-    public StorageKey RawKey { get; protected init; } = null!;
+    public StorageKey? RawKey { get; protected init; }
     
     public StorageKey? FinalKey { get; protected set; } = null!;
 
@@ -29,7 +29,7 @@ public abstract class MediaAsset
     
     public StorageReference? StorageReference { get; protected set; }
     
-    public StorageKey UploadKey => RequiresProcessing() ? RawKey : FinalKey!;
+    public StorageKey UploadKey => RequiresProcessing() ? RawKey! : FinalKey!;
     
     protected MediaAsset()
     {

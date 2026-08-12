@@ -143,6 +143,10 @@ public class VideoProcess
         if (string.IsNullOrWhiteSpace(errorMessage))
             return Error.Validation("processing.error.required", "Error message is required");
 
+        // Если процесс валится целиком, активный шаг тоже должен уйти в FAILED,
+        // иначе состояние шага (IN_PROGRESS) разойдётся с состоянием процесса (FAILED).
+        CurrentStep?.Fail(errorMessage);
+
         Status = ProcessingStatus.FAILED;
         ErrorMessage = errorMessage;
         CompletedAt = DateTime.UtcNow;
@@ -150,7 +154,7 @@ public class VideoProcess
 
         return UnitResult.Success<Error>();
     }
-    
+
     public bool CanRetry() => RetryCount < MaxRetries && !IsCriticalError;
     
     public UnitResult<Error> Reset()

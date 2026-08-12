@@ -34,6 +34,18 @@ public class VideoProcessingConfiguration : IEntityTypeConfiguration<VideoProces
         builder.Property(x => x.CompletedAt)
             .HasColumnName("completed_at");
 
+        builder.Property(x => x.IsCriticalError)
+            .HasColumnName("is_critical_error");
+
+        builder.Property(x => x.RetryCount)
+            .HasColumnName("retry_count");
+
+        builder.Property(x => x.MaxRetries)
+            .HasColumnName("max_retries");
+
+        builder.Property(x => x.NextRetryAt)
+            .HasColumnName("next_retry_at");
+
 
         builder.OwnsMany(vp => vp.Steps, sb =>
         {

@@ -93,7 +93,7 @@ public sealed class CancelUploadHandler
             return MediaAssetErrors.InvalidStatus(asset.Id, asset.Status).ToErrors();
         }
 
-        var deleteResult = await _s3Provider.DeleteObjectAsync(asset.RawKey, cancellationToken);
+        var deleteResult = await _s3Provider.DeleteObjectAsync(asset.UploadKey, cancellationToken);
         if (deleteResult.IsFailure)
         {
             _logger.LogError("Media was not deleted");
