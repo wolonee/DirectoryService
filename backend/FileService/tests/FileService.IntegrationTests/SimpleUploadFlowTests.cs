@@ -50,8 +50,8 @@ public sealed class SimpleUploadFlowTests(FileServiceTestWebFactory factory) : F
         Assert.Equal(ImageBytes.Length, asset.StorageReference.Size);
 
         GetObjectMetadataResponse metadata = await Factory.S3Client.GetObjectMetadataAsync(
-            asset.RawKey.Bucket,
-            asset.RawKey.Value);
+            asset.UploadKey.Bucket,
+            asset.UploadKey.Value);
         Assert.Equal(ImageBytes.Length, metadata.Headers.ContentLength);
         Assert.Equal("image/png", metadata.ContentType);
     }

@@ -40,8 +40,8 @@ public sealed class FileLifecycleTests(FileServiceTestWebFactory factory) : File
         var asset = await GetAssetAsync(initiated.FileId);
         Assert.Equal(MediaStatus.DELETED, asset.Status);
         await Assert.ThrowsAsync<AmazonS3Exception>(() => Factory.S3Client.GetObjectMetadataAsync(
-            asset.RawKey.Bucket,
-            asset.RawKey.Value));
+            asset.UploadKey.Bucket,
+            asset.UploadKey.Value));
     }
 
     [Fact]
@@ -59,8 +59,8 @@ public sealed class FileLifecycleTests(FileServiceTestWebFactory factory) : File
         var asset = await GetAssetAsync(initiated.FileId);
         Assert.Equal(MediaStatus.DELETED, asset.Status);
         await Assert.ThrowsAsync<AmazonS3Exception>(() => Factory.S3Client.GetObjectMetadataAsync(
-            asset.RawKey.Bucket,
-            asset.RawKey.Value));
+            asset.UploadKey.Bucket,
+            asset.UploadKey.Value));
     }
 
     [Fact]
