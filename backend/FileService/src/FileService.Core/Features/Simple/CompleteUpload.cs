@@ -4,10 +4,11 @@ using DirectoryService.Application.Validation;
 using DirectoryService.Presentation.EndpointResults;
 using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
-using FileService.Contracts;
+using FileService.Contracts.Features.Simple.CompleteUpload;
 using FileService.Core.Abstractions;
 using FileService.Domain;
-using FileService.Domain.Assets;
+using FileService.Domain.S3Entities;
+using FileService.Domain.S3Entities.Assets;
 using FileService.Web.EndpointsExtensions;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
@@ -15,7 +16,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
-namespace FileService.Core.Features.SimpleUpload;
+namespace FileService.Core.Features.Simple;
 
 public sealed record CompleteUploadCommand(Guid FileId) : ICommand;
 
@@ -102,7 +103,7 @@ public sealed class CompleteUploadHandler
         if (asset.AssetType != AssetType.PREVIEW)
             return GeneralErrors.ValueIsInvalid(nameof(asset.AssetType)).ToErrors();
 
-        var metadataResult = await _s3Provider.GetObjectMetadataAsync(asset.RawKey, cancellationToken);
+        var metadataResult = await _s3Provider.GetObjectMetadataAsync(asset.UploadKey, cancellationToken);
         if (metadataResult.IsFailure)
             return metadataResult.Error.ToErrors();
         
@@ -121,7 +122,7 @@ public sealed class CompleteUploadHandler
         }
         
         Result<StorageReference, Error> storageReferenceResult = StorageReference.Create(
-            asset.RawKey,
+            asset.UploadKey,
             metadata.ContentLength,
             metadata.ContentType ?? string.Empty,
             metadata.ETag,

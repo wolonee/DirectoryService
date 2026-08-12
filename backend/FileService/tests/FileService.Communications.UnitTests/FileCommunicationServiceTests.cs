@@ -3,8 +3,11 @@ using System.Text;
 using System.Text.Json;
 using CSharpFunctionalExtensions;
 using DirectoryService.Shared.Errors;
+using FileService.Communications.Communication.HttpCommunication;
 using FileService.Contracts;
-using FileService.Contracts.HttpCommunication;
+using FileService.Contracts.Features.Simple.GetMediaAsset;
+using FileService.Contracts.Features.Simple.GetMediaAssets;
+using FileService.Contracts.Shared;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 

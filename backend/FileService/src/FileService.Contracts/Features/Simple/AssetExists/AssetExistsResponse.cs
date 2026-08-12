@@ -1,3 +1,3 @@
-﻿namespace FileService.Contracts.Features.AssetExists;
+﻿namespace FileService.Contracts.Features.Simple.AssetExists;
 
 public record AssetExistsResponse(bool Exists);

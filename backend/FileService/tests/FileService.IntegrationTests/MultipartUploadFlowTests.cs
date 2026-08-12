@@ -1,8 +1,12 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using FileService.Contracts;
+using FileService.Contracts.Features.MultipartUpload.AbortMultipartUpload;
+using FileService.Contracts.Features.MultipartUpload.CompleteMultipartUpload;
+using FileService.Contracts.Features.MultipartUpload.StartMultipartUpload;
 using FileService.Domain;
-using FileService.Domain.Assets;
+using FileService.Domain.S3Entities;
+using FileService.Domain.S3Entities.Assets;
 using FileService.IntegrationTests.Infrastructure;
 
 namespace FileService.IntegrationTests;

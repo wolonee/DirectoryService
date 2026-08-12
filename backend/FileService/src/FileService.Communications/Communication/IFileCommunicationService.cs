@@ -1,8 +1,11 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Shared.Errors;
-using FileService.Contracts.Features.AssetExists;
+using FileService.Contracts.Features.Simple.AssetExists;
+using FileService.Contracts.Features.Simple.GetMediaAsset;
+using FileService.Contracts.Features.Simple.GetMediaAssets;
+using FileService.Contracts.Features.Simple.GetMediaAssetsByTarget;
 
-namespace FileService.Contracts.HttpCommunication;
+namespace FileService.Communications.Communication;
 
 public interface IFileCommunicationService
 {

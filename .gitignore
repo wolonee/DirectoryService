@@ -1,3 +1,6 @@
 .DS_Store
 nuget.config
 .env
+
+# Node dependencies (never commit installed packages)
+node_modules/

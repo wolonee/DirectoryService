@@ -4,9 +4,10 @@ using DirectoryService.Application.Validation;
 using DirectoryService.Presentation.EndpointResults;
 using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
-using FileService.Contracts;
+using FileService.Contracts.Features.Simple.CancelUpload;
 using FileService.Core.Abstractions;
 using FileService.Domain;
+using FileService.Domain.S3Entities;
 using FileService.Web.EndpointsExtensions;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
@@ -14,7 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
-namespace FileService.Core.Features.SimpleUpload;
+namespace FileService.Core.Features.Simple;
 
 public sealed record CancelUploadCommand(Guid FileId) : ICommand;
 
@@ -92,7 +93,7 @@ public sealed class CancelUploadHandler
             return MediaAssetErrors.InvalidStatus(asset.Id, asset.Status).ToErrors();
         }
 
-        var deleteResult = await _s3Provider.DeleteObjectAsync(asset.RawKey, cancellationToken);
+        var deleteResult = await _s3Provider.DeleteObjectAsync(asset.UploadKey, cancellationToken);
         if (deleteResult.IsFailure)
         {
             _logger.LogError("Media was not deleted");

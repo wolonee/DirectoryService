@@ -1,4 +1,4 @@
-namespace FileService.Contracts;
+namespace FileService.Contracts.Features.Simple.GetMediaAssetsByTarget;
 
 /// <summary>
 /// Параметры поиска активных файлов, прикреплённых к внешней сущности.

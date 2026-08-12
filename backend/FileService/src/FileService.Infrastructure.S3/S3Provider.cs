@@ -4,10 +4,16 @@ using Amazon.S3.Util;
 using CSharpFunctionalExtensions;
 using DirectoryService.Shared.Errors;
 using FileService.Contracts;
+using FileService.Contracts.Features.MultipartUpload.CompleteMultipartUpload;
+using FileService.Contracts.Features.MultipartUpload.StartMultipartUpload;
+using FileService.Contracts.Features.Simple.InitiateUpload;
+using FileService.Contracts.Shared;
 using FileService.Core;
+using FileService.Core.Abstractions;
 using FileService.Core.Models;
+using FileService.Core.Options.FileStorageOptions;
 using FileService.Domain;
-using FileService.Domain.Assets;
+using FileService.Domain.S3Entities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 

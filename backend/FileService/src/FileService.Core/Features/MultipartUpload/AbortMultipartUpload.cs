@@ -4,9 +4,10 @@ using DirectoryService.Application.Validation;
 using DirectoryService.Presentation.EndpointResults;
 using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
-using FileService.Contracts;
+using FileService.Contracts.Features.MultipartUpload.AbortMultipartUpload;
 using FileService.Core.Abstractions;
 using FileService.Domain;
+using FileService.Domain.S3Entities;
 using FileService.Web.EndpointsExtensions;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
@@ -14,7 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
-namespace FileService.Core.Features;
+namespace FileService.Core.Features.MultipartUpload;
 
 public sealed record AbortMultipartUploadCommand(AbortMultipartUploadRequest Request) : ICommand;
 
@@ -106,7 +107,7 @@ public sealed class AbortMultipartUploadHandler
         if (asset.MultipartUploadId != request.UploadId)
             return MediaAssetErrors.InvalidMultipartUploadId(asset.Id).ToErrors();
         
-        var deleteResult = await _s3Provider.AbortMultipartUploadAsync(asset.RawKey, asset.MultipartUploadId, cancellationToken);
+        var deleteResult = await _s3Provider.AbortMultipartUploadAsync(asset.UploadKey, asset.MultipartUploadId, cancellationToken);
         if (deleteResult.IsFailure)
             return deleteResult.Error.ToErrors();
         

@@ -3,9 +3,8 @@ using DirectoryService.Application.Abstractions;
 using DirectoryService.Presentation.EndpointResults;
 using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
-using FileService.Contracts.Features.AssetExists;
+using FileService.Contracts.Features.Simple.AssetExists;
 using FileService.Core.Abstractions;
-using FileService.Domain;
 using FileService.Web.EndpointsExtensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
@@ -13,7 +12,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace FileService.Core.Features.SimpleUpload;
+namespace FileService.Core.Features.Simple;
 
 public sealed record AssetExistsQuery(AssetExistsRequest Request) : IQuery;
 

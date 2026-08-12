@@ -2,7 +2,7 @@
 using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
 
-namespace FileService.Domain.Assets;
+namespace FileService.Domain.S3Entities.Assets;
 
 public class VideoAsset : MediaAsset
 {
@@ -26,9 +26,9 @@ public class VideoAsset : MediaAsset
         MediaUsage usage,
         MediaStatus status,
         MediaOwner owner,
-        StorageKey rawKey,
+        StorageKey key,
         StorageKey hlsRootKey)
-        : base(id, mediaData, status, AssetType.VIDEO, usage, owner, rawKey, StorageKey.None)
+        : base(id, mediaData, status, AssetType.VIDEO, usage, owner, key, false)
     {
         HlsRootKey = hlsRootKey;
     }
@@ -100,4 +100,6 @@ public class VideoAsset : MediaAsset
         
         return UnitResult.Success<Error>();
     }
+
+    public override bool RequiresProcessing() => true;
 }

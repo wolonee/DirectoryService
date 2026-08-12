@@ -1,7 +1,13 @@
 using System.Net.Http.Json;
 using Amazon.S3;
 using FileService.Contracts;
+using FileService.Contracts.Features.Simple.CancelUpload;
+using FileService.Contracts.Features.Simple.CompleteUpload;
+using FileService.Contracts.Features.Simple.DeleteMediaAsset;
+using FileService.Contracts.Features.Simple.GetMediaAssetsByTarget;
+using FileService.Contracts.Features.Simple.InitiateUpload;
 using FileService.Domain;
+using FileService.Domain.S3Entities;
 using FileService.IntegrationTests.Infrastructure;
 
 namespace FileService.IntegrationTests;
@@ -34,8 +40,8 @@ public sealed class FileLifecycleTests(FileServiceTestWebFactory factory) : File
         var asset = await GetAssetAsync(initiated.FileId);
         Assert.Equal(MediaStatus.DELETED, asset.Status);
         await Assert.ThrowsAsync<AmazonS3Exception>(() => Factory.S3Client.GetObjectMetadataAsync(
-            asset.RawKey.Bucket,
-            asset.RawKey.Value));
+            asset.UploadKey.Bucket,
+            asset.UploadKey.Value));
     }
 
     [Fact]
@@ -53,8 +59,8 @@ public sealed class FileLifecycleTests(FileServiceTestWebFactory factory) : File
         var asset = await GetAssetAsync(initiated.FileId);
         Assert.Equal(MediaStatus.DELETED, asset.Status);
         await Assert.ThrowsAsync<AmazonS3Exception>(() => Factory.S3Client.GetObjectMetadataAsync(
-            asset.RawKey.Bucket,
-            asset.RawKey.Value));
+            asset.UploadKey.Bucket,
+            asset.UploadKey.Value));
     }
 
     [Fact]

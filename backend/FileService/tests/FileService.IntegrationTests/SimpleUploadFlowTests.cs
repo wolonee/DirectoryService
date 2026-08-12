@@ -3,8 +3,12 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Amazon.S3.Model;
 using FileService.Contracts;
+using FileService.Contracts.Features.Simple.CompleteUpload;
+using FileService.Contracts.Features.Simple.GetMediaAsset;
+using FileService.Contracts.Features.Simple.InitiateUpload;
 using FileService.Domain;
-using FileService.Domain.Assets;
+using FileService.Domain.S3Entities;
+using FileService.Domain.S3Entities.Assets;
 using FileService.IntegrationTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
@@ -46,8 +50,8 @@ public sealed class SimpleUploadFlowTests(FileServiceTestWebFactory factory) : F
         Assert.Equal(ImageBytes.Length, asset.StorageReference.Size);
 
         GetObjectMetadataResponse metadata = await Factory.S3Client.GetObjectMetadataAsync(
-            asset.RawKey.Bucket,
-            asset.RawKey.Value);
+            asset.UploadKey.Bucket,
+            asset.UploadKey.Value);
         Assert.Equal(ImageBytes.Length, metadata.Headers.ContentLength);
         Assert.Equal("image/png", metadata.ContentType);
     }

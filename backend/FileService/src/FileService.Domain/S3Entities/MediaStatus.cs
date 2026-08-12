@@ -1,7 +1,8 @@
-﻿namespace FileService.Domain;
+﻿namespace FileService.Domain.S3Entities;
 
 public enum MediaStatus
 {
+    PROCESSING,
     UPLOADING,
     UPLOADED,
     READY,

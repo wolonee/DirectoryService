@@ -1,5 +1,6 @@
 ﻿using Amazon.S3;
 using Amazon.S3.Util;
+using FileService.Core.Options.FileStorageOptions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

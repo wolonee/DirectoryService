@@ -1,4 +1,4 @@
-namespace FileService.Core.Options;
+namespace FileService.Core.Options.CacheOptions;
 
 public record CacheOptions
 {

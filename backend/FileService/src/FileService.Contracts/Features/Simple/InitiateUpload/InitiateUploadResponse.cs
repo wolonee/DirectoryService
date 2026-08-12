@@ -1,4 +1,4 @@
-﻿namespace FileService.Contracts;
+﻿namespace FileService.Contracts.Features.Simple.InitiateUpload;
 
 public record InitiateUploadResponse
 {

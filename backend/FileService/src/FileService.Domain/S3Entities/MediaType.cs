@@ -1,4 +1,4 @@
-﻿namespace FileService.Domain;
+﻿namespace FileService.Domain.S3Entities;
 
 public enum MediaType
 {

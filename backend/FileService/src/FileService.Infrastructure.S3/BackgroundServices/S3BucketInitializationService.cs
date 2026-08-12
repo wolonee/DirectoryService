@@ -1,10 +1,11 @@
-using FileService.Core;
+using FileService.Core.Abstractions;
+using FileService.Core.Options.FileStorageOptions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace FileService.Infrastructure.S3;
+namespace FileService.Infrastructure.S3.BackgroundServices;
 
 public class S3BucketInitializationService : BackgroundService
 {

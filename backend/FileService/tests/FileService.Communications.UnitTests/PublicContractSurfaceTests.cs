@@ -1,5 +1,8 @@
 using System.Text.Json;
 using FileService.Contracts;
+using FileService.Contracts.Features.Simple.GetMediaAsset;
+using FileService.Contracts.Features.Simple.GetMediaAssets;
+using FileService.Contracts.Shared;
 using Xunit;
 
 namespace FileService.Communications.UnitTests;

@@ -23,7 +23,7 @@ namespace FileService.Infrastructure.Postgres.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("FileService.Domain.Assets.MediaAsset", b =>
+            modelBuilder.Entity("FileService.Domain.S3Entities.Assets.MediaAsset", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -40,7 +40,6 @@ namespace FileService.Infrastructure.Postgres.Migrations
                         .HasColumnName("created_at");
 
                     b.Property<string>("FinalKey")
-                        .IsRequired()
                         .HasColumnType("jsonb")
                         .HasColumnName("final_key");
 
@@ -49,7 +48,6 @@ namespace FileService.Infrastructure.Postgres.Migrations
                         .HasColumnName("multipart_upload_id");
 
                     b.Property<string>("RawKey")
-                        .IsRequired()
                         .HasColumnType("jsonb")
                         .HasColumnName("raw_key");
 
@@ -84,16 +82,78 @@ namespace FileService.Infrastructure.Postgres.Migrations
                     b.UseTphMappingStrategy();
                 });
 
-            modelBuilder.Entity("FileService.Domain.Assets.PreviewAsset", b =>
+            modelBuilder.Entity("FileService.Domain.S3Entities.MediaProcessing.VideoProcess", b =>
                 {
-                    b.HasBaseType("FileService.Domain.Assets.MediaAsset");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("text")
+                        .HasColumnName("error_message");
+
+                    b.Property<bool>("IsCriticalError")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_critical_error");
+
+                    b.Property<int>("MaxRetries")
+                        .HasColumnType("integer")
+                        .HasColumnName("max_retries");
+
+                    b.Property<DateTime?>("NextRetryAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("next_retry_at");
+
+                    b.Property<int>("ProgressPercentage")
+                        .HasColumnType("integer")
+                        .HasColumnName("overall_progress_percentage");
+
+                    b.Property<int>("RetryCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("retry_count");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("started_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("VideoAssetId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("video_asset_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("ix_video_processing_status");
+
+                    b.HasIndex("VideoAssetId")
+                        .HasDatabaseName("ix_video_processing_video_asset_id");
+
+                    b.HasIndex("Status", "StartedAt")
+                        .HasDatabaseName("ix_video_processing_status_started_at");
+
+                    b.ToTable("video_processing", "files");
+                });
+
+            modelBuilder.Entity("FileService.Domain.S3Entities.Assets.PreviewAsset", b =>
+                {
+                    b.HasBaseType("FileService.Domain.S3Entities.Assets.MediaAsset");
 
                     b.HasDiscriminator().HasValue("PREVIEW");
                 });
 
-            modelBuilder.Entity("FileService.Domain.Assets.VideoAsset", b =>
+            modelBuilder.Entity("FileService.Domain.S3Entities.Assets.VideoAsset", b =>
                 {
-                    b.HasBaseType("FileService.Domain.Assets.MediaAsset");
+                    b.HasBaseType("FileService.Domain.S3Entities.Assets.MediaAsset");
 
                     b.Property<string>("HlsRootKey")
                         .IsRequired()
@@ -105,9 +165,9 @@ namespace FileService.Infrastructure.Postgres.Migrations
                     b.HasDiscriminator().HasValue("VIDEO");
                 });
 
-            modelBuilder.Entity("FileService.Domain.Assets.MediaAsset", b =>
+            modelBuilder.Entity("FileService.Domain.S3Entities.Assets.MediaAsset", b =>
                 {
-                    b.OwnsOne("FileService.Domain.MediaData", "MediaData", b1 =>
+                    b.OwnsOne("FileService.Domain.S3Entities.MediaData", "MediaData", b1 =>
                         {
                             b1.Property<Guid>("MediaAssetId")
                                 .HasColumnType("uuid");
@@ -130,7 +190,7 @@ namespace FileService.Infrastructure.Postgres.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("MediaAssetId");
 
-                            b1.OwnsOne("FileService.Domain.ContentType", "ContentType", b2 =>
+                            b1.OwnsOne("FileService.Domain.S3Entities.ContentType", "ContentType", b2 =>
                                 {
                                     b2.Property<Guid>("MediaDataMediaAssetId")
                                         .HasColumnType("uuid");
@@ -153,7 +213,7 @@ namespace FileService.Infrastructure.Postgres.Migrations
                                         .HasForeignKey("MediaDataMediaAssetId");
                                 });
 
-                            b1.OwnsOne("FileService.Domain.FileName", "FileName", b2 =>
+                            b1.OwnsOne("FileService.Domain.S3Entities.FileName", "FileName", b2 =>
                                 {
                                     b2.Property<Guid>("MediaDataMediaAssetId")
                                         .HasColumnType("uuid");
@@ -183,7 +243,7 @@ namespace FileService.Infrastructure.Postgres.Migrations
                                 .IsRequired();
                         });
 
-                    b.OwnsOne("FileService.Domain.MediaOwner", "Owner", b1 =>
+                    b.OwnsOne("FileService.Domain.S3Entities.MediaOwner", "Owner", b1 =>
                         {
                             b1.Property<Guid>("MediaAssetId")
                                 .HasColumnType("uuid");
@@ -211,7 +271,7 @@ namespace FileService.Infrastructure.Postgres.Migrations
                                 .HasForeignKey("MediaAssetId");
                         });
 
-                    b.OwnsOne("FileService.Domain.StorageReference", "StorageReference", b1 =>
+                    b.OwnsOne("FileService.Domain.S3Entities.StorageReference", "StorageReference", b1 =>
                         {
                             b1.Property<Guid>("MediaAssetId")
                                 .HasColumnType("uuid");
@@ -257,6 +317,72 @@ namespace FileService.Infrastructure.Postgres.Migrations
                         .IsRequired();
 
                     b.Navigation("StorageReference");
+                });
+
+            modelBuilder.Entity("FileService.Domain.S3Entities.MediaProcessing.VideoProcess", b =>
+                {
+                    b.OwnsMany("FileService.Domain.S3Entities.MediaProcessing.ProcessingStep", "Steps", b1 =>
+                        {
+                            b1.Property<Guid>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("uuid")
+                                .HasColumnName("id");
+
+                            b1.Property<DateTime?>("CompletedAt")
+                                .HasColumnType("timestamp with time zone")
+                                .HasColumnName("completed_at");
+
+                            b1.Property<string>("ErrorMessage")
+                                .HasColumnType("text")
+                                .HasColumnName("error_message");
+
+                            b1.Property<int>("Order")
+                                .HasColumnType("integer")
+                                .HasColumnName("order");
+
+                            b1.Property<string>("ResultData")
+                                .HasColumnType("jsonb")
+                                .HasColumnName("result_data");
+
+                            b1.Property<DateTime?>("StartedAt")
+                                .HasColumnType("timestamp with time zone")
+                                .HasColumnName("started_at");
+
+                            b1.Property<string>("Status")
+                                .IsRequired()
+                                .HasColumnType("text")
+                                .HasColumnName("status");
+
+                            b1.Property<string>("StepType")
+                                .IsRequired()
+                                .HasColumnType("text")
+                                .HasColumnName("step_type");
+
+                            b1.Property<Guid>("VideoProcessingId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("video_processing_id");
+
+                            b1.Property<int>("Weight")
+                                .HasColumnType("integer")
+                                .HasColumnName("weight");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("Status")
+                                .HasDatabaseName("ix_processing_steps_status");
+
+                            b1.HasIndex("StepType")
+                                .HasDatabaseName("ix_processing_steps_step_type");
+
+                            b1.HasIndex("VideoProcessingId");
+
+                            b1.ToTable("processing_steps", "files");
+
+                            b1.WithOwner()
+                                .HasForeignKey("VideoProcessingId");
+                        });
+
+                    b.Navigation("Steps");
                 });
 #pragma warning restore 612, 618
         }

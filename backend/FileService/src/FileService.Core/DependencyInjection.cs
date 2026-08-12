@@ -1,7 +1,9 @@
 using DirectoryService.Application.Abstractions;
 using FileService.Core.Features;
-using FileService.Core.Features.SimpleUpload;
+using FileService.Core.Features.MultipartUpload;
+using FileService.Core.Features.Simple;
 using FileService.Core.Options;
+using FileService.Core.Options.CacheOptions;
 using FileService.Domain;
 using FileService.Web.EndpointsExtensions;
 using FluentValidation;

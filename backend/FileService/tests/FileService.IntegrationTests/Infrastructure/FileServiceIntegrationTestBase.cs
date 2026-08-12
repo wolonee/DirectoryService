@@ -2,7 +2,8 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using FileService.Contracts;
-using FileService.Domain.Assets;
+using FileService.Contracts.Features.Simple.InitiateUpload;
+using FileService.Domain.S3Entities.Assets;
 using Microsoft.EntityFrameworkCore;
 
 namespace FileService.IntegrationTests.Infrastructure;

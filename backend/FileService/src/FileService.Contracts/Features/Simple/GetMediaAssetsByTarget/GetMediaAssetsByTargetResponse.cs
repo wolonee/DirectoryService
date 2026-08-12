@@ -1,4 +1,4 @@
-namespace FileService.Contracts;
+namespace FileService.Contracts.Features.Simple.GetMediaAssetsByTarget;
 
 /// <summary>
 /// Список активных файлов внешней сущности.

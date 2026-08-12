@@ -1,13 +1,12 @@
-using FileService.Infrastructure.S3;
 using Microsoft.Extensions.Options;
 
-namespace FileService.Core.Options;
+namespace FileService.Core.Options.CacheOptions;
 
 public sealed class CacheOptionsValidator : IValidateOptions<CacheOptions>
 {
-    private readonly FileStorageOptions _fileStorageOptions;
+    private readonly FileStorageOptions.FileStorageOptions _fileStorageOptions;
 
-    public CacheOptionsValidator(IOptions<FileStorageOptions> fileStorageOptions)
+    public CacheOptionsValidator(IOptions<FileStorageOptions.FileStorageOptions> fileStorageOptions)
     {
         _fileStorageOptions = fileStorageOptions.Value;
     }

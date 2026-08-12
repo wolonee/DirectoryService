@@ -2,7 +2,7 @@
 using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
 using FileService.Core.Abstractions;
-using FileService.Domain.Assets;
+using FileService.Domain.S3Entities.Assets;
 using FileService.Infrastructure.Postgres.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

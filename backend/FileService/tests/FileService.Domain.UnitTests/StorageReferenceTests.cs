@@ -1,4 +1,5 @@
 using FileService.Domain;
+using FileService.Domain.S3Entities;
 
 namespace FileService.Domain.UnitTests;
 

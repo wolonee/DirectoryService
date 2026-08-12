@@ -1,4 +1,4 @@
-﻿using FileService.Domain.Assets;
+﻿using FileService.Domain.S3Entities.Assets;
 
 namespace FileService.Core.Abstractions;
 

@@ -1,7 +1,7 @@
 using System.Net;
 using DirectoryService.Shared.Errors;
 
-namespace FileService.Contracts.HttpCommunication;
+namespace FileService.Communications.Communication.HttpCommunication;
 
 public static class FileServiceClientErrors
 {
