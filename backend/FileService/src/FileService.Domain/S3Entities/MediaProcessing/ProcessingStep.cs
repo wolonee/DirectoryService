@@ -50,7 +50,8 @@ public class ProcessingStep
     
     internal UnitResult<Error> Complete(string? resultData = null)
     {
-        if (Status != StepStatus.IN_PROGRESS) return Error.Validation("step.invalid.status", $"Can only complete step from IN_PROGRESS status, current: {Status}");
+        if (Status != StepStatus.IN_PROGRESS) 
+            return Error.Validation("step.invalid.status", $"Can only complete step from IN_PROGRESS status, current: {Status}");
 
         Status = StepStatus.COMPLETED;
         ResultData = resultData;

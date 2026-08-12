@@ -26,9 +26,9 @@ public class VideoAsset : MediaAsset
         MediaUsage usage,
         MediaStatus status,
         MediaOwner owner,
-        StorageKey rawKey,
+        StorageKey key,
         StorageKey hlsRootKey)
-        : base(id, mediaData, status, AssetType.VIDEO, usage, owner, rawKey, StorageKey.None)
+        : base(id, mediaData, status, AssetType.VIDEO, usage, owner, key, false)
     {
         HlsRootKey = hlsRootKey;
     }

@@ -2,6 +2,7 @@
 
 public enum MediaStatus
 {
+    PROCESSING,
     UPLOADING,
     UPLOADED,
     READY,

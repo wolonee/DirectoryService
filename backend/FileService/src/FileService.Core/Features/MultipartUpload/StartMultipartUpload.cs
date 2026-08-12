@@ -146,7 +146,7 @@ public sealed class StartMultipartUploadHandler
             return addResult.Error.ToErrors();
         }
 
-        Result<string, Error> uploadIdResult = await _s3Provider.StartMultipartUploadAsync(mediaAsset.RawKey, contentType, cancellationToken);
+        Result<string, Error> uploadIdResult = await _s3Provider.StartMultipartUploadAsync(mediaAsset.UploadKey, contentType, cancellationToken);
         if (uploadIdResult.IsFailure)
         {
             _logger.LogError("Starting multipart upload failed for media asset {MediaAssetId}", mediaAsset.Id);
@@ -161,7 +161,7 @@ public sealed class StartMultipartUploadHandler
         if (saveUploadIdResult.IsFailure)
             return saveUploadIdResult.Error.ToErrors();
         
-        Result<IReadOnlyList<MultipartPartUploadDto>, Error> generateAllChunksResult = await _s3Provider.GenerateAllChunksUploadUrlsAsync(mediaAsset.RawKey, uploadIdResult.Value, totalChunks, cancellationToken);
+        Result<IReadOnlyList<MultipartPartUploadDto>, Error> generateAllChunksResult = await _s3Provider.GenerateAllChunksUploadUrlsAsync(mediaAsset.UploadKey, uploadIdResult.Value, totalChunks, cancellationToken);
         if (generateAllChunksResult.IsFailure)
         {
             _logger.LogError("Generating multipart part URLs failed for media asset {MediaAssetId}", mediaAsset.Id);

@@ -1,5 +1,6 @@
 ﻿using FileService.Core.Abstractions;
 using FileService.Domain.S3Entities.Assets;
+using FileService.Domain.S3Entities.MediaProcessing;
 using Microsoft.EntityFrameworkCore;
 
 namespace FileService.Infrastructure.Postgres.Database;
@@ -18,6 +19,8 @@ public class FileServiceDbContext : DbContext, IReadDbContext
     public DbSet<VideoAsset> VideoAssets => Set<VideoAsset>();
 
     public DbSet<PreviewAsset> PreviewAssets => Set<PreviewAsset>();
+    
+    public DbSet<VideoProcess> VideoProcesses => Set<VideoProcess>();
     
     public IQueryable<MediaAsset> MediaAssetsQuery => MediaAssets.AsQueryable().AsNoTracking();
 

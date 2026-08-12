@@ -86,7 +86,6 @@ public class VideoProcessingConfiguration : IEntityTypeConfiguration<VideoProces
                 .HasDatabaseName("ix_processing_steps_status");
         });
 
-
         builder.HasIndex(x => x.VideoAssetId)
             .HasDatabaseName("ix_video_processing_video_asset_id");
 

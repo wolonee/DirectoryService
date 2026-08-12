@@ -107,7 +107,7 @@ public sealed class AbortMultipartUploadHandler
         if (asset.MultipartUploadId != request.UploadId)
             return MediaAssetErrors.InvalidMultipartUploadId(asset.Id).ToErrors();
         
-        var deleteResult = await _s3Provider.AbortMultipartUploadAsync(asset.RawKey, asset.MultipartUploadId, cancellationToken);
+        var deleteResult = await _s3Provider.AbortMultipartUploadAsync(asset.UploadKey, asset.MultipartUploadId, cancellationToken);
         if (deleteResult.IsFailure)
             return deleteResult.Error.ToErrors();
         

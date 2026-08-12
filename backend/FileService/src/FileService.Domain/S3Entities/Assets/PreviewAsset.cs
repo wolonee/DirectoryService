@@ -25,7 +25,7 @@ public class PreviewAsset : MediaAsset
         MediaStatus status,
         MediaOwner owner,
         StorageKey key)
-        : base(id, mediaData, status, AssetType.PREVIEW, usage, owner, key, StorageKey.None)
+        : base(id, mediaData, status, AssetType.PREVIEW, usage, owner, key, true)
     {
     }
 
@@ -58,7 +58,7 @@ public class PreviewAsset : MediaAsset
             keyResult.Value);
     }
 
-    public static UnitResult<Error> ValidateForUpload(MediaData mediaData)
+    private static UnitResult<Error> ValidateForUpload(MediaData mediaData)
     {
         if (!AllowedExtensions.Contains(mediaData.FileName.Extension))
             return GeneralErrors.ValueIsInvalid("Extension");
@@ -84,4 +84,6 @@ public class PreviewAsset : MediaAsset
         
         return UnitResult.Success<Error>();
     }
+    
+    public override bool RequiresProcessing() => false;
 }

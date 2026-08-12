@@ -17,7 +17,7 @@ public abstract class MediaAsset
     
     public DateTime UpdatedAt { get; protected set; }
     
-    public StorageKey? RawKey { get; protected init; } = null!;
+    public StorageKey RawKey { get; protected init; } = null!;
     
     public StorageKey? FinalKey { get; protected set; } = null!;
 
@@ -29,7 +29,7 @@ public abstract class MediaAsset
     
     public StorageReference? StorageReference { get; protected set; }
     
-    public StorageKey? UploadKey => RequiresProcessing() ? RawKey! : FinalKey;
+    public StorageKey UploadKey => RequiresProcessing() ? RawKey : FinalKey!;
     
     protected MediaAsset()
     {
@@ -42,8 +42,8 @@ public abstract class MediaAsset
         AssetType type,
         MediaUsage usage,
         MediaOwner owner,
-        StorageKey rawKey,
-        StorageKey finalKey)
+        StorageKey key,
+        bool isDirectUpload)
     {
         Id = id;
         MediaData = mediaData;
@@ -53,8 +53,11 @@ public abstract class MediaAsset
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
         Owner = owner;
-        RawKey = rawKey;
-        FinalKey = finalKey;
+
+        if (isDirectUpload)
+            FinalKey = key;
+        else
+            RawKey = key;
     }
 
     private static bool IsAllowedTransition(MediaStatus currentStatus, MediaStatus newStatus) =>
@@ -66,6 +69,11 @@ public abstract class MediaAsset
             (MediaStatus.UPLOADED, MediaStatus.READY) => true,
             (MediaStatus.UPLOADED, MediaStatus.FAILED) => true,
             (MediaStatus.UPLOADED, MediaStatus.DELETED) => true,
+            (MediaStatus.UPLOADED, MediaStatus.PROCESSING) => true,
+            (MediaStatus.PROCESSING, MediaStatus.READY) => true,
+            (MediaStatus.PROCESSING, MediaStatus.FAILED) => true,
+            (MediaStatus.PROCESSING, MediaStatus.DELETED) => true,
+            (MediaStatus.FAILED, MediaStatus.PROCESSING) => true,
             (MediaStatus.READY, MediaStatus.DELETED) => true,
             (MediaStatus.FAILED, MediaStatus.DELETED) => true,
             _ => false,

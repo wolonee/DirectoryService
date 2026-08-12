@@ -73,12 +73,7 @@ public class VideoProcess
     public Result<ProcessingStep?, Error> ProcessNextStep()
     {
         if (Status != ProcessingStatus.IN_PROGRESS)
-        {
-            return Error.Failure(
-                "processing.invalid.status",
-                $"Cannot process step when status is {Status}"
-            );
-        }
+            return Error.Failure("processing.invalid.status", $"Cannot process step when status is {Status}");
 
         ProcessingStep? currentStep = CurrentStep;
         if (currentStep is not null)

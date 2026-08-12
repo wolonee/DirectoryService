@@ -87,15 +87,15 @@ public sealed class GetMediaAssetsHandler
             .Where(x => fileIds.Contains(x.Id) && x.Status != MediaStatus.DELETED)
             .ToListAsync(cancellationToken: cancellationToken);
 
-        List<MediaAsset> readyMediaAssets = mediaAssets.Where(x => x.Status == MediaStatus.READY).ToList();
-        List<StorageKey> keys = readyMediaAssets.Select(x => x.FinalKey).ToList();
+        List<MediaAsset> readyMediaAssets = mediaAssets.Where(x => x.Status == MediaStatus.READY && x.FinalKey != null).ToList();
+        List<StorageKey> keys = readyMediaAssets.Select(x => x.FinalKey!).ToList();
 
         Dictionary<StorageKey, string?> urlsDict = await GetPresignedUrlsFromCacheAsync(keys, cancellationToken);
 
         var response = new List<GetMediaAssetDto>();
         foreach (var mediaAsset in mediaAssets)
         {
-            urlsDict.TryGetValue(mediaAsset.FinalKey, out string? url);
+            urlsDict.TryGetValue(mediaAsset.FinalKey!, out string? url);
 
             var res = new GetMediaAssetDto(
                 mediaAsset.Id,

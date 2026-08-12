@@ -134,7 +134,7 @@ public sealed class CompleteMultipartUploadHandler
         }
 
         var completeMultipartResult = await _s3Provider.CompleteMultipartUploadAsync(
-            asset.RawKey,
+            asset.UploadKey,
             asset.MultipartUploadId,
             request.Parts,
             cancellationToken);
@@ -144,7 +144,7 @@ public sealed class CompleteMultipartUploadHandler
             return completeMultipartResult.Error.ToErrors();
         }
         
-        var metadataResult = await _s3Provider.GetObjectMetadataAsync(asset.RawKey, cancellationToken);
+        var metadataResult = await _s3Provider.GetObjectMetadataAsync(asset.UploadKey, cancellationToken);
         if (metadataResult.IsFailure)
         {
             _logger.LogError("Object metadata was not found for media asset {MediaAssetId}", request.FileId);
@@ -182,7 +182,7 @@ public sealed class CompleteMultipartUploadHandler
         }
 
         Result<StorageReference, Error> storageReferenceResult = StorageReference.Create(
-            asset.RawKey,
+            asset.UploadKey,
             metadata.ContentLength,
             metadata.ContentType ?? string.Empty,
             metadata.ETag,
@@ -195,7 +195,7 @@ public sealed class CompleteMultipartUploadHandler
         if (markUploadResult.IsFailure)
             return markUploadResult.Error.ToErrors();
 
-        var markReadyResult = asset.MarkReady(asset.RawKey, storageReferenceResult.Value, DateTime.UtcNow);
+        var markReadyResult = asset.MarkReady(asset.UploadKey, storageReferenceResult.Value, DateTime.UtcNow);
         if (markReadyResult.IsFailure)
             return markReadyResult.Error.ToErrors();
 
