@@ -16,6 +16,9 @@ public static class DependencyInjection
         services.AddScoped<FileServiceDbContext>(_ => new FileServiceDbContext(connectionString));
         services.AddScoped<IReadDbContext>(sp => sp.GetRequiredService<FileServiceDbContext>());
         services.AddScoped<IMediaAssetRepository, MediaAssetRepository>();
+        services.AddScoped<IVideoAssetRepository, VideoAssetRepository>();
+        services.AddScoped<IVideoProcessingRepository, VideoProcessingRepository>();
+        services.AddScoped<ITransactionManager, TransactionManager>();
 
         return services;
     }
