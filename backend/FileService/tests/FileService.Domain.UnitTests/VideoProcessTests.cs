@@ -318,14 +318,6 @@ public class VideoProcessTests
 
     // VideoProcess has no public factory (only private ctors for EF / internal use),
     // so tests build it through the private (Guid) constructor via reflection.
-    private static VideoProcess CreateProcess(Guid? videoAssetId = null)
-    {
-        ConstructorInfo ctor = typeof(VideoProcess).GetConstructor(
-            BindingFlags.Instance | BindingFlags.NonPublic,
-            binder: null,
-            types: [typeof(Guid)],
-            modifiers: null)!;
-
-        return (VideoProcess)ctor.Invoke([videoAssetId ?? Guid.CreateVersion7()]);
-    }
+    private static VideoProcess CreateProcess(Guid? videoAssetId = null) =>
+        new(videoAssetId ?? Guid.CreateVersion7());
 }

@@ -78,6 +78,7 @@ public sealed class StartMultipartUploadHandler
 {
     private readonly IS3Provider _s3Provider;
     private readonly IMediaAssetRepository _mediaAssetRepository;
+    private readonly ITransactionManager _transactionManager;
     private readonly IMediaAssetFactory _mediaAssetFactory;
     private readonly IChunkSizeCalculator _chunkSizeCalculator;
     private readonly IValidator<StartMultipartUploadCommand> _validator;
@@ -87,6 +88,7 @@ public sealed class StartMultipartUploadHandler
     public StartMultipartUploadHandler(
         IS3Provider s3Provider,
         IMediaAssetRepository mediaAssetRepository,
+        ITransactionManager transactionManager,
         IMediaAssetFactory mediaAssetFactory,
         IChunkSizeCalculator chunkSizeCalculator,
         IValidator<StartMultipartUploadCommand> validator,
@@ -95,6 +97,7 @@ public sealed class StartMultipartUploadHandler
     {
         _s3Provider = s3Provider;
         _mediaAssetRepository = mediaAssetRepository;
+        _transactionManager = transactionManager;
         _mediaAssetFactory = mediaAssetFactory;
         _chunkSizeCalculator = chunkSizeCalculator;
         _validator = validator;
@@ -139,7 +142,7 @@ public sealed class StartMultipartUploadHandler
         
         var mediaAsset = mediaAssetResult.Value;
 
-        Result<Guid, Error> addResult = await _mediaAssetRepository.AddAsync(mediaAsset, cancellationToken);
+        Result<Guid, Error> addResult = _mediaAssetRepository.Add(mediaAsset);
         if (addResult.IsFailure)
         {
             _logger.LogError("Saving multipart media asset {MediaAssetId} failed", mediaAsset.Id);
@@ -157,7 +160,7 @@ public sealed class StartMultipartUploadHandler
         if (setUploadIdResult.IsFailure)
             return setUploadIdResult.Error.ToErrors();
 
-        var saveUploadIdResult = await _mediaAssetRepository.SaveChangesAsync(cancellationToken);
+        var saveUploadIdResult = await _transactionManager.SaveChangesAsync(cancellationToken);
         if (saveUploadIdResult.IsFailure)
             return saveUploadIdResult.Error.ToErrors();
         

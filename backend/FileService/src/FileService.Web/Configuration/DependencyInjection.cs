@@ -2,6 +2,7 @@ using FileService.Core;
 using FileService.Infrastructure.Postgres;
 using FileService.Infrastructure.S3;
 using FileService.Core.Abstractions;
+using FileService.VideoProcessing;
 using FileService.Web.Auth;
 using FileService.Web.EndpointsExtensions;
 using Serilog;
@@ -16,6 +17,7 @@ public static class DependencyInjection
         services.AddPostgresDependencies(configuration);
         services.AddCoreDependencies(configuration);
         services.AddS3(configuration);
+        services.AddVideoProcessing();
         services.AddWebDependencies();
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, HttpCurrentUser>();

@@ -15,6 +15,8 @@ public class VideoAsset : MediaAsset
     public static readonly string[] AllowedExtensions = ["mp4", "mkv", "avi", "mov"];
     
     public StorageKey HlsRootKey { get; protected set; } = StorageKey.None;
+    
+    public VideoMetadata? Metadata { get; private set; }
 
     protected VideoAsset()
     {
@@ -84,8 +86,11 @@ public class VideoAsset : MediaAsset
         return UnitResult.Success<Error>();
     }
 
-    public UnitResult<Error> CompleteProcessing(StorageReference storageReference, DateTime timestamp)
+    public UnitResult<Error> CompleteProcessing(StorageReference? storageReference, DateTime timestamp)
     {
+        if (storageReference is null)
+            return Error.Validation("video.storage-reference.required", "Cannot complete processing without a storage reference.");
+        
         Result<StorageKey, Error> hlsRootKeyResult = HlsRootKey.AppendSegment(MASTER_PLAYLIST_NAME);
         if (hlsRootKeyResult.IsFailure)
         {
@@ -101,5 +106,24 @@ public class VideoAsset : MediaAsset
         return UnitResult.Success<Error>();
     }
 
+    public void SetMetadata(VideoMetadata metadata)
+    {
+        Metadata = metadata;
+    }
+
     public override bool RequiresProcessing() => true;
+
+    public UnitResult<Error> StartProcessing()
+    {
+        if (Status != MediaStatus.UPLOADED)
+            return Error.Validation("asset.invalid.status.transition", "Can only start processing from UPLOADED status");
+
+        if (!RequiresProcessing())
+            return Error.Validation("asset.processing.not.required", "This asset type does not require processing");
+
+        Status = MediaStatus.PROCESSING;
+        UpdatedAt = DateTime.UtcNow;
+
+        return UnitResult.Success<Error>();
+    }
 }

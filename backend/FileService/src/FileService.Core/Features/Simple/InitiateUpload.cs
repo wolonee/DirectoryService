@@ -77,6 +77,7 @@ public sealed class InitiateUploadHandler
     : ICommandHandler<InitiateUploadResponse, InitiateUploadCommand>
 {
     private readonly IMediaAssetRepository _mediaAssetRepository;
+    private readonly ITransactionManager _transactionManager;
     private readonly IMediaAssetFactory _mediaAssetFactory;
     private readonly IS3Provider _s3Provider;
     private readonly IValidator<InitiateUploadCommand> _validator;
@@ -85,6 +86,7 @@ public sealed class InitiateUploadHandler
 
     public InitiateUploadHandler(
         IMediaAssetRepository mediaAssetRepository,
+        ITransactionManager transactionManager,
         IMediaAssetFactory mediaAssetFactory,
         IS3Provider s3Provider,
         IValidator<InitiateUploadCommand> validator,
@@ -92,6 +94,7 @@ public sealed class InitiateUploadHandler
         ILogger<InitiateUploadHandler> logger)
     {
         _mediaAssetRepository = mediaAssetRepository;
+        _transactionManager = transactionManager;
         _mediaAssetFactory = mediaAssetFactory;
         _s3Provider = s3Provider;
         _validator = validator;
@@ -150,7 +153,11 @@ public sealed class InitiateUploadHandler
         if (uploadUrlResult.IsFailure)
             return uploadUrlResult.Error.ToErrors();
 
-        await _mediaAssetRepository.AddAsync(mediaAssetResult.Value, cancellationToken);
+        _mediaAssetRepository.Add(mediaAssetResult.Value);
+        
+        var saveChangesResult = await _transactionManager.SaveChangesAsync(cancellationToken);
+        if (saveChangesResult.IsFailure)
+            return saveChangesResult.Error.ToErrors();
 
         _logger.LogInformation("Initiated upload for media asset {MediaAssetId}", mediaAssetId);
 

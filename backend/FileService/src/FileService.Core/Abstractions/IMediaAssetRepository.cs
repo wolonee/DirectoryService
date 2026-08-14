@@ -6,9 +6,7 @@ namespace FileService.Core.Abstractions;
 
 public interface IMediaAssetRepository
 {
-    Task<Result<Guid, Error>> AddAsync(MediaAsset asset, CancellationToken cancellationToken);
+    Result<Guid, Error> Add(MediaAsset asset);
     
     Task<Result<MediaAsset, Error>> GetByIdAsync(Guid fileId, CancellationToken cancellationToken);
-    
-    Task<UnitResult<Error>> SaveChangesAsync(CancellationToken cancellationToken);
 }

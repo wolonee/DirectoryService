@@ -49,17 +49,20 @@ public sealed class CancelUploadHandler
     : ICommandHandler<CancelUploadResponse, CancelUploadCommand>
 {
     private readonly IMediaAssetRepository _repository;
+    private readonly ITransactionManager _transactionManager;
     private readonly IS3Provider _s3Provider;
     private readonly IValidator<CancelUploadCommand> _validator;
     private readonly ILogger<CancelUploadHandler> _logger;
 
     public CancelUploadHandler(
         IMediaAssetRepository repository,
+        ITransactionManager transactionManager,
         IS3Provider s3Provider,
         IValidator<CancelUploadCommand> validator,
         ILogger<CancelUploadHandler> logger)
     {
         _repository = repository;
+        _transactionManager = transactionManager;
         _s3Provider = s3Provider;
         _validator = validator;
         _logger = logger;
@@ -107,7 +110,7 @@ public sealed class CancelUploadHandler
             return markDeleted.Error.ToErrors();
         }
 
-        var saveChanges = await _repository.SaveChangesAsync(cancellationToken);
+        var saveChanges = await _transactionManager.SaveChangesAsync(cancellationToken);
         if (saveChanges.IsFailure)
         {
             _logger.LogError("Save changes failed");

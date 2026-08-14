@@ -14,5 +14,9 @@ public sealed class VideoAssetConfiguration : IEntityTypeConfiguration<VideoAsse
             .HasColumnType("jsonb");
 
         builder.HasIndex(x => x.HlsRootKey);
+
+        // FS-10: VideoMetadata пока не персистится (mock, in-memory). Реальное сохранение как jsonb —
+        // в FS-11 вместе с ffprobe (+ миграция). Без Ignore EF пытается замапить VO как entity и падает.
+        builder.Ignore(x => x.Metadata);
     }
 }

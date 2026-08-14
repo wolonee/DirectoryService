@@ -77,6 +77,7 @@ public sealed class CompleteMultipartUploadHandler
 {
     private readonly IS3Provider _s3Provider;
     private readonly IMediaAssetRepository _mediaAssetRepository;
+    private readonly ITransactionManager _transactionManager;
     private readonly ICurrentUser _currentUser;
     private readonly IValidator<CompleteMultipartUploadCommand> _validator;
     private readonly ILogger<CompleteMultipartUploadHandler> _logger;
@@ -86,13 +87,15 @@ public sealed class CompleteMultipartUploadHandler
         IMediaAssetRepository mediaAssetRepository,
         ICurrentUser currentUser,
         IValidator<CompleteMultipartUploadCommand> validator,
-        ILogger<CompleteMultipartUploadHandler> logger)
+        ILogger<CompleteMultipartUploadHandler> logger,
+        ITransactionManager transactionManager)
     {
         _s3Provider = s3Provider;
         _mediaAssetRepository = mediaAssetRepository;
         _currentUser = currentUser;
         _validator = validator;
         _logger = logger;
+        _transactionManager = transactionManager;
     }
 
     public async Task<Result<CompleteMultipartUploadResponse, Errors>> Handle(
@@ -160,7 +163,7 @@ public sealed class CompleteMultipartUploadHandler
             if (markFailedResult.IsFailure)
                 return markFailedResult.Error.ToErrors();
 
-            var failedSaveChangesResult = await _mediaAssetRepository.SaveChangesAsync(cancellationToken);
+            var failedSaveChangesResult = await _transactionManager.SaveChangesAsync(cancellationToken);
             if (failedSaveChangesResult.IsFailure)
                 return failedSaveChangesResult.Error.ToErrors();
 
@@ -174,7 +177,7 @@ public sealed class CompleteMultipartUploadHandler
             if (markFailedResult.IsFailure)
                 return markFailedResult.Error.ToErrors();
 
-            var failedSaveChangesResult = await _mediaAssetRepository.SaveChangesAsync(cancellationToken);
+            var failedSaveChangesResult = await _transactionManager.SaveChangesAsync(cancellationToken);
             if (failedSaveChangesResult.IsFailure)
                 return failedSaveChangesResult.Error.ToErrors();
 
@@ -199,7 +202,7 @@ public sealed class CompleteMultipartUploadHandler
         if (markReadyResult.IsFailure)
             return markReadyResult.Error.ToErrors();
 
-        var saveChangesResult = await _mediaAssetRepository.SaveChangesAsync(cancellationToken);
+        var saveChangesResult = await _transactionManager.SaveChangesAsync(cancellationToken);
         if (saveChangesResult.IsFailure)
             return saveChangesResult.Error.ToErrors();
 

@@ -57,6 +57,7 @@ public sealed class CompleteUploadHandler
     : ICommandHandler<CompleteUploadResponse, CompleteUploadCommand>
 {
     private readonly IMediaAssetRepository _mediaAssetRepository;
+    private readonly ITransactionManager _transactionManager;
     private readonly IS3Provider _s3Provider;
     private readonly ICurrentUser _currentUser;
     private readonly IValidator<CompleteUploadCommand> _validator;
@@ -64,12 +65,14 @@ public sealed class CompleteUploadHandler
 
     public CompleteUploadHandler(
         IMediaAssetRepository mediaAssetRepository,
+        ITransactionManager transactionManager,
         IS3Provider s3Provider,
         ICurrentUser currentUser,
         IValidator<CompleteUploadCommand> validator,
         ILogger<CompleteUploadHandler> logger)
     {
         _mediaAssetRepository = mediaAssetRepository;
+        _transactionManager = transactionManager;
         _s3Provider = s3Provider;
         _currentUser = currentUser;
         _validator = validator;
@@ -138,7 +141,7 @@ public sealed class CompleteUploadHandler
         if (completeResult.IsFailure)
             return completeResult.Error.ToErrors();
 
-        var saveChangesResult = await _mediaAssetRepository.SaveChangesAsync(cancellationToken);
+        var saveChangesResult = await _transactionManager.SaveChangesAsync(cancellationToken);
         if (saveChangesResult.IsFailure)
             return saveChangesResult.Error.ToErrors();
         

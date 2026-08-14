@@ -23,31 +23,11 @@ public class MediaAssetRepository : IMediaAssetRepository
         _logger = logger;
     }
     
-    public async Task<Result<Guid, Error>> AddAsync(MediaAsset asset, CancellationToken cancellationToken)
+    public Result<Guid, Error> Add(MediaAsset asset)
     {
-        try
-        {
-            await _dbContext.MediaAssets.AddAsync(asset, cancellationToken);
-
-            await _dbContext.SaveChangesAsync(cancellationToken);
-
-            return asset.Id;
-        }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException)
-        {
-            _logger.LogError(ex, "Postgres error while adding media asset {MediaAssetId}", asset.Id);
-            return GeneralErrors.DatabaseError();
-        }
-        catch (OperationCanceledException ex)
-        {
-            _logger.LogInformation(ex, "Adding media asset {MediaAssetId} was cancelled", asset.Id);
-            return GeneralErrors.DatabaseError();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected error while adding media asset {MediaAssetId}", asset.Id);
-            return GeneralErrors.DatabaseError();
-        }
+        _dbContext.MediaAssets.Add(asset);
+        
+        return asset.Id;
     }
 
     public async Task<Result<MediaAsset, Error>> GetByIdAsync(Guid fileId, CancellationToken cancellationToken)
@@ -66,30 +46,6 @@ public class MediaAssetRepository : IMediaAssetRepository
         catch (Exception e)
         {
             _logger.LogError(e, "Error getting asset");
-            return GeneralErrors.DatabaseError();
-        }
-    }
-
-    public async Task<UnitResult<Error>> SaveChangesAsync(CancellationToken cancellationToken)
-    {
-        try
-        {
-            await _dbContext.SaveChangesAsync(cancellationToken);
-            return UnitResult.Success<Error>();
-        }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException)
-        {
-            _logger.LogError(ex, "Postgres error while saving media assets");
-            return GeneralErrors.DatabaseError();
-        }
-        catch (OperationCanceledException ex)
-        {
-            _logger.LogInformation(ex, "Saving media assets was cancelled");
-            return GeneralErrors.DatabaseError();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected error while saving media assets");
             return GeneralErrors.DatabaseError();
         }
     }

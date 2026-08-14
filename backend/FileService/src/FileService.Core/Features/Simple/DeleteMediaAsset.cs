@@ -53,6 +53,7 @@ public sealed class DeleteMediaAssetHandler
     : ICommandHandler<DeleteMediaAssetResponse, DeleteFileCommand>
 {
     private readonly IMediaAssetRepository _repository;
+    private readonly ITransactionManager _transactionManager;
     private readonly IS3Provider _s3Provider;
     private readonly IValidator<DeleteFileCommand> _validator;
     private readonly HybridCache _cache;
@@ -60,12 +61,14 @@ public sealed class DeleteMediaAssetHandler
 
     public DeleteMediaAssetHandler(
         IMediaAssetRepository repository,
+        ITransactionManager transactionManager,
         IS3Provider s3Provider,
         IValidator<DeleteFileCommand> validator,
         HybridCache cache,
         ILogger<DeleteMediaAssetHandler> logger)
     {
         _repository = repository;
+        _transactionManager = transactionManager;
         _s3Provider = s3Provider;
         _validator = validator;
         _cache = cache;
@@ -123,7 +126,7 @@ public sealed class DeleteMediaAssetHandler
             return markDeleted.Error.ToErrors();
         }
 
-        var saveChanges = await _repository.SaveChangesAsync(cancellationToken);
+        var saveChanges = await _transactionManager.SaveChangesAsync(cancellationToken);
         if (saveChanges.IsFailure)
         {
             _logger.LogError("Save changes failed");
