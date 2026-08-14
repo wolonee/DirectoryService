@@ -106,7 +106,7 @@ public class VideoAsset : MediaAsset
         return UnitResult.Success<Error>();
     }
 
-    public void setMetadata(VideoMetadata metadata)
+    public void SetMetadata(VideoMetadata metadata)
     {
         Metadata = metadata;
     }
