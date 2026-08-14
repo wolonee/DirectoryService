@@ -154,7 +154,6 @@ public class ProcessingPipelineTests
         new(
             NullLogger<ProcessingPipeline>.Instance,
             new FakeVideoProcessingRepository(),
-            new FakeMediaAssetRepository(),
             new FakeVideoAssetRepository(asset),
             new FakeTransactionManager(),
             handlers);
@@ -224,14 +223,6 @@ public class ProcessingPipelineTests
 
         public Task<Result<VideoAsset, Error>> GetByIdAsync(Guid videoId, CancellationToken cancellationToken) =>
             Task.FromResult(Result.Success<VideoAsset, Error>(_asset));
-    }
-
-    private sealed class FakeMediaAssetRepository : IMediaAssetRepository
-    {
-        public Result<Guid, Error> Add(MediaAsset asset) => asset.Id;
-
-        public Task<Result<MediaAsset, Error>> GetByIdAsync(Guid fileId, CancellationToken cancellationToken) =>
-            Task.FromResult(Result.Success<MediaAsset, Error>(null!));
     }
 
     private sealed class FakeTransactionManager : ITransactionManager

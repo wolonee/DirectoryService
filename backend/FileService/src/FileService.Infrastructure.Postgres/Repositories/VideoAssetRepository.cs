@@ -35,7 +35,13 @@ public class VideoAssetRepository : IVideoAssetRepository
                 return GeneralErrors.NotFound(fileId, "Asset");
             }
 
-            return (VideoAsset)asset;
+            if (asset is not VideoAsset videoAsset)
+            {
+                _logger.LogError($"Asset with id {fileId} is not a video asset");
+                return GeneralErrors.NotFound(fileId, "VideoAsset");
+            }
+
+            return videoAsset;
         }
         catch (Exception e)
         {

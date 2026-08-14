@@ -12,7 +12,6 @@ public class ProcessingPipeline : IProcessingPipeline
     private readonly IEnumerable<IProcessingStepHandler> _stepHandlers;
     private readonly ILogger<ProcessingPipeline> _logger;
     private readonly IVideoProcessingRepository _videoProcessingRepository;
-    private readonly IMediaAssetRepository _mediaAssetsRepository;
     private readonly IVideoAssetRepository _videoAssetRepository;
     private readonly ITransactionManager _transactionManager;
 
@@ -20,14 +19,12 @@ public class ProcessingPipeline : IProcessingPipeline
     public ProcessingPipeline(
         ILogger<ProcessingPipeline> logger,
         IVideoProcessingRepository videoProcessingRepository,
-        IMediaAssetRepository mediaAssetsRepository,
         IVideoAssetRepository videoAssetRepository,
         ITransactionManager transactionManager,
         IEnumerable<IProcessingStepHandler> stepHandlers)
     {
         _logger = logger;
         _videoProcessingRepository = videoProcessingRepository;
-        _mediaAssetsRepository = mediaAssetsRepository;
         _videoAssetRepository = videoAssetRepository;
         _transactionManager = transactionManager;
         _stepHandlers = stepHandlers;
@@ -66,6 +63,10 @@ public class ProcessingPipeline : IProcessingPipeline
                 var completeResult = videoAsset.CompleteProcessing(context.StorageReference, DateTime.UtcNow);
                 if (completeResult.IsFailure)
                     return completeResult.Error;
+
+                var finalSaveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
+                if (finalSaveResult.IsFailure)
+                    return finalSaveResult.Error;
 
                 return UnitResult.Success<Error>();
             }
