@@ -49,7 +49,7 @@ public class VideoProcess
     {
     }
     
-    private VideoProcess(Guid videoAssetId)
+    public VideoProcess(Guid videoAssetId)
     {
         Id = Guid.NewGuid();
         VideoAssetId = videoAssetId;

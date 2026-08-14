@@ -61,6 +61,7 @@ public sealed class AbortMultipartUploadHandler
 {
     private readonly IS3Provider _s3Provider;
     private readonly IMediaAssetRepository _mediaAssetRepository;
+    private readonly ITransactionManager _transactionManager;
     private readonly ICurrentUser _currentUser;
     private readonly IValidator<AbortMultipartUploadCommand> _validator;
     private readonly ILogger<AbortMultipartUploadHandler> _logger;
@@ -68,12 +69,14 @@ public sealed class AbortMultipartUploadHandler
     public AbortMultipartUploadHandler(
         IS3Provider s3Provider,
         IMediaAssetRepository mediaAssetRepository,
+        ITransactionManager transactionManager,
         ICurrentUser currentUser,
         IValidator<AbortMultipartUploadCommand> validator,
         ILogger<AbortMultipartUploadHandler> logger)
     {
         _s3Provider = s3Provider;
         _mediaAssetRepository = mediaAssetRepository;
+        _transactionManager = transactionManager;
         _currentUser = currentUser;
         _validator = validator;
         _logger = logger;
@@ -115,7 +118,7 @@ public sealed class AbortMultipartUploadHandler
         if (markDeletedResult.IsFailure)
             return markDeletedResult.Error.ToErrors();
         
-        var saveChangesResult = await _mediaAssetRepository.SaveChangesAsync(cancellationToken);
+        var saveChangesResult = await _transactionManager.SaveChangesAsync(cancellationToken);
         if (saveChangesResult.IsFailure)
             return saveChangesResult.Error.ToErrors();
         
