@@ -202,7 +202,7 @@ public class VideoProcess
         ProgressPercentage = totalProgress;
     }
 
-    private UnitResult<Error> Complete()
+    public UnitResult<Error> Complete()
     {
         if (Status != ProcessingStatus.IN_PROGRESS)
             return Error.Validation("processing.invalid.status", $"Can only complete from IN_PROGRESS status, current: {Status}");

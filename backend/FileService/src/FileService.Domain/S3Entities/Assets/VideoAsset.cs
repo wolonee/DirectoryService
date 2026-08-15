@@ -12,6 +12,8 @@ public class VideoAsset : MediaAsset
     public const string HLS_PREFIX = "hls";
     public const MediaType ALLOWED_CONTENT_TYPE = MediaType.VIDEO;
     public const string MASTER_PLAYLIST_NAME = "master.m3u8";
+    public const string STREAM_PLAYLIST_PATTERN = "%v_stream.m3u8";
+    public const string SEGMENT_FILE_PATTERN = "%v_%06d.ts";
     public static readonly string[] AllowedExtensions = ["mp4", "mkv", "avi", "mov"];
     
     public StorageKey HlsRootKey { get; protected set; } = StorageKey.None;
@@ -122,6 +124,31 @@ public class VideoAsset : MediaAsset
             return Error.Validation("asset.processing.not.required", "This asset type does not require processing");
 
         Status = MediaStatus.PROCESSING;
+        UpdatedAt = DateTime.UtcNow;
+
+        return UnitResult.Success<Error>();
+    }
+    
+    public Result<StorageKey, Error> GetHlsRootKey()
+    {
+        return StorageKey.Create(BUCKET, HLS_PREFIX, Id.ToString());
+    }
+    
+    public Result<StorageKey, Error> GetHlsMasterPlaylistKey()
+    {
+        Result<StorageKey, Error> hlsRoot = GetHlsRootKey();
+        if (hlsRoot.IsFailure)
+            return hlsRoot.Error;
+
+        return hlsRoot.Value.AppendKey(MASTER_PLAYLIST_NAME);
+    }
+    
+    public UnitResult<Error> SetHlsMasterPlaylistKey(StorageKey value)
+    {
+        if (Status != MediaStatus.PROCESSING)
+            return Error.Validation("video.invalid.status", "Can only set processed data during processing");
+
+        FinalKey = value;
         UpdatedAt = DateTime.UtcNow;
 
         return UnitResult.Success<Error>();

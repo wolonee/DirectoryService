@@ -73,4 +73,30 @@ public static class FileErrors
             "unknown.error",
             "Произошла неизвестная ошибка");
     }
+
+    public static Error ProcessFailed()
+    {
+        return Error.Failure(
+            "process.failed",
+            "Внешний процесс завершился с ошибкой");
+    }
+
+    public static Error InvalidFfprobeOutput(string reason)
+    {
+        return Error.Failure(
+            "ffprobe.invalid.output",
+            $"Некорректный вывод ffprobe: {reason}");
+    }
+
+    public static Error HlsProcessingFailed(string? reason = null)
+    {
+        string message = "Не удалось сгенерировать HLS";
+
+        if (!string.IsNullOrWhiteSpace(reason))
+            message += $": {reason}";
+
+        return Error.Failure(
+            "hls.processing.failed",
+            message);
+    }
 }

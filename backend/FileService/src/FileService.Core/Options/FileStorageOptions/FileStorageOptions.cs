@@ -21,6 +21,8 @@ public record FileStorageOptions
     public TimeSpan UploadUrlExpiration { get; init; }
 
     public int MaxConcurrentRequests { get; init; }
+    
+    public int UploadDegreeOfParallelism { get; init; }
 
     public IReadOnlyList<string> RequiredBuckets { get; init; } = [];
 
