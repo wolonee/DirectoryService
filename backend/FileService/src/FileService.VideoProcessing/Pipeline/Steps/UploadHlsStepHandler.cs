@@ -96,10 +96,11 @@ public sealed class UploadHlsStepHandler : IProcessingStepHandler
         if (setKeyResult.IsFailure)
             return setKeyResult.Error;
         
-        long size = new FileInfo(masterPlaylistKey.Value.Value).Length;
-        
+        string masterPlaylistPath = Path.Combine(context.HlsOutputDirectory, "master.m3u8");
+        long size = new FileInfo(masterPlaylistPath).Length;
+
         Result<StorageReference, Error> storageReferenceResult = StorageReference
-            .Create(masterPlaylistKey.Value, size, "video", null, null, DateTime.UtcNow);
+            .Create(masterPlaylistKey.Value, size, "application/vnd.apple.mpegurl", null, null, DateTime.UtcNow);
         
         if (storageReferenceResult.IsFailure)
             return storageReferenceResult.Error;

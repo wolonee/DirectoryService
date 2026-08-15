@@ -11,7 +11,6 @@ public class ProcessingPipeline : IProcessingPipeline
 {
     private readonly IEnumerable<IProcessingStepHandler> _stepHandlers;
     private readonly ILogger<ProcessingPipeline> _logger;
-    private readonly IS3Provider _s3Provider;
     private readonly IVideoProcessingRepository _videoProcessingRepository;
     private readonly IVideoAssetRepository _videoAssetRepository;
     private readonly ITransactionManager _transactionManager;
@@ -19,14 +18,12 @@ public class ProcessingPipeline : IProcessingPipeline
 
     public ProcessingPipeline(
         ILogger<ProcessingPipeline> logger,
-        IS3Provider s3Provider,
         IVideoProcessingRepository videoProcessingRepository,
         IVideoAssetRepository videoAssetRepository,
         ITransactionManager transactionManager,
         IEnumerable<IProcessingStepHandler> stepHandlers)
     {
         _logger = logger;
-        _s3Provider = s3Provider;
         _videoProcessingRepository = videoProcessingRepository;
         _videoAssetRepository = videoAssetRepository;
         _transactionManager = transactionManager;

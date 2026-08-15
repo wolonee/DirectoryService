@@ -2,8 +2,6 @@
 
 public sealed record VideoProcessingOptions
 {
-    public const string SECTION_NAME = "VideoProcessing";
-
     public string FfmpegPath { get; init; } = "ffmpeg";
 
     public string FfprobePath { get; init; } = "ffprobe";

@@ -1,12 +1,23 @@
+using FileService.VideoProcessing.FfmpegProcess;
 using FileService.VideoProcessing.Handlers;
+using FileService.VideoProcessing.ProcessRunner;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FileService.VideoProcessing;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddVideoProcessing(this IServiceCollection services)
+    public static IServiceCollection AddVideoProcessing(this IServiceCollection services, IConfiguration configuration)
     {
+        VideoProcessingOptions options =
+            configuration.GetSection(nameof(VideoProcessingOptions)).Get<VideoProcessingOptions>()
+            ?? new VideoProcessingOptions();
+        services.AddSingleton(options);
+
+        services.AddScoped<IProcessRunner, ProcessRunner.ProcessRunner>();
+        services.AddScoped<IFfmpegProcessRunner, FfmpegProcessRunner>();
+
         services.AddScoped<IProcessingPipeline, ProcessingPipeline>();
 
         services.AddScoped<IProcessingStepHandler, InitializeStepHandler>();
