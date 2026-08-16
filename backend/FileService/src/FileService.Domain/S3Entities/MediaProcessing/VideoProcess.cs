@@ -53,6 +53,7 @@ public class VideoProcess
     {
         Id = Guid.NewGuid();
         VideoAssetId = videoAssetId;
+        RetryCount = 0;
         Status = ProcessingStatus.IN_PROGRESS;
         ProgressPercentage = 0;
         StartedAt = DateTime.UtcNow;

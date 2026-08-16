@@ -180,6 +180,8 @@ public sealed class CompleteMultipartUploadHandler
                 var failedSaveChangesResult = await _transactionManager.SaveChangesAsync(cancellationToken);
                 if (failedSaveChangesResult.IsFailure)
                     return failedSaveChangesResult.Error.ToErrors();
+                
+                transaction.Commit();
 
                 return MediaAssetErrors.SizeMismatch(asset.MediaData.Size, metadata.ContentLength).ToErrors();
             }
@@ -194,10 +196,10 @@ public sealed class CompleteMultipartUploadHandler
                 var failedSaveChangesResult = await _transactionManager.SaveChangesAsync(cancellationToken);
                 if (failedSaveChangesResult.IsFailure)
                     return failedSaveChangesResult.Error.ToErrors();
+                
+                transaction.Commit();
 
-                return MediaAssetErrors
-                    .ContentTypeMismatch(asset.MediaData.ContentType.Value, metadata.ContentType ?? string.Empty)
-                    .ToErrors();
+                return MediaAssetErrors.ContentTypeMismatch(asset.MediaData.ContentType.Value, metadata.ContentType ?? string.Empty).ToErrors();
             }
 
             Result<StorageReference, Error> storageReferenceResult = StorageReference.Create(

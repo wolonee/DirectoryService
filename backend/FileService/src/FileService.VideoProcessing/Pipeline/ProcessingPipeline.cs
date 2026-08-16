@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Shared.Errors;
 using FileService.Core.Abstractions;
+using FileService.Domain;
 using FileService.Domain.S3Entities.Assets;
 using FileService.Domain.S3Entities.MediaProcessing;
 using Microsoft.Extensions.Logging;
@@ -123,7 +124,7 @@ public class ProcessingPipeline : IProcessingPipeline
                     executionResult.Error);
 
                 context.VideoProcess.FailCurrentStep(executionResult.Error.Message);
-                context.VideoProcess.Fail(executionResult.Error.Message, isCritical: true);
+                context.VideoProcess.Fail(executionResult.Error.Message);
                 context.VideoAsset.MarkFailed(DateTime.UtcNow);
 
                 UnitResult<Error> saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
@@ -236,10 +237,7 @@ public class ProcessingPipeline : IProcessingPipeline
 
         context.VideoProcess.Fail(error.Message);
 
-        _logger.LogError(
-            "Video processing failed for VideoAssetId: {VideoAssetId}. Error: {Error}.",
-            videoAssetId,
-            error.Message);
+        _logger.LogError("Video processing failed for VideoAssetId: {VideoAssetId}. Error: {Error}.", videoAssetId, error.Message);
 
         // Временные файлы должны чиститься и при ошибке — CleanupStepHandler мог не запуститься
         // (сбой на более раннем шаге, например ffmpeg).
@@ -290,16 +288,12 @@ public class ProcessingPipeline : IProcessingPipeline
         if (completeResult.IsFailure)
             return completeResult.Error;
 
-        _logger.LogInformation(
-            "Video processing completed successfully for VideoAssetId: {VideoAssetId}",
-            videoAssetId);
+        _logger.LogInformation("Video processing completed successfully for VideoAssetId: {VideoAssetId}", videoAssetId);
 
         UnitResult<Error> saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
         if (saveResult.IsFailure)
         {
-            _logger.LogError(
-                "Failed to save final state for VideoAssetId: {VideoAssetId}",
-                videoAssetId);
+            _logger.LogError("Failed to save final state for VideoAssetId: {VideoAssetId}", videoAssetId);
             return saveResult.Error;
         }
 

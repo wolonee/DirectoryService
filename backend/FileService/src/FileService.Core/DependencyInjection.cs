@@ -64,23 +64,12 @@ public static class DependencyInjection
             {
                 persistenceOptions.UsePostgres(cfg =>
                 {
-                    cfg.ConnectionString = configuration.GetConnectionString("Database")!;
+                    cfg.ConnectionString = configuration.GetConnectionString("FileServiceDb")!;
                 });
 
                 persistenceOptions.UseNewtonsoftJsonSerializer();
-                persistenceOptions.UseProperties = true;
+                persistenceOptions.UseProperties = false;
             });
-
-            var testJobKey = new JobKey("TestJob");
-            options.AddJob<TestJob>(opts => opts.WithIdentity(testJobKey));
-
-            options.AddTrigger(opts => opts
-                .ForJob(testJobKey)
-                .WithIdentity("TestJob-trigger")
-                .StartNow()
-                .WithSimpleSchedule(x => x
-                    .WithIntervalInSeconds(1)
-                    .RepeatForever()));
         });
 
         services.AddQuartzHostedService(options =>

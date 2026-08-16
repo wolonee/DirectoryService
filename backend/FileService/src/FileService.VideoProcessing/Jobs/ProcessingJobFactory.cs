@@ -25,9 +25,18 @@ public class ProcessingJobFactory : IProcessingJobFactory
     {
         return TriggerBuilder.Create()
             .WithIdentity($"video-processing-trigger-{mediaAsset.Id}", JOB_GROUP)
+            .ForJob($"video-processing-{mediaAsset.Id}", JOB_GROUP)
             .StartNow()
             .Build();
     }
 
-    // public ITrigger CreateRetryTrigger(MediaAsset mediaAsset, int retryCount, DateTime startAtUtc) => throw new NotImplementedException();
+    public ITrigger CreateRetryTrigger(Guid mediaAssetId, int retryCount, DateTime startAtUtc)
+    {
+        return TriggerBuilder.Create()
+            .WithIdentity($"video-processing-retry-trigger-{mediaAssetId}-{retryCount}", JOB_GROUP)
+            .UsingJobData(VideoProcessingJob.RetryCountKey.Name, retryCount)
+            .ForJob($"video-processing-{mediaAssetId}", JOB_GROUP)
+            .StartAt(startAtUtc)
+            .Build();
+    }
 }
