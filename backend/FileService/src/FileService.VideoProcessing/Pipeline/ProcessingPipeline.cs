@@ -205,6 +205,15 @@ public class ProcessingPipeline : IProcessingPipeline
         {
             videoProcess = processingResult.Value;
 
+            // Повторный прогон: предыдущая попытка оставила процесс в FAILED.
+            // Reset возвращает статус в IN_PROGRESS и сбрасывает все шаги в PENDING.
+            if (videoProcess.Status == ProcessingStatus.FAILED)
+            {
+                UnitResult<Error> resetResult = videoProcess.Reset();
+                if (resetResult.IsFailure)
+                    return resetResult.Error;
+            }
+
             _logger.LogInformation(
                 "Loaded existing VideoProcess for VideoAssetId: {VideoAssetId}",
                 videoAssetId);

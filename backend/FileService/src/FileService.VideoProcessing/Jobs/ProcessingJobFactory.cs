@@ -34,7 +34,6 @@ public class ProcessingJobFactory : IProcessingJobFactory
     {
         return TriggerBuilder.Create()
             .WithIdentity($"video-processing-retry-trigger-{mediaAssetId}-{retryCount}", JOB_GROUP)
-            .UsingJobData(VideoProcessingJob.RetryCountKey.Name, retryCount)
             .ForJob($"video-processing-{mediaAssetId}", JOB_GROUP)
             .StartAt(startAtUtc)
             .Build();

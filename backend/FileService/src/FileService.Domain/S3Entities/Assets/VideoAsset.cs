@@ -117,8 +117,8 @@ public class VideoAsset : MediaAsset
 
     public UnitResult<Error> StartProcessing()
     {
-        if (Status != MediaStatus.UPLOADED)
-            return Error.Validation("asset.invalid.status.transition", "Can only start processing from UPLOADED status");
+        if (Status != MediaStatus.UPLOADED && Status != MediaStatus.FAILED)
+            return Error.Validation("asset.invalid.status.transition", "Can only start processing from UPLOADED or FAILED status");
 
         if (!RequiresProcessing())
             return Error.Validation("asset.processing.not.required", "This asset type does not require processing");
