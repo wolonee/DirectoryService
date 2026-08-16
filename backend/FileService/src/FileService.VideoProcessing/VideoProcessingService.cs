@@ -7,23 +7,28 @@ namespace FileService.VideoProcessing;
 
 public class VideoProcessingService
 {
+    private readonly IProcessingPipeline _processingPipeline;
     private readonly ILogger<VideoProcessingService> _logger;
 
     public VideoProcessingService(
+        IProcessingPipeline processingPipeline,
         ILogger<VideoProcessingService> logger)
     {
+        _processingPipeline = processingPipeline;
         _logger = logger;
     }
 
     public async Task<UnitResult<Error>> ProcessVideoAsync(
-        Guid id,
-        CancellationToken cancellationToken)
+        Guid videoAssetId,
+        CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("");
-        
-        // pipeline
-        return new UnitResult<Error>();
+        _logger.LogInformation(
+            "Starting video processing for VideoAssetId: {VideoAssetId}",
+            videoAssetId);
+
+        UnitResult<Error> pipelineResult = await _processingPipeline
+            .ProcessAllStepsAsync(videoAssetId, cancellationToken);
+
+        return pipelineResult;
     }
-    
-    
 }

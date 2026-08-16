@@ -105,4 +105,13 @@ public sealed record StorageKey
 
         return trimmed;
     }
+    
+    public Result<StorageKey, Error> AppendKey(string childKey)
+    {
+        if (string.IsNullOrWhiteSpace(childKey))
+            return GeneralErrors.ValueIsInvalid("childKey");
+
+        string newPrefix = Value;
+        return Create(Bucket, newPrefix, childKey);
+    }
 }

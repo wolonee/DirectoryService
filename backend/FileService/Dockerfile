@@ -25,7 +25,7 @@ RUN dotnet publish "FileService.Web.csproj" -c $BUILD_CONFIGURATION -o /app/publ
 
 FROM base AS final
 USER root
-RUN apt-get update && apt-get install -y --no-install-recommends curl \
+RUN apt-get update && apt-get install -y --no-install-recommends curl ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 USER $APP_UID
 WORKDIR /app

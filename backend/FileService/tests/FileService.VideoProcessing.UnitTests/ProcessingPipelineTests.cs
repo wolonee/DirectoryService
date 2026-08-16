@@ -147,7 +147,8 @@ public class ProcessingPipelineTests
             null,
             DateTime.UtcNow).Value;
 
-        return context with { StorageReference = reference };
+        context.SetStorageReference(reference);
+        return context;
     }
 
     private static ProcessingPipeline CreatePipeline(VideoAsset asset, IEnumerable<IProcessingStepHandler> handlers) =>

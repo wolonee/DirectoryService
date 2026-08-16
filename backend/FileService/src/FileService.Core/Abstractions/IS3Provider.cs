@@ -11,7 +11,11 @@ namespace FileService.Core.Abstractions;
 
 public interface IS3Provider
 {
-    Task UploadFileAsync(Stream stream, string bucketName, string key, string contentType, CancellationToken cancellationToken);
+    Task<UnitResult<Error>> UploadFileAsync(
+        StorageKey storageKey,
+        FileStream fileStream,
+        string contentType,
+        CancellationToken cancellationToken);
 
     Task<Result<string, Error>> StartMultipartUploadAsync(
         StorageKey storageKey,

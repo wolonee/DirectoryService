@@ -15,8 +15,19 @@ public sealed class VideoAssetConfiguration : IEntityTypeConfiguration<VideoAsse
 
         builder.HasIndex(x => x.HlsRootKey);
 
-        // FS-10: VideoMetadata пока не персистится (mock, in-memory). Реальное сохранение как jsonb —
-        // в FS-11 вместе с ffprobe (+ миграция). Без Ignore EF пытается замапить VO как entity и падает.
-        builder.Ignore(x => x.Metadata);
+        // FS-11: VideoMetadata из ffprobe хранится как единый jsonb-столбец "metadata".
+        builder.OwnsOne(x => x.Metadata, md =>
+        {
+            md.ToJson("metadata");
+
+            md.Property(x => x.Duration)
+                .HasColumnName("duration");
+
+            md.Property(x => x.Height)
+                .HasColumnName("height");
+            
+            md.Property(x => x.Width)
+                .HasColumnName("width");
+        });
     }
 }

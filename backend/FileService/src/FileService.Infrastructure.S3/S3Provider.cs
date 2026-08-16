@@ -39,17 +39,35 @@ public class S3Provider : IS3Provider, IDisposable
         _requestsSemaphore = new SemaphoreSlim(_fileStorageOptions.MaxConcurrentRequests);
     }
 
-    public async Task UploadFileAsync(Stream stream, string bucketName, string key, string contentType, CancellationToken cancellationToken)
+    public async Task<UnitResult<Error>> UploadFileAsync(
+        StorageKey storageKey,
+        FileStream fileStream,
+        string contentType,
+        CancellationToken cancellationToken)
     {
-        var request = new PutObjectRequest
+        try
         {
-            BucketName = bucketName,
-            Key = key,
-            InputStream = stream,
-            ContentType = contentType,
-        };
+            var request = new PutObjectRequest
+            {
+                BucketName = storageKey.Bucket,
+                Key = storageKey.Value,
+                InputStream = fileStream,
+                ContentType = contentType ?? "application/octet-stream",
+            };
 
-        await _s3Client.PutObjectAsync(request, cancellationToken);
+            await _s3Client.PutObjectAsync(request, cancellationToken);
+
+            return UnitResult.Success<Error>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Error uploading file to {Key}",
+                storageKey.Value);
+
+            return S3ErrorMapper.ToError(ex);
+        }
     }
 
     public async Task<Result<string, Error>> StartMultipartUploadAsync(

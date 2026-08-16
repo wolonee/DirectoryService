@@ -29,7 +29,7 @@ public class ProcessingPipeline : IProcessingPipeline
         _transactionManager = transactionManager;
         _stepHandlers = stepHandlers;
     }
-    
+
     public async Task<UnitResult<Error>> ProcessAllStepsAsync(
         Guid videoAssetId,
         CancellationToken cancellationToken = default)
@@ -39,7 +39,21 @@ public class ProcessingPipeline : IProcessingPipeline
             return contextResult.Error;
 
         ProcessingContext context = contextResult.Value;
-        var videoAsset = context.VideoAsset;
+
+        var executeStepsResult = await ExecuteAllStepsAsync(context, cancellationToken);
+        if (executeStepsResult.IsFailure)
+        {
+            return await FinalizeWithFailureAsync(context, executeStepsResult.Error, cancellationToken);
+        }
+        
+        return await FinalizeAsync(context, cancellationToken);
+    }
+
+    public async Task<UnitResult<Error>> ExecuteAllStepsAsync(
+        ProcessingContext context,
+        CancellationToken cancellationToken = default)
+    {
+        var videoAssetId = context.VideoAsset.Id;
 
         while (true)
         {
@@ -53,21 +67,14 @@ public class ProcessingPipeline : IProcessingPipeline
 
                 return stepResult.Error;
             }
-            
+
             if (stepResult.Value is null)
             {
                 _logger.LogInformation(
                     "All processing steps completed for VideoAssetId: {VideoAssetId}",
                     videoAssetId);
-                
-                var completeResult = videoAsset.CompleteProcessing(context.StorageReference, DateTime.UtcNow);
-                if (completeResult.IsFailure)
-                    return completeResult.Error;
 
-                var finalSaveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
-                if (finalSaveResult.IsFailure)
-                    return finalSaveResult.Error;
-
+                // Завершение (CompleteProcessing/Complete + save) выполняется один раз в FinalizeAsync.
                 return UnitResult.Success<Error>();
             }
 
@@ -78,9 +85,9 @@ public class ProcessingPipeline : IProcessingPipeline
                 currentStep.StepType,
                 currentStep.Order,
                 videoAssetId);
-            
+
             IProcessingStepHandler? stepHandler = _stepHandlers.FirstOrDefault(h => h.StepType == currentStep.StepType);
-            
+
             if (stepHandler is null)
             {
                 string error = $"No handler found for step type {currentStep.StepType}";
@@ -101,7 +108,7 @@ public class ProcessingPipeline : IProcessingPipeline
 
                 return Error.Failure("pipeline.handler.not.found", error);
             }
-            
+
             Result<ProcessingContext, Error> executionResult = await ExecuteStepSafelyAsync(
                 stepHandler,
                 context,
@@ -130,7 +137,7 @@ public class ProcessingPipeline : IProcessingPipeline
 
                 return executionResult.Error;
             }
-            
+
             context = executionResult.Value;
 
             context.VideoProcess.CompleteCurrentStep();
@@ -140,7 +147,7 @@ public class ProcessingPipeline : IProcessingPipeline
                 currentStep.StepType,
                 videoAssetId,
                 context.VideoProcess.ProgressPercentage);
-    
+
             UnitResult<Error> completeSaveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
             if (completeSaveResult.IsFailure)
             {
@@ -153,7 +160,7 @@ public class ProcessingPipeline : IProcessingPipeline
             }
         }
     }
-    
+
     private async Task<Result<ProcessingContext, Error>> ExecuteStepSafelyAsync(
         IProcessingStepHandler handler,
         ProcessingContext context,
@@ -174,7 +181,7 @@ public class ProcessingPipeline : IProcessingPipeline
             return Error.Failure("pipeline.step.exception", $"Step execution failed: {ex.Message}");
         }
     }
-    
+
     private async Task<Result<ProcessingContext, Error>> LoadContextAsync(
         Guid videoAssetId,
         CancellationToken cancellationToken)
@@ -202,25 +209,100 @@ public class ProcessingPipeline : IProcessingPipeline
                 videoAssetId);
         }
 
-        Result<VideoAsset, Error> assetResult = await _videoAssetRepository.GetByIdAsync(videoAssetId, cancellationToken);
+        Result<VideoAsset, Error> assetResult =
+            await _videoAssetRepository.GetByIdAsync(videoAssetId, cancellationToken);
         if (assetResult.IsFailure)
             return assetResult.Error;
 
         UnitResult<Error> startResult = assetResult.Value.StartProcessing();
         if (startResult.IsFailure)
             return startResult.Error;
-        
+
         Result<int, Error> saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
         if (saveResult.IsFailure)
             return saveResult.Error;
 
-        var processingContext = new ProcessingContext
-        {
-            VideoAsset = assetResult.Value,
-            VideoProcess = videoProcess,
-        };
+        var processingContext = new ProcessingContext { VideoAsset = assetResult.Value, VideoProcess = videoProcess, };
 
         return processingContext;
-        
+    }
+
+    private async Task<UnitResult<Error>> FinalizeWithFailureAsync(
+        ProcessingContext context,
+        Error error,
+        CancellationToken cancellationToken)
+    {
+        Guid videoAssetId = context.VideoAsset.Id;
+
+        context.VideoProcess.Fail(error.Message);
+
+        _logger.LogError(
+            "Video processing failed for VideoAssetId: {VideoAssetId}. Error: {Error}.",
+            videoAssetId,
+            error.Message);
+
+        // Временные файлы должны чиститься и при ошибке — CleanupStepHandler мог не запуститься
+        // (сбой на более раннем шаге, например ffmpeg).
+        CleanupWorkingDirectory(context);
+
+        UnitResult<Error> saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
+        if (saveResult.IsFailure)
+        {
+            _logger.LogError(
+                "Failed to save failure state for VideoAssetId: {VideoAssetId}",
+                videoAssetId);
+            return saveResult.Error;
+        }
+
+        return UnitResult.Failure(error);
+    }
+
+    private void CleanupWorkingDirectory(ProcessingContext context)
+    {
+        if (string.IsNullOrWhiteSpace(context.WorkingDirectory))
+            return;
+
+        try
+        {
+            if (Directory.Exists(context.WorkingDirectory))
+                Directory.Delete(context.WorkingDirectory, recursive: true);
+
+            context.Cleanup();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Failed to delete working directory on failure: {WorkingDirectory}",
+                context.WorkingDirectory);
+        }
+    }
+    
+    private async Task<UnitResult<Error>> FinalizeAsync(
+        ProcessingContext context,
+        CancellationToken cancellationToken)
+    {
+        Guid videoAssetId = context.VideoAsset.Id;
+
+        // VideoProcess уже переведён в COMPLETED внутри ProcessNextStep (когда шаги кончились),
+        // поэтому здесь завершаем только сам видео-asset.
+        UnitResult<Error> completeResult = context.VideoAsset.CompleteProcessing(context.StorageReference, DateTime.UtcNow);
+        if (completeResult.IsFailure)
+            return completeResult.Error;
+
+        _logger.LogInformation(
+            "Video processing completed successfully for VideoAssetId: {VideoAssetId}",
+            videoAssetId);
+
+        UnitResult<Error> saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
+        if (saveResult.IsFailure)
+        {
+            _logger.LogError(
+                "Failed to save final state for VideoAssetId: {VideoAssetId}",
+                videoAssetId);
+            return saveResult.Error;
+        }
+
+        return UnitResult.Success<Error>();
     }
 }

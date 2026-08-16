@@ -17,7 +17,7 @@ public static class DependencyInjection
         services.AddPostgresDependencies(configuration);
         services.AddCoreDependencies(configuration);
         services.AddS3(configuration);
-        services.AddVideoProcessing();
+        services.AddVideoProcessing(configuration);
         services.AddWebDependencies();
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, HttpCurrentUser>();
