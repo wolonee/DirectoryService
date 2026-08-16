@@ -11,6 +11,7 @@ using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Quartz;
 
 namespace FileService.Core;
 
@@ -50,6 +51,43 @@ public static class DependencyInjection
             };
         });
         
+        return services;
+    }
+    
+    public static IServiceCollection AddQuartzServices(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddQuartz(options =>
+        {
+            options.UsePersistentStore(persistenceOptions =>
+            {
+                persistenceOptions.UsePostgres(cfg =>
+                {
+                    cfg.ConnectionString = configuration.GetConnectionString("Database")!;
+                });
+
+                persistenceOptions.UseNewtonsoftJsonSerializer();
+                persistenceOptions.UseProperties = true;
+            });
+
+            var testJobKey = new JobKey("TestJob");
+            options.AddJob<TestJob>(opts => opts.WithIdentity(testJobKey));
+
+            options.AddTrigger(opts => opts
+                .ForJob(testJobKey)
+                .WithIdentity("TestJob-trigger")
+                .StartNow()
+                .WithSimpleSchedule(x => x
+                    .WithIntervalInSeconds(1)
+                    .RepeatForever()));
+        });
+
+        services.AddQuartzHostedService(options =>
+        {
+            options.WaitForJobsToComplete = true;
+        });
+
         return services;
     }
 }

@@ -1,5 +1,7 @@
-﻿using DirectoryService.Presentation.Middlewares;
+﻿using CrystalQuartz.AspNetCore;
+using DirectoryService.Presentation.Middlewares;
 using FileService.Web.EndpointsExtensions;
+using Quartz;
 using Serilog;
 
 namespace FileService.Web.Configuration;
@@ -22,6 +24,7 @@ public static class AppExtensions
         }
 
         app.MapHealthChecks("/health");
+        app.UseCrystalQuartz(() => app.Services.GetRequiredService<ISchedulerFactory>().GetScheduler());
         app.MapEndpoints();
 
         return app;

@@ -1,5 +1,6 @@
 using FileService.Core.Abstractions;
 using FileService.Infrastructure.Postgres.Database;
+using FileService.Infrastructure.Postgres.Initializers;
 using FileService.Infrastructure.Postgres.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +20,7 @@ public static class DependencyInjection
         services.AddScoped<IVideoAssetRepository, VideoAssetRepository>();
         services.AddScoped<IVideoProcessingRepository, VideoProcessingRepository>();
         services.AddScoped<ITransactionManager, TransactionManager>();
+        services.AddScoped<QuartzDbInitializer>();
 
         return services;
     }

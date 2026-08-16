@@ -1,5 +1,6 @@
 using System.Globalization;
 using FileService.Infrastructure.Postgres.Database;
+using FileService.Infrastructure.Postgres.Initializers;
 using FileService.Web.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -29,6 +30,9 @@ try
     {
         FileServiceDbContext dbContext = scope.ServiceProvider.GetRequiredService<FileServiceDbContext>();
         await dbContext.Database.MigrateAsync();
+        
+        QuartzDbInitializer quartzDbInitializer = scope.ServiceProvider.GetRequiredService<QuartzDbInitializer>();
+        await quartzDbInitializer.InitializeAsync();
     }
 
     app.Configure();
