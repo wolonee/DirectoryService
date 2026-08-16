@@ -3,9 +3,13 @@ using Quartz;
 
 namespace FileService.VideoProcessing.Jobs;
 
-public interface IVideoProcessingJobFactory
+public interface IProcessingJobFactory
 {
     bool CanProcess(MediaAsset mediaAsset);
+    
     IJobDetail CreateJob(MediaAsset mediaAsset);
+    
     ITrigger CreateTrigger(MediaAsset mediaAsset);
+    
+    // ITrigger CreateRetryTrigger(MediaAsset mediaAsset, int retryCount, DateTime startAtUtc);
 }

@@ -3,7 +3,7 @@ using Quartz;
 
 namespace FileService.VideoProcessing.Jobs;
 
-public class VideoProcessingJobFactory : IVideoProcessingJobFactory
+public class ProcessingJobFactory : IProcessingJobFactory
 {
     private const string JOB_GROUP = "video-processing";
 
@@ -28,4 +28,6 @@ public class VideoProcessingJobFactory : IVideoProcessingJobFactory
             .StartNow()
             .Build();
     }
+
+    // public ITrigger CreateRetryTrigger(MediaAsset mediaAsset, int retryCount, DateTime startAtUtc) => throw new NotImplementedException();
 }
