@@ -108,7 +108,6 @@ public class VideoProcess
             return Error.Validation("processing.no.active.step",  "No active step to complete");
 
         UnitResult<Error> completeResult = currentStep.Complete(resultData);
-
         if (completeResult.IsFailure)
             return completeResult.Error;
 

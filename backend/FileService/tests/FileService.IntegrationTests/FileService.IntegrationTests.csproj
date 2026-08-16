@@ -24,5 +24,12 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\FileService.Web\FileService.Web.csproj" />
     <ProjectReference Include="..\..\src\FileService.Infrastructure.Postgres\FileService.Infrastructure.Postgres.csproj" />
+    <ProjectReference Include="..\..\src\FileService.VideoProcessing\FileService.VideoProcessing.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Assets\sample.mp4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

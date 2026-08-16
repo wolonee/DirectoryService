@@ -22,7 +22,7 @@ public record FileStorageOptions
 
     public int MaxConcurrentRequests { get; init; }
     
-    public int UploadDegreeOfParallelism { get; init; }
+    public int UploadDegreeOfParallelism { get; init; } = 10;
 
     public IReadOnlyList<string> RequiredBuckets { get; init; } = [];
 

@@ -53,7 +53,6 @@ public class ProcessingPipeline : IProcessingPipeline
         ProcessingContext context,
         CancellationToken cancellationToken = default)
     {
-        var videoAsset = context.VideoAsset;
         var videoAssetId = context.VideoAsset.Id;
 
         while (true)
@@ -75,14 +74,7 @@ public class ProcessingPipeline : IProcessingPipeline
                     "All processing steps completed for VideoAssetId: {VideoAssetId}",
                     videoAssetId);
 
-                var completeResult = videoAsset.CompleteProcessing(context.StorageReference, DateTime.UtcNow);
-                if (completeResult.IsFailure)
-                    return completeResult.Error;
-
-                var finalSaveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
-                if (finalSaveResult.IsFailure)
-                    return finalSaveResult.Error;
-
+                // Завершение (CompleteProcessing/Complete + save) выполняется один раз в FinalizeAsync.
                 return UnitResult.Success<Error>();
             }
 
@@ -249,6 +241,10 @@ public class ProcessingPipeline : IProcessingPipeline
             videoAssetId,
             error.Message);
 
+        // Временные файлы должны чиститься и при ошибке — CleanupStepHandler мог не запуститься
+        // (сбой на более раннем шаге, например ffmpeg).
+        CleanupWorkingDirectory(context);
+
         UnitResult<Error> saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
         if (saveResult.IsFailure)
         {
@@ -260,15 +256,39 @@ public class ProcessingPipeline : IProcessingPipeline
 
         return UnitResult.Failure(error);
     }
+
+    private void CleanupWorkingDirectory(ProcessingContext context)
+    {
+        if (string.IsNullOrWhiteSpace(context.WorkingDirectory))
+            return;
+
+        try
+        {
+            if (Directory.Exists(context.WorkingDirectory))
+                Directory.Delete(context.WorkingDirectory, recursive: true);
+
+            context.Cleanup();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Failed to delete working directory on failure: {WorkingDirectory}",
+                context.WorkingDirectory);
+        }
+    }
     
     private async Task<UnitResult<Error>> FinalizeAsync(
         ProcessingContext context,
         CancellationToken cancellationToken)
     {
         Guid videoAssetId = context.VideoAsset.Id;
-        
-        context.VideoAsset.CompleteProcessing(context.StorageReference, DateTime.UtcNow);
-        context.VideoProcess.Complete();
+
+        // VideoProcess уже переведён в COMPLETED внутри ProcessNextStep (когда шаги кончились),
+        // поэтому здесь завершаем только сам видео-asset.
+        UnitResult<Error> completeResult = context.VideoAsset.CompleteProcessing(context.StorageReference, DateTime.UtcNow);
+        if (completeResult.IsFailure)
+            return completeResult.Error;
 
         _logger.LogInformation(
             "Video processing completed successfully for VideoAssetId: {VideoAssetId}",

@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Globalization;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using CSharpFunctionalExtensions;
 using DirectoryService.Shared.Errors;
@@ -86,7 +87,7 @@ public static class FfprobeOutputParser
             {
                 string? str = reader.GetString();
 
-                if (double.TryParse(str, out double value))
+                if (double.TryParse(str, NumberStyles.Any, CultureInfo.InvariantCulture, out double value))
                     return value;
 
                 return null;
