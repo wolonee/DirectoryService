@@ -15,7 +15,8 @@ public class QuartzDbInitializer
         IConfiguration configuration,
         ILogger<QuartzDbInitializer> logger)
     {
-        _connectionString = configuration.GetConnectionString("Database")!;
+        _connectionString = configuration.GetConnectionString("FileServiceDb")
+            ?? throw new InvalidOperationException("Connection string 'FileServiceDb' is not configured.");
         _logger = logger;
     }
 
@@ -45,7 +46,7 @@ public class QuartzDbInitializer
     {
         Assembly assembly = typeof(QuartzDbInitializer).Assembly;
         string resourceName =
-            "FileService.Infrastructure.Postgres.Scripts.quartz_tables.sql";
+            "FileService.Infrastructure.Postgres.Scripts.tables_postgres.sql";
 
         await using Stream? stream =
             assembly.GetManifestResourceStream(resourceName);
