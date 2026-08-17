@@ -242,7 +242,7 @@ public sealed class CompleteMultipartUploadHandler
 
                 _logger.LogInformation("MediaAssetId: {MediaAssetId} doesn't need processing", asset.Id);
             }
-
+            
             var saveChangesResult = await _transactionManager.SaveChangesAsync(cancellationToken);
             if (saveChangesResult.IsFailure)
                 return saveChangesResult.Error.ToErrors();
@@ -258,7 +258,6 @@ public sealed class CompleteMultipartUploadHandler
         }
         
         var response = new CompleteMultipartUploadResponse { FileId = request.FileId };
-
         return response;
     }
 }
