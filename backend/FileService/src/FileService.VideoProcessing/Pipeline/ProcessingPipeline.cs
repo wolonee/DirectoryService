@@ -43,9 +43,7 @@ public class ProcessingPipeline : IProcessingPipeline
 
         var executeStepsResult = await ExecuteAllStepsAsync(context, cancellationToken);
         if (executeStepsResult.IsFailure)
-        {
             return await FinalizeWithFailureAsync(context, executeStepsResult.Error, cancellationToken);
-        }
         
         return await FinalizeAsync(context, cancellationToken);
     }
@@ -61,19 +59,14 @@ public class ProcessingPipeline : IProcessingPipeline
             Result<ProcessingStep?, Error> stepResult = context.VideoProcess.ProcessNextStep();
             if (stepResult.IsFailure)
             {
-                _logger.LogWarning(
-                    "Failed to process next step for VideoAssetId: {VideoAssetId}. Status: {Status}",
-                    videoAssetId,
-                    context.VideoProcess.Status);
+                _logger.LogWarning("Failed to process next step for VideoAssetId: {VideoAssetId}. Status: {Status}", videoAssetId, context.VideoProcess.Status);
 
                 return stepResult.Error;
             }
 
             if (stepResult.Value is null)
             {
-                _logger.LogInformation(
-                    "All processing steps completed for VideoAssetId: {VideoAssetId}",
-                    videoAssetId);
+                _logger.LogInformation("All processing steps completed for VideoAssetId: {VideoAssetId}", videoAssetId);
 
                 // Завершение (CompleteProcessing/Complete + save) выполняется один раз в FinalizeAsync.
                 return UnitResult.Success<Error>();
@@ -81,11 +74,7 @@ public class ProcessingPipeline : IProcessingPipeline
 
             ProcessingStep currentStep = stepResult.Value;
 
-            _logger.LogInformation(
-                "Processing step {StepType} (Order: {Order}) for VideoAssetId: {VideoAssetId}",
-                currentStep.StepType,
-                currentStep.Order,
-                videoAssetId);
+            _logger.LogInformation("Processing step {StepType} (Order: {Order}) for VideoAssetId: {VideoAssetId}", currentStep.StepType, currentStep.Order, videoAssetId);
 
             IProcessingStepHandler? stepHandler = _stepHandlers.FirstOrDefault(h => h.StepType == currentStep.StepType);
 
@@ -173,12 +162,7 @@ public class ProcessingPipeline : IProcessingPipeline
         }
         catch (Exception ex)
         {
-            _logger.LogError(
-                ex,
-                "Unhandled exception in step handler {StepType} for VideoAssetId: {VideoAssetId}",
-                handler.StepType,
-                context.VideoAsset.Id);
-
+            _logger.LogError(ex, "Unhandled exception in step handler {StepType} for VideoAssetId: {VideoAssetId}", handler.StepType, context.VideoAsset.Id);
             return Error.Failure("pipeline.step.exception", $"Step execution failed: {ex.Message}");
         }
     }
@@ -214,13 +198,10 @@ public class ProcessingPipeline : IProcessingPipeline
                     return resetResult.Error;
             }
 
-            _logger.LogInformation(
-                "Loaded existing VideoProcess for VideoAssetId: {VideoAssetId}",
-                videoAssetId);
+            _logger.LogInformation("Loaded existing VideoProcess for VideoAssetId: {VideoAssetId}", videoAssetId);
         }
 
-        Result<VideoAsset, Error> assetResult =
-            await _videoAssetRepository.GetByIdAsync(videoAssetId, cancellationToken);
+        Result<VideoAsset, Error> assetResult = await _videoAssetRepository.GetByIdAsync(videoAssetId, cancellationToken);
         if (assetResult.IsFailure)
             return assetResult.Error;
 
@@ -244,22 +225,24 @@ public class ProcessingPipeline : IProcessingPipeline
     {
         Guid videoAssetId = context.VideoAsset.Id;
 
-        context.VideoProcess.Fail(error.Message);
+        if (context.VideoProcess.Status != ProcessingStatus.FAILED)
+        {
+            context.VideoProcess.Fail(error.Message);
+            
+            UnitResult<Error> saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
+            if (saveResult.IsFailure)
+            {
+                _logger.LogError("Failed to save failure state for VideoAssetId: {VideoAssetId}", videoAssetId);
+                return saveResult.Error;
+            }
+        }
 
         _logger.LogError("Video processing failed for VideoAssetId: {VideoAssetId}. Error: {Error}.", videoAssetId, error.Message);
 
         // Временные файлы должны чиститься и при ошибке — CleanupStepHandler мог не запуститься
         // (сбой на более раннем шаге, например ffmpeg).
-        CleanupWorkingDirectory(context);
-
-        UnitResult<Error> saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
-        if (saveResult.IsFailure)
-        {
-            _logger.LogError(
-                "Failed to save failure state for VideoAssetId: {VideoAssetId}",
-                videoAssetId);
-            return saveResult.Error;
-        }
+        if (context.VideoProcess.IsCriticalError)
+            CleanupWorkingDirectory(context);
 
         return UnitResult.Failure(error);
     }
@@ -278,10 +261,7 @@ public class ProcessingPipeline : IProcessingPipeline
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(
-                ex,
-                "Failed to delete working directory on failure: {WorkingDirectory}",
-                context.WorkingDirectory);
+            _logger.LogWarning(ex, "Failed to delete working directory on failure: {WorkingDirectory}", context.WorkingDirectory);
         }
     }
     

@@ -42,8 +42,7 @@ public class VideoProcessingJob : IJob
 
         _logger.LogInformation("Starting video processing job for VideoAssetId: {VideoAssetId}", videoAssetId);
 
-        UnitResult<Error> result =
-            await _videoProcessingService.ProcessVideoAsync(videoAssetId, context.CancellationToken);
+        UnitResult<Error> result = await _videoProcessingService.ProcessVideoAsync(videoAssetId, context.CancellationToken);
         if (result.IsSuccess)
             return;
 
