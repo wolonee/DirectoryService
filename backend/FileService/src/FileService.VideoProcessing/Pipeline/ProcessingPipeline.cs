@@ -128,10 +128,11 @@ public class ProcessingPipeline : IProcessingPipeline
                     videoAssetId,
                     executionResult.Error);
 
-                // Транзиентный сбой шага: НЕ переводим asset/процесс в FAILED — терминал (FAILED)
-                // ставит джоба только при критической ошибке или исчерпании попыток.
-                // Здесь лишь фиксируем упавший шаг; процесс остаётся IN_PROGRESS, asset — PROCESSING.
+                // Транзиентный сбой: помечаем FAILED сам ПРОЦЕСС (эта попытка провалилась —
+                // это правда), но asset НЕ трогаем — он остаётся PROCESSING, потому что будет повтор.
+                // Терминальный FAILED у asset ставит джоба (критическая ошибка / попытки кончились).
                 context.VideoProcess.FailCurrentStep(executionResult.Error.Message);
+                context.VideoProcess.Fail(executionResult.Error.Message);
 
                 UnitResult<Error> saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
                 if (saveResult.IsFailure)
@@ -211,8 +212,15 @@ public class ProcessingPipeline : IProcessingPipeline
         {
             videoProcess = processingResult.Value;
 
-            // На ретрае процесс уже IN_PROGRESS со сброшенными в PENDING шагами (это делает джоба
-            // перед перепланированием). Отдельный Reset при загрузке больше не нужен.
+            // Ретрай: предыдущая попытка оставила ПРОЦЕСС в FAILED. Reset возвращает его в
+            // IN_PROGRESS и сбрасывает шаги в PENDING. Asset при этом всё время был PROCESSING.
+            if (videoProcess.Status == ProcessingStatus.FAILED)
+            {
+                UnitResult<Error> resetResult = videoProcess.Reset();
+                if (resetResult.IsFailure)
+                    return resetResult.Error;
+            }
+
             _logger.LogInformation(
                 "Loaded existing VideoProcess for VideoAssetId: {VideoAssetId}",
                 videoAssetId);

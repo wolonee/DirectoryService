@@ -256,32 +256,9 @@ public class VideoProcessTests
     }
 
     [Fact]
-    public void Reset_FromInProgress_ClearsStepStateForRetry()
+    public void Reset_WhenNotFailed_ReturnsValidationError()
     {
         VideoProcess process = CreateProcess();
-        process.ProcessNextStep();
-        process.CompleteCurrentStep();
-        process.ProcessNextStep();
-        process.CompleteCurrentStep("metadata"); // progress now 10
-
-        var result = process.Reset();
-
-        Assert.True(result.IsSuccess);
-        Assert.Equal(ProcessingStatus.IN_PROGRESS, process.Status);
-        Assert.Equal(0, process.ProgressPercentage);
-        Assert.All(process.Steps, s => Assert.Equal(StepStatus.PENDING, s.Status));
-    }
-
-    [Fact]
-    public void Reset_WhenCompleted_ReturnsValidationError()
-    {
-        VideoProcess process = CreateProcess();
-        for (int i = 0; i < process.Steps.Count; i++)
-        {
-            process.ProcessNextStep();
-            process.CompleteCurrentStep();
-        }
-        process.ProcessNextStep(); // финализирует процесс -> COMPLETED
 
         var result = process.Reset();
 
@@ -290,22 +267,18 @@ public class VideoProcessTests
     }
 
     // ---------- Retry ----------
-    // Транзиентный сбой НЕ переводит процесс в FAILED — он остаётся IN_PROGRESS,
-    // поэтому ScheduleRetry/Reset вызываются из IN_PROGRESS. MaxRetries по умолчанию = 3.
+    // Попытка (VideoProcess) на сбое уходит в FAILED — отсюда планируется повтор и делается Reset.
+    // Asset при этом остаётся PROCESSING; терминальный FAILED ставит джоба. MaxRetries по умолчанию = 3.
 
     [Fact]
-    public void ScheduleRetry_FromInProgress_IncrementsRetryCountAndSetsNextRetryAt()
+    public void ScheduleRetry_WhenNotFailed_ReturnsValidationError()
     {
-        VideoProcess process = CreateProcess(); // IN_PROGRESS, RetryCount = 0
-        DateTime nextRetryAt = DateTime.UtcNow.AddMinutes(5);
+        VideoProcess process = CreateProcess();
 
-        var result = process.ScheduleRetry(nextRetryAt);
+        var result = process.ScheduleRetry(DateTime.UtcNow.AddMinutes(5));
 
-        Assert.True(result.IsSuccess);
-        Assert.Equal(1, process.RetryCount);
-        Assert.Equal(nextRetryAt, process.NextRetryAt);
-        // Статус не меняется — процесс всё ещё выполняется, не FAILED.
-        Assert.Equal(ProcessingStatus.IN_PROGRESS, process.Status);
+        Assert.True(result.IsFailure);
+        Assert.Equal("processing.invalid.status", result.Error.Code);
     }
 
     [Fact]
@@ -321,9 +294,24 @@ public class VideoProcessTests
     }
 
     [Fact]
-    public void CanRetry_FromInProgress_WithinBudget_ReturnsTrue()
+    public void ScheduleRetry_AfterNonCriticalFailure_IncrementsRetryCountAndSetsNextRetryAt()
     {
         VideoProcess process = CreateProcess();
+        process.Fail("transient", isCritical: false);
+        DateTime nextRetryAt = DateTime.UtcNow.AddMinutes(5);
+
+        var result = process.ScheduleRetry(nextRetryAt);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(1, process.RetryCount);
+        Assert.Equal(nextRetryAt, process.NextRetryAt);
+    }
+
+    [Fact]
+    public void CanRetry_AfterNonCriticalFailure_WithinBudget_ReturnsTrue()
+    {
+        VideoProcess process = CreateProcess();
+        process.Fail("transient", isCritical: false);
 
         Assert.True(process.CanRetry());
     }
@@ -342,9 +330,10 @@ public class VideoProcessTests
     {
         VideoProcess process = CreateProcess(); // MaxRetries = 3
 
-        // Три цикла повтора: ScheduleRetry -> Reset (всё из IN_PROGRESS, без прохода через FAILED).
+        // Три цикла: Fail -> ScheduleRetry -> Reset (RetryCount переживает Reset).
         for (int attempt = 0; attempt < 3; attempt++)
         {
+            process.Fail("transient", isCritical: false);
             Assert.True(process.ScheduleRetry(DateTime.UtcNow).IsSuccess);
             process.Reset();
         }
@@ -353,6 +342,7 @@ public class VideoProcessTests
         Assert.False(process.CanRetry());
 
         // Четвёртая попытка запрещена — бюджет исчерпан.
+        process.Fail("transient", isCritical: false);
         var result = process.ScheduleRetry(DateTime.UtcNow);
 
         Assert.True(result.IsFailure);

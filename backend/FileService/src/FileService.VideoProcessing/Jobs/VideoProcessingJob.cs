@@ -51,7 +51,8 @@ public class VideoProcessingJob : IJob
         if (result.IsSuccess)
             return;
 
-        // Транзиентный сбой оставил процесс в IN_PROGRESS, asset — в PROCESSING (pipeline их не валит).
+        // Транзиентный сбой оставил ПРОЦЕСС в FAILED (эта попытка провалилась),
+        // а asset — в PROCESSING (pipeline его не валит). Решаем: повтор или терминал.
         Result<VideoProcess, Error> processResult =
             await _videoProcessingRepository.GetBy(vp => vp.VideoAssetId == videoAssetId, context.CancellationToken);
         if (processResult.IsFailure)
@@ -66,9 +67,8 @@ public class VideoProcessingJob : IJob
 
         if (scheduleRetry.IsSuccess)
         {
-            // Чистый повтор: сбрасываем шаги в PENDING; процесс остаётся IN_PROGRESS, asset — PROCESSING.
-            process.Reset();
-
+            // Процесс остаётся FAILED до следующего захода — там LoadContext сделает Reset
+            // (FAILED → IN_PROGRESS, шаги → PENDING). Asset всё это время остаётся PROCESSING.
             Result<int, Error> saveResult = await _transactionManager.SaveChangesAsync(context.CancellationToken);
             if (saveResult.IsFailure)
                 throw new JobExecutionException(refireImmediately: false);

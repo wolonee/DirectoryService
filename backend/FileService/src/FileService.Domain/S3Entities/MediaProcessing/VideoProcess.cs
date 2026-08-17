@@ -72,6 +72,8 @@ public class VideoProcess
         }
     }
     
+    public int CountSteps() => _steps.Count;
+    
     public Result<ProcessingStep?, Error> ProcessNextStep()
     {
         if (Status != ProcessingStatus.IN_PROGRESS)
@@ -160,8 +162,8 @@ public class VideoProcess
     
     public UnitResult<Error> Reset()
     {
-        if (Status is not (ProcessingStatus.IN_PROGRESS or ProcessingStatus.FAILED))
-            return Error.Validation("processing.invalid.status", $"Can only reset from IN_PROGRESS or FAILED status, current: {Status}");
+        if (Status != ProcessingStatus.FAILED)
+            return Error.Validation("processing.invalid.status", "Can only reset from FAILED status");
 
         Status = ProcessingStatus.IN_PROGRESS;
         ProgressPercentage = 0;
@@ -179,12 +181,12 @@ public class VideoProcess
     
     public UnitResult<Error> ScheduleRetry(DateTime nextRetryAt)
     {
+        // Попытка (VideoProcess) провалилась и уже FAILED — отсюда и планируем повтор.
+        if (Status != ProcessingStatus.FAILED)
+            return Error.Validation("processing.invalid.status", "Can only schedule retry from FAILED status");
+
         if (IsCriticalError)
             return Error.Validation("processing.retry.critical", "Cannot retry critical failure");
-
-        // Транзиентный сбой оставляет процесс в IN_PROGRESS (не FAILED), отсюда и планируем повтор.
-        if (Status != ProcessingStatus.IN_PROGRESS)
-            return Error.Validation("processing.invalid.status", $"Can only schedule retry from IN_PROGRESS status, current: {Status}");
 
         if (RetryCount >= MaxRetries)
             return Error.Validation("processing.retry.exhausted", "Max retries exceeded");
