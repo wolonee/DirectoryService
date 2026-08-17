@@ -1,4 +1,3 @@
-using System.Data;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstractions;
 using DirectoryService.Application.Validation;
@@ -9,14 +8,13 @@ using FileService.Contracts.Features.MultipartUpload.CompleteMultipartUpload;
 using FileService.Core.Abstractions;
 using FileService.Domain;
 using FileService.Domain.S3Entities;
-using FileService.VideoProcessing.Jobs;
+using FileService.Domain.S3Entities.Assets;
 using FileService.Web.EndpointsExtensions;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
-using Quartz;
 
 namespace FileService.Core.Features.MultipartUpload;
 
@@ -81,8 +79,7 @@ public sealed class CompleteMultipartUploadHandler
     private readonly IS3Provider _s3Provider;
     private readonly IMediaAssetRepository _mediaAssetRepository;
     private readonly ITransactionManager _transactionManager;
-    private readonly IEnumerable<IProcessingJobFactory> _jobFactories;
-    private readonly ISchedulerFactory _schedulerFactory;
+    private readonly IVideoProcessingScheduler _scheduler;
     private readonly ICurrentUser _currentUser;
     private readonly IValidator<CompleteMultipartUploadCommand> _validator;
     private readonly ILogger<CompleteMultipartUploadHandler> _logger;
@@ -94,8 +91,7 @@ public sealed class CompleteMultipartUploadHandler
         IValidator<CompleteMultipartUploadCommand> validator,
         ILogger<CompleteMultipartUploadHandler> logger,
         ITransactionManager transactionManager,
-        IEnumerable<IProcessingJobFactory> jobFactories,
-        ISchedulerFactory schedulerFactory)
+        IVideoProcessingScheduler scheduler)
     {
         _s3Provider = s3Provider;
         _mediaAssetRepository = mediaAssetRepository;
@@ -103,8 +99,7 @@ public sealed class CompleteMultipartUploadHandler
         _validator = validator;
         _logger = logger;
         _transactionManager = transactionManager;
-        _jobFactories = jobFactories;
-        _schedulerFactory = schedulerFactory;
+        _scheduler = scheduler;
     }
 
     public async Task<Result<CompleteMultipartUploadResponse, Errors>> Handle(
@@ -150,114 +145,94 @@ public sealed class CompleteMultipartUploadHandler
             asset.MultipartUploadId,
             request.Parts,
             cancellationToken);
-
-        try
+        if (completeMultipartResult.IsFailure)
         {
-            IDbTransaction transaction = await _transactionManager.BeginTransactionAsync(cancellationToken);
-
-            if (completeMultipartResult.IsFailure)
-            {
-                _logger.LogError("Multipart upload failed for media asset {MediaAssetId}", request.FileId);
-                return completeMultipartResult.Error.ToErrors();
-            }
-
-            var metadataResult = await _s3Provider.GetObjectMetadataAsync(asset.UploadKey, cancellationToken);
-            if (metadataResult.IsFailure)
-            {
-                _logger.LogError("Object metadata was not found for media asset {MediaAssetId}", request.FileId);
-                return metadataResult.Error.ToErrors();
-            }
-
-            var metadata = metadataResult.Value;
-
-            if (metadata.ContentLength != asset.MediaData.Size)
-            {
-                _logger.LogError("File size does not match for media asset {MediaAssetId}", request.FileId);
-                var markFailedResult = asset.MarkFailed(DateTime.UtcNow);
-                if (markFailedResult.IsFailure)
-                    return markFailedResult.Error.ToErrors();
-
-                var failedSaveChangesResult = await _transactionManager.SaveChangesAsync(cancellationToken);
-                if (failedSaveChangesResult.IsFailure)
-                    return failedSaveChangesResult.Error.ToErrors();
-                
-                transaction.Commit();
-
-                return MediaAssetErrors.SizeMismatch(asset.MediaData.Size, metadata.ContentLength).ToErrors();
-            }
-
-            if (metadata.ContentType != asset.MediaData.ContentType.Value)
-            {
-                _logger.LogError("File type does not match for media asset {MediaAssetId}", request.FileId);
-                var markFailedResult = asset.MarkFailed(DateTime.UtcNow);
-                if (markFailedResult.IsFailure)
-                    return markFailedResult.Error.ToErrors();
-
-                var failedSaveChangesResult = await _transactionManager.SaveChangesAsync(cancellationToken);
-                if (failedSaveChangesResult.IsFailure)
-                    return failedSaveChangesResult.Error.ToErrors();
-                
-                transaction.Commit();
-
-                return MediaAssetErrors.ContentTypeMismatch(asset.MediaData.ContentType.Value, metadata.ContentType ?? string.Empty).ToErrors();
-            }
-
-            Result<StorageReference, Error> storageReferenceResult = StorageReference.Create(
-                asset.UploadKey,
-                metadata.ContentLength,
-                metadata.ContentType ?? string.Empty,
-                metadata.ETag,
-                metadata.Checksum,
-                metadata.LastModified);
-            if (storageReferenceResult.IsFailure)
-                return storageReferenceResult.Error.ToErrors();
-
-            var markUploadResult = asset.MarkUploaded(DateTime.UtcNow);
-            if (markUploadResult.IsFailure)
-                return markUploadResult.Error.ToErrors();
-
-            if (asset.RequiresProcessing())
-            {
-                var factory = _jobFactories.FirstOrDefault(f => f.CanProcess(asset));
-                if (factory is null)
-                {
-                    _logger.LogError("No processing job factory found for MediaAssetId: {MediaAssetId}", asset.Id);
-                    return GeneralErrors.Failure("No processing job factory found").ToErrors();
-                }
-
-                IScheduler scheduler = await _schedulerFactory.GetScheduler(cancellationToken);
-
-                IJobDetail job = factory.CreateJob(asset);
-                ITrigger trigger = factory.CreateTrigger(asset);
-
-                await scheduler.ScheduleJob(job, trigger, cancellationToken);
-
-                _logger.LogInformation("Scheduled processing job for MediaAssetId: {MediaAssetId}", asset.Id);
-            }
-            else
-            {
-                var markReadyResult = asset.MarkReady(asset.UploadKey, storageReferenceResult.Value, DateTime.UtcNow);
-                if (markReadyResult.IsFailure)
-                    return markReadyResult.Error.ToErrors();
-
-                _logger.LogInformation("MediaAssetId: {MediaAssetId} doesn't need processing", asset.Id);
-            }
-            
-            var saveChangesResult = await _transactionManager.SaveChangesAsync(cancellationToken);
-            if (saveChangesResult.IsFailure)
-                return saveChangesResult.Error.ToErrors();
-
-            _logger.LogInformation("File {FileId} saved", request.FileId);
-            
-            transaction.Commit();
+            _logger.LogError("Multipart upload failed for media asset {MediaAssetId}", request.FileId);
+            return completeMultipartResult.Error.ToErrors();
         }
-        catch (Exception ex)
+
+        var metadataResult = await _s3Provider.GetObjectMetadataAsync(asset.UploadKey, cancellationToken);
+        if (metadataResult.IsFailure)
         {
-            _logger.LogError(ex, "Error completing multipart upload");
-            return GeneralErrors.Failure("Error completing multipart upload").ToErrors();
+            _logger.LogError("Object metadata was not found for media asset {MediaAssetId}", request.FileId);
+            return metadataResult.Error.ToErrors();
         }
-        
-        var response = new CompleteMultipartUploadResponse { FileId = request.FileId };
-        return response;
+
+        var metadata = metadataResult.Value;
+
+        if (metadata.ContentLength != asset.MediaData.Size)
+        {
+            _logger.LogError("File size does not match for media asset {MediaAssetId}", request.FileId);
+            return await MarkAssetFailedAsync(
+                asset,
+                MediaAssetErrors.SizeMismatch(asset.MediaData.Size, metadata.ContentLength),
+                cancellationToken);
+        }
+
+        if (metadata.ContentType != asset.MediaData.ContentType.Value)
+        {
+            _logger.LogError("File type does not match for media asset {MediaAssetId}", request.FileId);
+            return await MarkAssetFailedAsync(
+                asset,
+                MediaAssetErrors.ContentTypeMismatch(asset.MediaData.ContentType.Value, metadata.ContentType ?? string.Empty),
+                cancellationToken);
+        }
+
+        Result<StorageReference, Error> storageReferenceResult = StorageReference.Create(
+            asset.UploadKey,
+            metadata.ContentLength,
+            metadata.ContentType ?? string.Empty,
+            metadata.ETag,
+            metadata.Checksum,
+            metadata.LastModified);
+        if (storageReferenceResult.IsFailure)
+            return storageReferenceResult.Error.ToErrors();
+
+        var markUploadResult = asset.MarkUploaded(DateTime.UtcNow);
+        if (markUploadResult.IsFailure)
+            return markUploadResult.Error.ToErrors();
+
+        bool requiresProcessing = asset.RequiresProcessing();
+        if (!requiresProcessing)
+        {
+            var markReadyResult = asset.MarkReady(asset.UploadKey, storageReferenceResult.Value, DateTime.UtcNow);
+            if (markReadyResult.IsFailure)
+                return markReadyResult.Error.ToErrors();
+
+            _logger.LogInformation("MediaAssetId: {MediaAssetId} doesn't need processing", asset.Id);
+        }
+
+        // Сначала фиксируем изменения БД (SaveChangesAsync атомарен сам по себе),
+        // и только потом планируем job — иначе Quartz-триггер может остаться при откате БД.
+        var saveChangesResult = await _transactionManager.SaveChangesAsync(cancellationToken);
+        if (saveChangesResult.IsFailure)
+            return saveChangesResult.Error.ToErrors();
+
+        if (requiresProcessing)
+        {
+            var scheduleResult = await _scheduler.ScheduleAsync(asset, cancellationToken);
+            if (scheduleResult.IsFailure)
+                return scheduleResult.Error.ToErrors();
+        }
+
+        _logger.LogInformation("File {FileId} saved", request.FileId);
+
+        return new CompleteMultipartUploadResponse { FileId = request.FileId };
+    }
+
+    private async Task<Result<CompleteMultipartUploadResponse, Errors>> MarkAssetFailedAsync(
+        MediaAsset asset,
+        Error resultError,
+        CancellationToken cancellationToken)
+    {
+        var markFailedResult = asset.MarkFailed(DateTime.UtcNow);
+        if (markFailedResult.IsFailure)
+            return markFailedResult.Error.ToErrors();
+
+        var saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
+        if (saveResult.IsFailure)
+            return saveResult.Error.ToErrors();
+
+        return resultError.ToErrors();
     }
 }

@@ -11,7 +11,6 @@ using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Quartz;
 
 namespace FileService.Core;
 
@@ -51,35 +50,6 @@ public static class DependencyInjection
             };
         });
         
-        return services;
-    }
-    
-    public static IServiceCollection AddQuartzServices(
-        this IServiceCollection services,
-        IConfiguration configuration)
-    {
-        string connectionString = configuration.GetConnectionString("FileServiceDb")
-            ?? throw new InvalidOperationException("Connection string 'FileServiceDb' is not configured.");
-
-        services.AddQuartz(options =>
-        {
-            options.UsePersistentStore(persistenceOptions =>
-            {
-                persistenceOptions.UsePostgres(cfg =>
-                {
-                    cfg.ConnectionString = connectionString;
-                });
-
-                persistenceOptions.UseNewtonsoftJsonSerializer();
-                persistenceOptions.UseProperties = false;
-            });
-        });
-
-        services.AddQuartzHostedService(options =>
-        {
-            options.WaitForJobsToComplete = true;
-        });
-
         return services;
     }
 }

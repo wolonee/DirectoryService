@@ -18,7 +18,6 @@ public static class DependencyInjection
         services.AddCoreDependencies(configuration);
         services.AddS3(configuration);
         services.AddVideoProcessing(configuration);
-        services.AddQuartzServices(configuration);
         services.AddWebDependencies();
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, HttpCurrentUser>();

@@ -5,7 +5,7 @@
 -- Should you only require it to create the tables, set DropDb to 0.
 
 DO $$
-  DECLARE DropDb INT := 1; -- Set this to 0 to skip DROP statements, 1 to include them
+  DECLARE DropDb INT := 0; -- 0 = не дропать таблицы Quartz при старте (иначе теряются durable jobs/retry/recovery)
 BEGIN
   IF DropDb = 1 THEN
     SET client_min_messages = WARNING;
