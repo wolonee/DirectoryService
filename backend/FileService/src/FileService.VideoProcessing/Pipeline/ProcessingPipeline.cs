@@ -5,6 +5,7 @@ using FileService.Domain;
 using FileService.Domain.S3Entities.Assets;
 using FileService.Domain.S3Entities.MediaProcessing;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace FileService.VideoProcessing;
 
@@ -15,6 +16,7 @@ public class ProcessingPipeline : IProcessingPipeline
     private readonly IVideoProcessingRepository _videoProcessingRepository;
     private readonly IVideoAssetRepository _videoAssetRepository;
     private readonly ITransactionManager _transactionManager;
+    private readonly VideoProcessingOptions _options;
 
 
     public ProcessingPipeline(
@@ -22,12 +24,14 @@ public class ProcessingPipeline : IProcessingPipeline
         IVideoProcessingRepository videoProcessingRepository,
         IVideoAssetRepository videoAssetRepository,
         ITransactionManager transactionManager,
+        IOptions<VideoProcessingOptions> options,
         IEnumerable<IProcessingStepHandler> stepHandlers)
     {
         _logger = logger;
         _videoProcessingRepository = videoProcessingRepository;
         _videoAssetRepository = videoAssetRepository;
         _transactionManager = transactionManager;
+        _options = options.Value;
         _stepHandlers = stepHandlers;
     }
 
@@ -194,7 +198,7 @@ public class ProcessingPipeline : IProcessingPipeline
 
         if (processingResult.IsFailure)
         {
-            var newProcess = new VideoProcess(videoAssetId);
+            var newProcess = new VideoProcess(videoAssetId, _options.MaxRetries);
             videoProcess = newProcess;
 
             _videoProcessingRepository.Add(videoProcess);

@@ -1,6 +1,7 @@
 using System.Data;
 using System.Linq.Expressions;
 using CSharpFunctionalExtensions;
+using Microsoft.Extensions.Options;
 using DirectoryService.Shared.EntitiesErrors;
 using DirectoryService.Shared.Errors;
 using FileService.Core.Abstractions;
@@ -157,6 +158,7 @@ public class ProcessingPipelineTests
             new FakeVideoProcessingRepository(),
             new FakeVideoAssetRepository(asset),
             new FakeTransactionManager(),
+            Options.Create(new VideoProcessingOptions()),
             handlers);
 
     private static VideoAsset CreateVideoAsset()

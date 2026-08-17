@@ -76,6 +76,7 @@ public class RealPipelineProcessingTests
             new FakeVideoProcessingRepository(),
             new FakeVideoAssetRepository(asset),
             new FakeTransactionManager(),
+            Options.Create(new VideoProcessingOptions()),
             handlers);
 
     private static VideoAsset CreateUploadedVideoAsset()

@@ -49,12 +49,12 @@ public class VideoProcess
     {
     }
     
-    public VideoProcess(Guid videoAssetId)
+    public VideoProcess(Guid videoAssetId, int maxRetries = 3)
     {
         Id = Guid.NewGuid();
         VideoAssetId = videoAssetId;
         RetryCount = 0;
-        MaxRetries = 3;
+        MaxRetries = maxRetries;
         Status = ProcessingStatus.IN_PROGRESS;
         ProgressPercentage = 0;
         StartedAt = DateTime.UtcNow;
