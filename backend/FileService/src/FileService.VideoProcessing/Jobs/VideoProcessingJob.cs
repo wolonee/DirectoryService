@@ -17,7 +17,7 @@ public class VideoProcessingJob : IJob
     private readonly IVideoProcessingService _videoProcessingService;
     private readonly IVideoProcessingRepository _videoProcessingRepository;
     private readonly ITransactionManager _transactionManager;
-    private readonly ProcessingJobFactory _factory;
+    private readonly IProcessingJobFactory _factory;
     private readonly VideoProcessingOptions _options;
 
     public VideoProcessingJob(
@@ -26,7 +26,7 @@ public class VideoProcessingJob : IJob
         IVideoProcessingRepository videoProcessingRepository,
         ITransactionManager transactionManager,
         IOptions<VideoProcessingOptions> options,
-        ProcessingJobFactory factory)
+        IProcessingJobFactory factory)
     {
         _logger = logger;
         _videoProcessingService = videoProcessingService;
@@ -38,7 +38,7 @@ public class VideoProcessingJob : IJob
 
     public async Task Execute(IJobExecutionContext context)
     {
-        Guid videoAssetId = context.MergedJobDataMap.GetGuid(VideoAssetIdKey.Name);
+        Guid videoAssetId = Guid.Parse(context.MergedJobDataMap.GetString(VideoAssetIdKey.Name)!);
 
         _logger.LogInformation("Starting video processing job for VideoAssetId: {VideoAssetId}", videoAssetId);
 

@@ -10,6 +10,6 @@ public interface IProcessingJobFactory
     IJobDetail CreateJob(MediaAsset mediaAsset);
     
     ITrigger CreateTrigger(MediaAsset mediaAsset);
-    
-    // ITrigger CreateRetryTrigger(MediaAsset mediaAsset, int retryCount, DateTime startAtUtc);
+
+    ITrigger CreateRetryTrigger(Guid mediaAssetId, int retryCount, DateTime startAtUtc);
 }

@@ -16,7 +16,7 @@ public class ProcessingJobFactory : IProcessingJobFactory
     {
         return JobBuilder.Create<VideoProcessingJob>()
             .WithIdentity($"video-processing-{mediaAsset.Id}", JOB_GROUP)
-            .UsingJobData(VideoProcessingJob.VideoAssetIdKey.Name, mediaAsset.Id)
+            .UsingJobData(VideoProcessingJob.VideoAssetIdKey.Name, mediaAsset.Id.ToString())
             .StoreDurably(true)
             .Build();
     }
