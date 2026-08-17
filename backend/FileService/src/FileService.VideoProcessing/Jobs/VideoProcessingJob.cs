@@ -47,8 +47,7 @@ public class VideoProcessingJob : IJob
             return;
 
         // Pipeline уже перевёл asset и VideoProcess в FAILED. Решаем: повтор или окончательный провал.
-        Result<VideoProcess, Error> processResult =
-            await _videoProcessingRepository.GetBy(vp => vp.VideoAssetId == videoAssetId, context.CancellationToken);
+        Result<VideoProcess, Error> processResult = await _videoProcessingRepository.GetBy(vp => vp.VideoAssetId == videoAssetId, context.CancellationToken);
         if (processResult.IsFailure)
             throw new JobExecutionException(refireImmediately: false);
 
