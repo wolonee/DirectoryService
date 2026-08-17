@@ -10,9 +10,4 @@
       <ProjectReference Include="..\FileService.Core\FileService.Core.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <PackageReference Include="Quartz.Extensions.Hosting" Version="3.19.1" />
-      <PackageReference Include="Quartz.Serialization.Json" Version="3.19.1" />
-    </ItemGroup>
-
 </Project>

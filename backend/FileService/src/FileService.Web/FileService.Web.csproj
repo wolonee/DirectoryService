@@ -7,7 +7,6 @@
     <ProjectReference Include="..\FileService.VideoProcessing\FileService.VideoProcessing.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CrystalQuartz.AspNetCore" Version="7.3.0" />
     <PackageReference Include="Wolonee.Framework" Version="0.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.18">
       <PrivateAssets>all</PrivateAssets>

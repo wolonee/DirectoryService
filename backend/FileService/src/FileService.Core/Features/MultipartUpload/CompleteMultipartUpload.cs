@@ -9,12 +9,14 @@ using FileService.Core.Abstractions;
 using FileService.Domain;
 using FileService.Domain.S3Entities;
 using FileService.Domain.S3Entities.Assets;
+using FileService.VideoProcessing.Jobs;
 using FileService.Web.EndpointsExtensions;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using Quartz;
 
 namespace FileService.Core.Features.MultipartUpload;
 
@@ -79,7 +81,8 @@ public sealed class CompleteMultipartUploadHandler
     private readonly IS3Provider _s3Provider;
     private readonly IMediaAssetRepository _mediaAssetRepository;
     private readonly ITransactionManager _transactionManager;
-    private readonly IVideoProcessingScheduler _scheduler;
+    private readonly IEnumerable<IProcessingJobFactory> _jobFactories;
+    private readonly ISchedulerFactory _schedulerFactory;
     private readonly ICurrentUser _currentUser;
     private readonly IValidator<CompleteMultipartUploadCommand> _validator;
     private readonly ILogger<CompleteMultipartUploadHandler> _logger;
@@ -91,7 +94,8 @@ public sealed class CompleteMultipartUploadHandler
         IValidator<CompleteMultipartUploadCommand> validator,
         ILogger<CompleteMultipartUploadHandler> logger,
         ITransactionManager transactionManager,
-        IVideoProcessingScheduler scheduler)
+        IEnumerable<IProcessingJobFactory> jobFactories,
+        ISchedulerFactory schedulerFactory)
     {
         _s3Provider = s3Provider;
         _mediaAssetRepository = mediaAssetRepository;
@@ -99,7 +103,8 @@ public sealed class CompleteMultipartUploadHandler
         _validator = validator;
         _logger = logger;
         _transactionManager = transactionManager;
-        _scheduler = scheduler;
+        _jobFactories = jobFactories;
+        _schedulerFactory = schedulerFactory;
     }
 
     public async Task<Result<CompleteMultipartUploadResponse, Errors>> Handle(
@@ -210,9 +215,17 @@ public sealed class CompleteMultipartUploadHandler
 
         if (requiresProcessing)
         {
-            var scheduleResult = await _scheduler.ScheduleAsync(asset, cancellationToken);
-            if (scheduleResult.IsFailure)
-                return scheduleResult.Error.ToErrors();
+            var factory = _jobFactories.FirstOrDefault(f => f.CanProcess(asset));
+            if (factory is null)
+            {
+                _logger.LogError("No processing job factory found for MediaAssetId: {MediaAssetId}", asset.Id);
+                return GeneralErrors.Failure("No processing job factory found").ToErrors();
+            }
+
+            IScheduler scheduler = await _schedulerFactory.GetScheduler(cancellationToken);
+            await scheduler.ScheduleJob(factory.CreateJob(asset), factory.CreateTrigger(asset), cancellationToken);
+
+            _logger.LogInformation("Scheduled processing job for MediaAssetId: {MediaAssetId}", asset.Id);
         }
 
         _logger.LogInformation("File {FileId} saved", request.FileId);
