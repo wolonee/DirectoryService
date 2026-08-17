@@ -18,6 +18,7 @@ public class ProcessingJobFactory : IProcessingJobFactory
             .WithIdentity($"video-processing-{mediaAsset.Id}", JOB_GROUP)
             .UsingJobData(VideoProcessingJob.VideoAssetIdKey.Name, mediaAsset.Id.ToString())
             .StoreDurably(true)
+            .RequestRecovery(true)
             .Build();
     }
 

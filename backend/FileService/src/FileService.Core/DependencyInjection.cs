@@ -58,13 +58,16 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        string connectionString = configuration.GetConnectionString("FileServiceDb")
+            ?? throw new InvalidOperationException("Connection string 'FileServiceDb' is not configured.");
+
         services.AddQuartz(options =>
         {
             options.UsePersistentStore(persistenceOptions =>
             {
                 persistenceOptions.UsePostgres(cfg =>
                 {
-                    cfg.ConnectionString = configuration.GetConnectionString("FileServiceDb")!;
+                    cfg.ConnectionString = connectionString;
                 });
 
                 persistenceOptions.UseNewtonsoftJsonSerializer();
