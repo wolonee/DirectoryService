@@ -42,7 +42,7 @@ public class RealPipelineProcessingTests
     }
 
     [Fact]
-    public async Task RealPipeline_WhenFfmpegFails_MarksVideoFailed()
+    public async Task RealPipeline_WhenFfmpegFails_KeepsVideoProcessing()
     {
         VideoAsset asset = CreateUploadedVideoAsset();
         List<IProcessingStepHandler> handlers = BuildHandlers(new FakeFfmpegProcessRunner(failHls: true), new FakeS3Provider());
@@ -51,7 +51,8 @@ public class RealPipelineProcessingTests
         UnitResult<Error> result = await pipeline.ProcessAllStepsAsync(asset.Id);
 
         Assert.True(result.IsFailure);
-        Assert.Equal(MediaStatus.FAILED, asset.Status);
+        // Транзиентный сбой ffmpeg не валит asset — он остаётся PROCESSING; терминал FAILED ставит джоба.
+        Assert.Equal(MediaStatus.PROCESSING, asset.Status);
     }
 
     // ---------- Helpers ----------

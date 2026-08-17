@@ -2,6 +2,7 @@
 using DirectoryService.Shared.Errors;
 using FileService.Core.Abstractions;
 using FileService.Domain;
+using FileService.Domain.S3Entities;
 using FileService.Domain.S3Entities.Assets;
 using FileService.Domain.S3Entities.MediaProcessing;
 using Microsoft.Extensions.Logging;
@@ -127,9 +128,10 @@ public class ProcessingPipeline : IProcessingPipeline
                     videoAssetId,
                     executionResult.Error);
 
+                // Транзиентный сбой шага: НЕ переводим asset/процесс в FAILED — терминал (FAILED)
+                // ставит джоба только при критической ошибке или исчерпании попыток.
+                // Здесь лишь фиксируем упавший шаг; процесс остаётся IN_PROGRESS, asset — PROCESSING.
                 context.VideoProcess.FailCurrentStep(executionResult.Error.Message);
-                context.VideoProcess.Fail(executionResult.Error.Message);
-                context.VideoAsset.MarkFailed(DateTime.UtcNow);
 
                 UnitResult<Error> saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
                 if (saveResult.IsFailure)
@@ -209,15 +211,8 @@ public class ProcessingPipeline : IProcessingPipeline
         {
             videoProcess = processingResult.Value;
 
-            // Повторный прогон: предыдущая попытка оставила процесс в FAILED.
-            // Reset возвращает статус в IN_PROGRESS и сбрасывает все шаги в PENDING.
-            if (videoProcess.Status == ProcessingStatus.FAILED)
-            {
-                UnitResult<Error> resetResult = videoProcess.Reset();
-                if (resetResult.IsFailure)
-                    return resetResult.Error;
-            }
-
+            // На ретрае процесс уже IN_PROGRESS со сброшенными в PENDING шагами (это делает джоба
+            // перед перепланированием). Отдельный Reset при загрузке больше не нужен.
             _logger.LogInformation(
                 "Loaded existing VideoProcess for VideoAssetId: {VideoAssetId}",
                 videoAssetId);
@@ -227,9 +222,21 @@ public class ProcessingPipeline : IProcessingPipeline
         if (assetResult.IsFailure)
             return assetResult.Error;
 
-        UnitResult<Error> startResult = assetResult.Value.StartProcessing();
-        if (startResult.IsFailure)
-            return startResult.Error;
+        // Первый заход: asset UPLOADED → переводим в PROCESSING.
+        // Ретрай: asset уже PROCESSING → идём дальше без повторного StartProcessing.
+        // Любой другой статус (UPLOADING/READY/FAILED/DELETED) — обрабатывать нельзя.
+        if (assetResult.Value.Status == MediaStatus.UPLOADED)
+        {
+            UnitResult<Error> startResult = assetResult.Value.StartProcessing();
+            if (startResult.IsFailure)
+                return startResult.Error;
+        }
+        else if (assetResult.Value.Status != MediaStatus.PROCESSING)
+        {
+            return Error.Validation(
+                "asset.invalid.status.transition",
+                $"Cannot process asset in status {assetResult.Value.Status}");
+        }
 
         Result<int, Error> saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
         if (saveResult.IsFailure)

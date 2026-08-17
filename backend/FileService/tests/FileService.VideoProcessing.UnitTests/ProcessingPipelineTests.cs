@@ -40,7 +40,7 @@ public class ProcessingPipelineTests
     }
 
     [Fact]
-    public async Task StepFailure_MarksAssetFailed_AndStopsRemainingSteps()
+    public async Task StepFailure_KeepsAssetProcessing_AndStopsRemainingSteps()
     {
         VideoAsset asset = CreateUploadedVideoAsset();
         var log = new List<StepType>();
@@ -57,14 +57,15 @@ public class ProcessingPipelineTests
         UnitResult<Error> result = await pipeline.ProcessAllStepsAsync(asset.Id);
 
         Assert.True(result.IsFailure);
-        Assert.Equal(MediaStatus.FAILED, asset.Status);
+        // Транзиентный сбой шага НЕ валит asset — он остаётся PROCESSING (терминал FAILED ставит джоба).
+        Assert.Equal(MediaStatus.PROCESSING, asset.Status);
         Assert.Equal(
             new[] { StepType.INITIALIZE, StepType.EXTRACT_METADATA, StepType.GENERATE_HLS },
             log);
     }
 
     [Fact]
-    public async Task StepThrows_IsCaught_MarksAssetFailed()
+    public async Task StepThrows_IsCaught_KeepsAssetProcessing()
     {
         VideoAsset asset = CreateUploadedVideoAsset();
         var log = new List<StepType>();
@@ -80,7 +81,8 @@ public class ProcessingPipelineTests
         UnitResult<Error> result = await pipeline.ProcessAllStepsAsync(asset.Id);
 
         Assert.True(result.IsFailure);
-        Assert.Equal(MediaStatus.FAILED, asset.Status);
+        // Исключение в шаге ловится как транзиентная ошибка — asset остаётся PROCESSING.
+        Assert.Equal(MediaStatus.PROCESSING, asset.Status);
         Assert.DoesNotContain(StepType.UPLOAD_HLS, log);
     }
 

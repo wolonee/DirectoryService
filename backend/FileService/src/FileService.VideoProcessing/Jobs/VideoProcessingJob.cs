@@ -1,6 +1,7 @@
 using CSharpFunctionalExtensions;
 using DirectoryService.Shared.Errors;
 using FileService.Core.Abstractions;
+using FileService.Domain.S3Entities.Assets;
 using FileService.Domain.S3Entities.MediaProcessing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -16,6 +17,7 @@ public class VideoProcessingJob : IJob
     private readonly ILogger<VideoProcessingJob> _logger;
     private readonly IVideoProcessingService _videoProcessingService;
     private readonly IVideoProcessingRepository _videoProcessingRepository;
+    private readonly IVideoAssetRepository _videoAssetRepository;
     private readonly ITransactionManager _transactionManager;
     private readonly IProcessingJobFactory _factory;
     private readonly VideoProcessingOptions _options;
@@ -24,6 +26,7 @@ public class VideoProcessingJob : IJob
         ILogger<VideoProcessingJob> logger,
         IVideoProcessingService videoProcessingService,
         IVideoProcessingRepository videoProcessingRepository,
+        IVideoAssetRepository videoAssetRepository,
         ITransactionManager transactionManager,
         IOptions<VideoProcessingOptions> options,
         IProcessingJobFactory factory)
@@ -31,6 +34,7 @@ public class VideoProcessingJob : IJob
         _logger = logger;
         _videoProcessingService = videoProcessingService;
         _videoProcessingRepository = videoProcessingRepository;
+        _videoAssetRepository = videoAssetRepository;
         _transactionManager = transactionManager;
         _factory = factory;
         _options = options.Value;
@@ -42,25 +46,28 @@ public class VideoProcessingJob : IJob
 
         _logger.LogInformation("Starting video processing job for VideoAssetId: {VideoAssetId}", videoAssetId);
 
-        UnitResult<Error> result = await _videoProcessingService.ProcessVideoAsync(videoAssetId, context.CancellationToken);
+        UnitResult<Error> result =
+            await _videoProcessingService.ProcessVideoAsync(videoAssetId, context.CancellationToken);
         if (result.IsSuccess)
             return;
 
-        // Pipeline уже перевёл asset и VideoProcess в FAILED. Решаем: повтор или окончательный провал.
-        Result<VideoProcess, Error> processResult = await _videoProcessingRepository.GetBy(vp => vp.VideoAssetId == videoAssetId, context.CancellationToken);
+        // Транзиентный сбой оставил процесс в IN_PROGRESS, asset — в PROCESSING (pipeline их не валит).
+        Result<VideoProcess, Error> processResult =
+            await _videoProcessingRepository.GetBy(vp => vp.VideoAssetId == videoAssetId, context.CancellationToken);
         if (processResult.IsFailure)
             throw new JobExecutionException(refireImmediately: false);
 
         VideoProcess process = processResult.Value;
 
-        // CanRetry(): RetryCount < MaxRetries && !IsCriticalError — счётчик живёт в домене, не в JobDataMap.
-        if (process.CanRetry())
-        {
-            DateTime nextRetryAt = DateTime.UtcNow.AddSeconds(_options.RetryDelaySeconds);
+        // Пробуем запланировать повтор. Успех = транзиентная ошибка и бюджет есть.
+        // Неуспех = критическая ошибка или попытки исчерпаны → терминал.
+        DateTime nextRetryAt = DateTime.UtcNow.AddSeconds(_options.RetryDelaySeconds);
+        UnitResult<Error> scheduleRetry = process.ScheduleRetry(nextRetryAt);   // RetryCount++, NextRetryAt
 
-            UnitResult<Error> scheduleRetry = process.ScheduleRetry(nextRetryAt);   // RetryCount++, NextRetryAt
-            if (scheduleRetry.IsFailure)
-                throw new JobExecutionException(refireImmediately: false);
+        if (scheduleRetry.IsSuccess)
+        {
+            // Чистый повтор: сбрасываем шаги в PENDING; процесс остаётся IN_PROGRESS, asset — PROCESSING.
+            process.Reset();
 
             Result<int, Error> saveResult = await _transactionManager.SaveChangesAsync(context.CancellationToken);
             if (saveResult.IsFailure)
@@ -80,7 +87,9 @@ public class VideoProcessingJob : IJob
             return;
         }
 
-        // Попытки исчерпаны или критическая ошибка — asset остаётся FAILED (терминал).
+        // Терминал: только теперь помечаем FAILED (asset и процесс).
+        await MarkPermanentlyFailedAsync(videoAssetId, process, result.Error, context.CancellationToken);
+
         _logger.LogError(
             "Video processing permanently failed for VideoAssetId: {VideoAssetId} after {RetryCount} retries. Error: {Error}",
             videoAssetId,
@@ -88,5 +97,24 @@ public class VideoProcessingJob : IJob
             result.Error);
 
         throw new JobExecutionException(refireImmediately: false);
+    }
+
+    private async Task MarkPermanentlyFailedAsync(
+        Guid videoAssetId,
+        VideoProcess process,
+        Error error,
+        CancellationToken cancellationToken)
+    {
+        // Исчерпаны попытки: процесс ещё IN_PROGRESS → переводим в FAILED.
+        // Критическая ошибка: pipeline уже поставил FAILED, тут Fail просто вернёт no-op.
+        if (process.Status == ProcessingStatus.IN_PROGRESS)
+            process.Fail(error.Message);
+
+        Result<VideoAsset, Error> assetResult =
+            await _videoAssetRepository.GetByIdAsync(videoAssetId, cancellationToken);
+        if (assetResult.IsSuccess)
+            assetResult.Value.MarkFailed(DateTime.UtcNow);
+
+        await _transactionManager.SaveChangesAsync(cancellationToken);
     }
 }
