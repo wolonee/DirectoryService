@@ -117,8 +117,19 @@ public class VideoProcessingJob : IJob
         if (assetResult.IsSuccess)
             assetResult.Value.MarkFailed(DateTime.UtcNow);
 
-        await _transactionManager.SaveChangesAsync(cancellationToken);
-        
+        // Проверяем результат записи: если терминальный FAILED не сохранился, в БД остаётся
+        // PROCESSING. Тогда НЕ шлём FAILED-событие — иначе клиент увидит статус, которого нет
+        // в источнике истины, и при reconnect состояние разъедется.
+        Result<int, Error> saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
+        if (saveResult.IsFailure)
+        {
+            _logger.LogError(
+                "Failed to persist terminal FAILED state for VideoAssetId: {VideoAssetId}",
+                videoAssetId);
+            return;
+        }
+
+        // Событие — только после успешной записи.
         _videoProgressReporter.Report(process, MediaStatus.FAILED);
     }
 }

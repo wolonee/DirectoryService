@@ -24,10 +24,20 @@ public class QuartzDbInitializer
     {
         try
         {
-            string sqlScript = await LoadSqlScriptAsync();
-
             await using var connection = new NpgsqlConnection(_connectionString);
             await connection.OpenAsync(stoppingToken);
+
+            // Скрипт tables_postgres.sql не идемпотентный (CREATE без IF NOT EXISTS).
+            // Повторный запуск по той же БД падает на "already exists" — а старт может
+            // выполниться дважды (например, WebApplicationFactory в интеграционных тестах).
+            // Поэтому сначала проверяем, созданы ли уже Quartz-таблицы, и пропускаем init.
+            if (await QuartzTablesExistAsync(connection, stoppingToken))
+            {
+                _logger.LogInformation("Quartz tables already exist, skipping initialization");
+                return;
+            }
+
+            string sqlScript = await LoadSqlScriptAsync();
 
             await using var command = new NpgsqlCommand(sqlScript, connection);
 
@@ -40,6 +50,20 @@ public class QuartzDbInitializer
             _logger.LogError(ex, "Failed to initialize Quartz tables");
             throw;
         }
+    }
+
+    private static async Task<bool> QuartzTablesExistAsync(
+        NpgsqlConnection connection,
+        CancellationToken stoppingToken)
+    {
+        // to_regclass возвращает NULL, если таблицы нет (без исключения).
+        await using var command = new NpgsqlCommand(
+            "SELECT to_regclass('public.qrtz_locks') IS NOT NULL;",
+            connection);
+
+        object? result = await command.ExecuteScalarAsync(stoppingToken);
+
+        return result is true;
     }
 
     private static async Task<string> LoadSqlScriptAsync()
