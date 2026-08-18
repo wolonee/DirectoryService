@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace FileService.VideoProcessing;
 
-public class VideoProcessingService
+public class VideoProcessingService : IVideoProcessingService
 {
     private readonly IProcessingPipeline _processingPipeline;
     private readonly ILogger<VideoProcessingService> _logger;

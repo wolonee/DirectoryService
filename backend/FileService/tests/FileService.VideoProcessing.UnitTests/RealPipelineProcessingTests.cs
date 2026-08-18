@@ -42,7 +42,7 @@ public class RealPipelineProcessingTests
     }
 
     [Fact]
-    public async Task RealPipeline_WhenFfmpegFails_MarksVideoFailed()
+    public async Task RealPipeline_WhenFfmpegFails_KeepsVideoProcessing()
     {
         VideoAsset asset = CreateUploadedVideoAsset();
         List<IProcessingStepHandler> handlers = BuildHandlers(new FakeFfmpegProcessRunner(failHls: true), new FakeS3Provider());
@@ -51,7 +51,8 @@ public class RealPipelineProcessingTests
         UnitResult<Error> result = await pipeline.ProcessAllStepsAsync(asset.Id);
 
         Assert.True(result.IsFailure);
-        Assert.Equal(MediaStatus.FAILED, asset.Status);
+        // Транзиентный сбой ffmpeg не валит asset — он остаётся PROCESSING; терминал FAILED ставит джоба.
+        Assert.Equal(MediaStatus.PROCESSING, asset.Status);
     }
 
     // ---------- Helpers ----------
@@ -76,7 +77,9 @@ public class RealPipelineProcessingTests
             new FakeVideoProcessingRepository(),
             new FakeVideoAssetRepository(asset),
             new FakeTransactionManager(),
-            handlers);
+            Options.Create(new VideoProcessingOptions()),
+            handlers,
+            new FakeVideoProgressReporter());
 
     private static VideoAsset CreateUploadedVideoAsset()
     {
@@ -145,6 +148,12 @@ public class RealPipelineProcessingTests
             Task.FromResult(Result.Failure<VideoProcess, Error>(GeneralErrors.NotFound(Guid.Empty, "VideoProcess")));
 
         public void Add(VideoProcess videoProcessing) { }
+    }
+
+    // Прогресс — побочный канал; в этих тестах его не проверяем, глушим no-op.
+    private sealed class FakeVideoProgressReporter : IVideoProgressReporter
+    {
+        public void Report(VideoProcess videoProcess, MediaStatus mediaStatus) { }
     }
 
     private sealed class FakeVideoAssetRepository : IVideoAssetRepository

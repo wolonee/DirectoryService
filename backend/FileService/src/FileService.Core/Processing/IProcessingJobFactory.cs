@@ -1,0 +1,15 @@
+﻿using FileService.Domain.S3Entities.Assets;
+using Quartz;
+
+namespace FileService.VideoProcessing.Jobs;
+
+public interface IProcessingJobFactory
+{
+    bool CanProcess(MediaAsset mediaAsset);
+    
+    IJobDetail CreateJob(MediaAsset mediaAsset);
+    
+    ITrigger CreateTrigger(MediaAsset mediaAsset);
+
+    ITrigger CreateRetryTrigger(Guid mediaAssetId, int retryCount, DateTime startAtUtc);
+}

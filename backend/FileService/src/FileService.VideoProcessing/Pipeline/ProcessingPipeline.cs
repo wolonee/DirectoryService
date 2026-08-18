@@ -1,19 +1,24 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Shared.Errors;
 using FileService.Core.Abstractions;
+using FileService.Domain;
+using FileService.Domain.S3Entities;
 using FileService.Domain.S3Entities.Assets;
 using FileService.Domain.S3Entities.MediaProcessing;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace FileService.VideoProcessing;
 
 public class ProcessingPipeline : IProcessingPipeline
 {
     private readonly IEnumerable<IProcessingStepHandler> _stepHandlers;
+    private readonly IVideoProgressReporter _videoProgressReporter;
     private readonly ILogger<ProcessingPipeline> _logger;
     private readonly IVideoProcessingRepository _videoProcessingRepository;
     private readonly IVideoAssetRepository _videoAssetRepository;
     private readonly ITransactionManager _transactionManager;
+    private readonly VideoProcessingOptions _options;
 
 
     public ProcessingPipeline(
@@ -21,13 +26,17 @@ public class ProcessingPipeline : IProcessingPipeline
         IVideoProcessingRepository videoProcessingRepository,
         IVideoAssetRepository videoAssetRepository,
         ITransactionManager transactionManager,
-        IEnumerable<IProcessingStepHandler> stepHandlers)
+        IOptions<VideoProcessingOptions> options,
+        IEnumerable<IProcessingStepHandler> stepHandlers,
+        IVideoProgressReporter videoProgressReporter)
     {
         _logger = logger;
         _videoProcessingRepository = videoProcessingRepository;
         _videoAssetRepository = videoAssetRepository;
         _transactionManager = transactionManager;
+        _options = options.Value;
         _stepHandlers = stepHandlers;
+        _videoProgressReporter = videoProgressReporter;
     }
 
     public async Task<UnitResult<Error>> ProcessAllStepsAsync(
@@ -122,9 +131,11 @@ public class ProcessingPipeline : IProcessingPipeline
                     videoAssetId,
                     executionResult.Error);
 
+                // Транзиентный сбой: помечаем FAILED сам ПРОЦЕСС (эта попытка провалилась —
+                // это правда), но asset НЕ трогаем — он остаётся PROCESSING, потому что будет повтор.
+                // Терминальный FAILED у asset ставит джоба (критическая ошибка / попытки кончились).
                 context.VideoProcess.FailCurrentStep(executionResult.Error.Message);
-                context.VideoProcess.Fail(executionResult.Error.Message, isCritical: true);
-                context.VideoAsset.MarkFailed(DateTime.UtcNow);
+                context.VideoProcess.Fail(executionResult.Error.Message);
 
                 UnitResult<Error> saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
                 if (saveResult.IsFailure)
@@ -141,6 +152,7 @@ public class ProcessingPipeline : IProcessingPipeline
             context = executionResult.Value;
 
             context.VideoProcess.CompleteCurrentStep();
+            _videoProgressReporter.Report(context.VideoProcess, context.VideoAsset.Status);
 
             _logger.LogInformation(
                 "Step {StepType} completed for VideoAssetId: {VideoAssetId}. Progress: {Progress}%",
@@ -193,7 +205,7 @@ public class ProcessingPipeline : IProcessingPipeline
 
         if (processingResult.IsFailure)
         {
-            var newProcess = new VideoProcess(videoAssetId);
+            var newProcess = new VideoProcess(videoAssetId, _options.MaxRetries);
             videoProcess = newProcess;
 
             _videoProcessingRepository.Add(videoProcess);
@@ -204,23 +216,47 @@ public class ProcessingPipeline : IProcessingPipeline
         {
             videoProcess = processingResult.Value;
 
+            // Ретрай: предыдущая попытка оставила ПРОЦЕСС в FAILED. Reset возвращает его в
+            // IN_PROGRESS и сбрасывает шаги в PENDING. Asset при этом всё время был PROCESSING.
+            if (videoProcess.Status == ProcessingStatus.FAILED)
+            {
+                UnitResult<Error> resetResult = videoProcess.Reset();
+                if (resetResult.IsFailure)
+                    return resetResult.Error;
+            }
+
             _logger.LogInformation(
                 "Loaded existing VideoProcess for VideoAssetId: {VideoAssetId}",
                 videoAssetId);
         }
 
-        Result<VideoAsset, Error> assetResult =
-            await _videoAssetRepository.GetByIdAsync(videoAssetId, cancellationToken);
+        Result<VideoAsset, Error> assetResult = await _videoAssetRepository.GetByIdAsync(videoAssetId, cancellationToken);
         if (assetResult.IsFailure)
             return assetResult.Error;
 
-        UnitResult<Error> startResult = assetResult.Value.StartProcessing();
-        if (startResult.IsFailure)
-            return startResult.Error;
+        // Первый заход: asset UPLOADED → переводим в PROCESSING.
+        // Ретрай: asset уже PROCESSING → идём дальше без повторного StartProcessing.
+        // Любой другой статус (UPLOADING/READY/FAILED/DELETED) — обрабатывать нельзя.
+        if (assetResult.Value.Status == MediaStatus.UPLOADED)
+        {
+            UnitResult<Error> startResult = assetResult.Value.StartProcessing();
+            if (startResult.IsFailure)
+                return startResult.Error;
+        }
+        else if (assetResult.Value.Status != MediaStatus.PROCESSING)
+        {
+            return Error.Validation(
+                "asset.invalid.status.transition",
+                $"Cannot process asset in status {assetResult.Value.Status}");
+        }
 
         Result<int, Error> saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
         if (saveResult.IsFailure)
             return saveResult.Error;
+
+        // Initial-событие: старт обработки уже сохранён (asset PROCESSING). Один репорт
+        // покрывает и первый запуск, и ретрай; статус берём реальный, а не хардкодим.
+        _videoProgressReporter.Report(videoProcess, assetResult.Value.Status);
 
         var processingContext = new ProcessingContext { VideoAsset = assetResult.Value, VideoProcess = videoProcess, };
 
@@ -236,10 +272,7 @@ public class ProcessingPipeline : IProcessingPipeline
 
         context.VideoProcess.Fail(error.Message);
 
-        _logger.LogError(
-            "Video processing failed for VideoAssetId: {VideoAssetId}. Error: {Error}.",
-            videoAssetId,
-            error.Message);
+        _logger.LogError("Video processing failed for VideoAssetId: {VideoAssetId}. Error: {Error}.", videoAssetId, error.Message);
 
         // Временные файлы должны чиститься и при ошибке — CleanupStepHandler мог не запуститься
         // (сбой на более раннем шаге, например ffmpeg).
@@ -290,18 +323,16 @@ public class ProcessingPipeline : IProcessingPipeline
         if (completeResult.IsFailure)
             return completeResult.Error;
 
-        _logger.LogInformation(
-            "Video processing completed successfully for VideoAssetId: {VideoAssetId}",
-            videoAssetId);
+        _logger.LogInformation("Video processing completed successfully for VideoAssetId: {VideoAssetId}", videoAssetId);
 
         UnitResult<Error> saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
         if (saveResult.IsFailure)
         {
-            _logger.LogError(
-                "Failed to save final state for VideoAssetId: {VideoAssetId}",
-                videoAssetId);
+            _logger.LogError("Failed to save final state for VideoAssetId: {VideoAssetId}", videoAssetId);
             return saveResult.Error;
         }
+        
+        _videoProgressReporter.Report(context.VideoProcess, context.VideoAsset.Status);
 
         return UnitResult.Success<Error>();
     }

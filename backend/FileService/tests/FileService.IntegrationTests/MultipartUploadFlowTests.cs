@@ -16,7 +16,7 @@ public sealed class MultipartUploadFlowTests(FileServiceTestWebFactory factory) 
     private const int PartSize = 5 * 1024 * 1024;
 
     [Fact]
-    public async Task StartUploadPartsComplete_SavesReadyAssetAndFinalObject()
+    public async Task StartUploadPartsComplete_AssemblesObjectAndQueuesVideoForProcessing()
     {
         StartMultipartUploadResponse started = await StartAsync();
         Assert.Equal(PartSize, started.ChunkSize);
@@ -44,9 +44,18 @@ public sealed class MultipartUploadFlowTests(FileServiceTestWebFactory factory) 
         Assert.Equal(started.FileId, completed.FileId);
 
         MediaAsset asset = await GetAssetAsync(started.FileId);
-        Assert.Equal(MediaStatus.READY, asset.Status);
-        Assert.NotNull(asset.StorageReference);
-        Assert.Equal(PartSize * 2L, asset.StorageReference.Size);
+
+        // complete увёл asset из UPLOADING. Точный статус дальше гоняет Quartz-джоба
+        // (видео уходит в очередь на обработку — FS-12), поэтому проверяем «не UPLOADING».
+        Assert.NotEqual(MediaStatus.UPLOADING, asset.Status);
+
+        // Итоговый объект реально собран в MinIO по upload-ключу и имеет ожидаемый размер.
+        var head = await Factory.S3Client.GetObjectMetadataAsync(new Amazon.S3.Model.GetObjectMetadataRequest
+        {
+            BucketName = asset.UploadKey.Bucket,
+            Key = asset.UploadKey.Value,
+        });
+        Assert.Equal(PartSize * 2L, head.ContentLength);
     }
 
     [Fact]

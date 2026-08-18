@@ -267,8 +267,8 @@ public class VideoProcessTests
     }
 
     // ---------- Retry ----------
-    // NOTE: MaxRetries is never assigned (defaults to 0), so retries are
-    // effectively disabled. These tests document the *current* behavior.
+    // Попытка (VideoProcess) на сбое уходит в FAILED — отсюда планируется повтор и делается Reset.
+    // Asset при этом остаётся PROCESSING; терминальный FAILED ставит джоба. MaxRetries по умолчанию = 3.
 
     [Fact]
     public void ScheduleRetry_WhenNotFailed_ReturnsValidationError()
@@ -294,24 +294,59 @@ public class VideoProcessTests
     }
 
     [Fact]
-    public void ScheduleRetry_AfterNonCriticalFailure_IsExhaustedBecauseMaxRetriesIsZero()
+    public void ScheduleRetry_AfterNonCriticalFailure_IncrementsRetryCountAndSetsNextRetryAt()
     {
         VideoProcess process = CreateProcess();
         process.Fail("transient", isCritical: false);
+        DateTime nextRetryAt = DateTime.UtcNow.AddMinutes(5);
 
-        var result = process.ScheduleRetry(DateTime.UtcNow.AddMinutes(5));
+        var result = process.ScheduleRetry(nextRetryAt);
 
-        Assert.True(result.IsFailure);
-        Assert.Equal("processing.retry.exhausted", result.Error.Code);
+        Assert.True(result.IsSuccess);
+        Assert.Equal(1, process.RetryCount);
+        Assert.Equal(nextRetryAt, process.NextRetryAt);
     }
 
     [Fact]
-    public void CanRetry_WithDefaultMaxRetries_ReturnsFalse()
+    public void CanRetry_AfterNonCriticalFailure_WithinBudget_ReturnsTrue()
     {
         VideoProcess process = CreateProcess();
         process.Fail("transient", isCritical: false);
 
+        Assert.True(process.CanRetry());
+    }
+
+    [Fact]
+    public void CanRetry_AfterCriticalFailure_ReturnsFalse()
+    {
+        VideoProcess process = CreateProcess();
+        process.Fail("fatal", isCritical: true);
+
         Assert.False(process.CanRetry());
+    }
+
+    [Fact]
+    public void ScheduleRetry_WhenBudgetExhausted_ReturnsExhaustedError()
+    {
+        VideoProcess process = CreateProcess(); // MaxRetries = 3
+
+        // Три цикла: Fail -> ScheduleRetry -> Reset (RetryCount переживает Reset).
+        for (int attempt = 0; attempt < 3; attempt++)
+        {
+            process.Fail("transient", isCritical: false);
+            Assert.True(process.ScheduleRetry(DateTime.UtcNow).IsSuccess);
+            process.Reset();
+        }
+
+        Assert.Equal(3, process.RetryCount);
+        Assert.False(process.CanRetry());
+
+        // Четвёртая попытка запрещена — бюджет исчерпан.
+        process.Fail("transient", isCritical: false);
+        var result = process.ScheduleRetry(DateTime.UtcNow);
+
+        Assert.True(result.IsFailure);
+        Assert.Equal("processing.retry.exhausted", result.Error.Code);
     }
 
     // ---------- Helpers ----------

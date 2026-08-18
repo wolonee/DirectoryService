@@ -45,8 +45,7 @@ public sealed class GetMediaAssetEndpoint : IEndpoint
     }
 }
 
-public sealed class GetMediaAssetHandler
-    : IQueryHandler<GetMediaAssetResponse, GetMediaAssetQuery>
+public sealed class GetMediaAssetHandler : IQueryHandler<GetMediaAssetResponse, GetMediaAssetQuery>
 {
     private readonly IMediaAssetRepository _repository;
     private readonly IS3Provider _s3Provider;

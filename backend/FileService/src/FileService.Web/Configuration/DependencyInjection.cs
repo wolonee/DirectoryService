@@ -18,6 +18,7 @@ public static class DependencyInjection
         services.AddCoreDependencies(configuration);
         services.AddS3(configuration);
         services.AddVideoProcessing(configuration);
+        services.AddQuartzServices(configuration);
         services.AddWebDependencies();
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, HttpCurrentUser>();
@@ -32,7 +33,14 @@ public static class DependencyInjection
         services.AddControllers();
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
-        
+
+        // Realtime-прогресс через SignalR: сам фреймворк + фоновый мост очередь→хаб.
+        services.AddSignalR();
+        services.AddHostedService<Progress.ProgressBroadcastConsumer>();
+
+        // Чтение initial-снапшота из БД для отправки только что подписавшемуся клиенту.
+        services.AddScoped<Progress.InitialProcess>();
+
         return services;
     }
     

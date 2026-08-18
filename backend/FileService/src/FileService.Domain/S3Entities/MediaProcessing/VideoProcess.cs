@@ -49,10 +49,12 @@ public class VideoProcess
     {
     }
     
-    public VideoProcess(Guid videoAssetId)
+    public VideoProcess(Guid videoAssetId, int maxRetries = 3)
     {
         Id = Guid.NewGuid();
         VideoAssetId = videoAssetId;
+        RetryCount = 0;
+        MaxRetries = maxRetries;
         Status = ProcessingStatus.IN_PROGRESS;
         ProgressPercentage = 0;
         StartedAt = DateTime.UtcNow;
@@ -69,6 +71,8 @@ public class VideoProcess
             _steps.Add(new ProcessingStep(stepType, order++, weight));
         }
     }
+    
+    public int CountSteps() => _steps.Count;
     
     public Result<ProcessingStep?, Error> ProcessNextStep()
     {
@@ -177,6 +181,7 @@ public class VideoProcess
     
     public UnitResult<Error> ScheduleRetry(DateTime nextRetryAt)
     {
+        // Попытка (VideoProcess) провалилась и уже FAILED — отсюда и планируем повтор.
         if (Status != ProcessingStatus.FAILED)
             return Error.Validation("processing.invalid.status", "Can only schedule retry from FAILED status");
 
