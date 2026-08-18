@@ -1,7 +1,9 @@
+using FileService.Core.Abstractions;
 using FileService.VideoProcessing.FfmpegProcess;
 using FileService.VideoProcessing.Handlers;
 using FileService.VideoProcessing.Jobs;
 using FileService.VideoProcessing.ProcessRunner;
+using FileService.VideoProcessing.Progress;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -30,6 +32,10 @@ public static class DependencyInjection
         services.AddTransient<VideoProcessingJob>();
 
         services.AddScoped<IProcessingPipeline, ProcessingPipeline>();
+
+        // Репортер прогресса: маппит VideoProcess → DTO и кладёт в очередь.
+        // Stateless → singleton (безопасно инжектится в scoped-пайплайн).
+        services.AddSingleton<IVideoProgressReporter, VideoProgressReporter>();
 
         services.AddScoped<IProcessingStepHandler, InitializeStepHandler>();
         services.AddScoped<IProcessingStepHandler, ExtractMetadataStepHandler>();

@@ -1,6 +1,7 @@
 ﻿using CrystalQuartz.AspNetCore;
 using DirectoryService.Presentation.Middlewares;
 using FileService.Web.EndpointsExtensions;
+using FileService.Web.Progress;
 using Quartz;
 using Serilog;
 
@@ -26,6 +27,9 @@ public static class AppExtensions
         app.MapHealthChecks("/health");
         app.UseCrystalQuartz(() => app.Services.GetRequiredService<ISchedulerFactory>().GetScheduler());
         app.MapEndpoints();
+
+        // SignalR-хаб прогресса: клиент подключается сюда (через nginx — /api/hubs/progress).
+        app.MapHub<ProgressHub>("/hubs/progress");
 
         return app;
     }

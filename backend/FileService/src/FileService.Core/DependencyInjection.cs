@@ -1,6 +1,8 @@
 using DirectoryService.Application.Abstractions;
+using FileService.Core.Abstractions;
 using FileService.Core.Features;
 using FileService.Core.Features.MultipartUpload;
+using FileService.Core.Features.Progress;
 using FileService.Core.Features.Simple;
 using FileService.Core.Options;
 using FileService.Core.Options.CacheOptions;
@@ -21,6 +23,10 @@ public static class DependencyInjection
     {
         services.AddEndpoints(typeof(InitiateUploadEndpoint).Assembly);
         services.AddScoped<IMediaAssetFactory, MediaAssetFactory>();
+
+        // Транспортный буфер прогресса. Singleton: один канал на приложение
+        // (producer-пайплайн и consumer-рассылка должны быть на одной «ленте»).
+        services.AddSingleton<IProgressQueue, InMemoryProgressQueue>();
         
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
         

@@ -1,6 +1,7 @@
 using CSharpFunctionalExtensions;
 using DirectoryService.Shared.Errors;
 using FileService.Core.Abstractions;
+using FileService.Domain.S3Entities;
 using FileService.Domain.S3Entities.Assets;
 using FileService.Domain.S3Entities.MediaProcessing;
 using Microsoft.Extensions.Logging;
@@ -20,6 +21,7 @@ public class VideoProcessingJob : IJob
     private readonly IVideoAssetRepository _videoAssetRepository;
     private readonly ITransactionManager _transactionManager;
     private readonly IProcessingJobFactory _factory;
+    private readonly IVideoProgressReporter _videoProgressReporter;
     private readonly VideoProcessingOptions _options;
 
     public VideoProcessingJob(
@@ -29,7 +31,8 @@ public class VideoProcessingJob : IJob
         IVideoAssetRepository videoAssetRepository,
         ITransactionManager transactionManager,
         IOptions<VideoProcessingOptions> options,
-        IProcessingJobFactory factory)
+        IProcessingJobFactory factory,
+        IVideoProgressReporter videoProgressReporter)
     {
         _logger = logger;
         _videoProcessingService = videoProcessingService;
@@ -37,6 +40,7 @@ public class VideoProcessingJob : IJob
         _videoAssetRepository = videoAssetRepository;
         _transactionManager = transactionManager;
         _factory = factory;
+        _videoProgressReporter = videoProgressReporter;
         _options = options.Value;
     }
 
@@ -46,15 +50,14 @@ public class VideoProcessingJob : IJob
 
         _logger.LogInformation("Starting video processing job for VideoAssetId: {VideoAssetId}", videoAssetId);
 
-        UnitResult<Error> result =
-            await _videoProcessingService.ProcessVideoAsync(videoAssetId, context.CancellationToken);
+        UnitResult<Error> result = await _videoProcessingService.ProcessVideoAsync(videoAssetId, context.CancellationToken);
         if (result.IsSuccess)
             return;
 
         // Транзиентный сбой оставил ПРОЦЕСС в FAILED (эта попытка провалилась),
         // а asset — в PROCESSING (pipeline его не валит). Решаем: повтор или терминал.
-        Result<VideoProcess, Error> processResult =
-            await _videoProcessingRepository.GetBy(vp => vp.VideoAssetId == videoAssetId, context.CancellationToken);
+        Result<VideoProcess, Error> processResult = await _videoProcessingRepository
+            .GetBy(vp => vp.VideoAssetId == videoAssetId, context.CancellationToken);
         if (processResult.IsFailure)
             throw new JobExecutionException(refireImmediately: false);
 
@@ -72,7 +75,7 @@ public class VideoProcessingJob : IJob
             Result<int, Error> saveResult = await _transactionManager.SaveChangesAsync(context.CancellationToken);
             if (saveResult.IsFailure)
                 throw new JobExecutionException(refireImmediately: false);
-
+            
             await context.Scheduler.ScheduleJob(
                 _factory.CreateRetryTrigger(videoAssetId, process.RetryCount, nextRetryAt),
                 context.CancellationToken);
@@ -110,11 +113,12 @@ public class VideoProcessingJob : IJob
         if (process.Status == ProcessingStatus.IN_PROGRESS)
             process.Fail(error.Message);
 
-        Result<VideoAsset, Error> assetResult =
-            await _videoAssetRepository.GetByIdAsync(videoAssetId, cancellationToken);
+        Result<VideoAsset, Error> assetResult = await _videoAssetRepository.GetByIdAsync(videoAssetId, cancellationToken);
         if (assetResult.IsSuccess)
             assetResult.Value.MarkFailed(DateTime.UtcNow);
 
         await _transactionManager.SaveChangesAsync(cancellationToken);
+        
+        _videoProgressReporter.Report(process, MediaStatus.FAILED);
     }
 }

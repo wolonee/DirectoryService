@@ -161,7 +161,8 @@ public class ProcessingPipelineTests
             new FakeVideoAssetRepository(asset),
             new FakeTransactionManager(),
             Options.Create(new VideoProcessingOptions()),
-            handlers);
+            handlers,
+            new FakeVideoProgressReporter());
 
     private static VideoAsset CreateVideoAsset()
     {
@@ -216,6 +217,14 @@ public class ProcessingPipelineTests
             Task.FromResult(Result.Failure<VideoProcess, Error>(GeneralErrors.NotFound(Guid.Empty, "VideoProcess")));
 
         public void Add(VideoProcess videoProcessing)
+        {
+        }
+    }
+
+    // Прогресс — побочный канал; в юнит-тестах пайплайна его не проверяем, глушим no-op.
+    private sealed class FakeVideoProgressReporter : IVideoProgressReporter
+    {
+        public void Report(VideoProcess videoProcess, MediaStatus mediaStatus)
         {
         }
     }

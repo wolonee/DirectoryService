@@ -1,14 +1,22 @@
-﻿namespace FileService.Contracts.Features.Progress;
+namespace FileService.Contracts.Features.Progress;
 
 public record ProgressEventDto
 {
-    public Guid MediaAssetId;
-    public ProcessStatus ProcessStatus;
-    public double Percent;
-    public int? StepOrder;
-    public string? StepName;
-    public int TotalSteps;
-    public string? Error;
-    public string? ErrorCode;
-    public DateTime PublishedAtUtc;
+    public Guid MediaAssetId { get; init; }
+
+    public ProcessStatus ProcessStatus { get; init; }
+
+    public double Percent { get; init; }
+
+    public int? StepOrder { get; init; }
+
+    public string? StepName { get; init; }
+
+    public int TotalSteps { get; init; }
+
+    public string? Error { get; init; }
+
+    public string? ErrorCode { get; init; }
+
+    public DateTime PublishedAtUtc { get; init; }
 }

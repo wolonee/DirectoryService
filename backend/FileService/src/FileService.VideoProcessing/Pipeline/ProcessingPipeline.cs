@@ -13,6 +13,7 @@ namespace FileService.VideoProcessing;
 public class ProcessingPipeline : IProcessingPipeline
 {
     private readonly IEnumerable<IProcessingStepHandler> _stepHandlers;
+    private readonly IVideoProgressReporter _videoProgressReporter;
     private readonly ILogger<ProcessingPipeline> _logger;
     private readonly IVideoProcessingRepository _videoProcessingRepository;
     private readonly IVideoAssetRepository _videoAssetRepository;
@@ -26,7 +27,8 @@ public class ProcessingPipeline : IProcessingPipeline
         IVideoAssetRepository videoAssetRepository,
         ITransactionManager transactionManager,
         IOptions<VideoProcessingOptions> options,
-        IEnumerable<IProcessingStepHandler> stepHandlers)
+        IEnumerable<IProcessingStepHandler> stepHandlers,
+        IVideoProgressReporter videoProgressReporter)
     {
         _logger = logger;
         _videoProcessingRepository = videoProcessingRepository;
@@ -34,6 +36,7 @@ public class ProcessingPipeline : IProcessingPipeline
         _transactionManager = transactionManager;
         _options = options.Value;
         _stepHandlers = stepHandlers;
+        _videoProgressReporter = videoProgressReporter;
     }
 
     public async Task<UnitResult<Error>> ProcessAllStepsAsync(
@@ -149,6 +152,7 @@ public class ProcessingPipeline : IProcessingPipeline
             context = executionResult.Value;
 
             context.VideoProcess.CompleteCurrentStep();
+            _videoProgressReporter.Report(context.VideoProcess, context.VideoAsset.Status);
 
             _logger.LogInformation(
                 "Step {StepType} completed for VideoAssetId: {VideoAssetId}. Progress: {Progress}%",
@@ -250,6 +254,10 @@ public class ProcessingPipeline : IProcessingPipeline
         if (saveResult.IsFailure)
             return saveResult.Error;
 
+        // Initial-событие: старт обработки уже сохранён (asset PROCESSING). Один репорт
+        // покрывает и первый запуск, и ретрай; статус берём реальный, а не хардкодим.
+        _videoProgressReporter.Report(videoProcess, assetResult.Value.Status);
+
         var processingContext = new ProcessingContext { VideoAsset = assetResult.Value, VideoProcess = videoProcess, };
 
         return processingContext;
@@ -323,6 +331,8 @@ public class ProcessingPipeline : IProcessingPipeline
             _logger.LogError("Failed to save final state for VideoAssetId: {VideoAssetId}", videoAssetId);
             return saveResult.Error;
         }
+        
+        _videoProgressReporter.Report(context.VideoProcess, context.VideoAsset.Status);
 
         return UnitResult.Success<Error>();
     }
