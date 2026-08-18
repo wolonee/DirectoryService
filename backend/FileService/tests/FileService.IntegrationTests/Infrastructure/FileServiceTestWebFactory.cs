@@ -60,6 +60,15 @@ public sealed class FileServiceTestWebFactory : WebApplicationFactory<Program>, 
     {
         await Task.WhenAll(_postgres.StartAsync(), _minio.StartAsync());
 
+        // Quartz читает строку подключения из конфигурации в момент регистрации сервисов
+        // (AddProgramDependencies в Program.cs), ещё ДО того как ConfigureAppConfiguration
+        // фабрики подставит свой in-memory-конфиг. Поэтому подсовываем строку Testcontainers
+        // через переменную окружения — Program добавляет AddEnvironmentVariables() последним,
+        // так что она перекрывает appsettings и её видит регистрация Quartz.
+        Environment.SetEnvironmentVariable(
+            "ConnectionStrings__FileServiceDb",
+            _postgres.GetConnectionString());
+
         S3Client = new AmazonS3Client(
             "test-access-key",
             "test-secret-key",
